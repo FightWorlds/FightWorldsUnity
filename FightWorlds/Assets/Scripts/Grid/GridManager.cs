@@ -6,7 +6,7 @@ using UnityEngine;
 public class GridManager
 {
     private readonly Vector3 unclick = new Vector3(-999999, 0, 0);
-    private readonly int r = 5;
+    private readonly float r = 7.5f;
 
     private GridHex<GridObject> grid;
     private List<GridObject> filledHexagons;

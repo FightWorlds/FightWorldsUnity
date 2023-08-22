@@ -44,54 +44,27 @@ public class GridHex<TGridObject>
     public TGridObject[,] GetGridArray() => gridArray;
 
     public Vector3 GetWorldPosition(int x, int z)
-    {
-        //return
-        //    new Vector3(x, 0, 0) * cellSize +
-        //    new Vector3(0, 0, x) * 1.75f + // flower
-        //    new Vector3(z, 0, 0) + // flower
-        //    new Vector3(0, 0, z) * cellSize +
-        //    originPosition;
+    {//107 139.75
         return
-        new Vector3(x, 0, 0) * cellSize +
-        new Vector3(0, 0, z) * cellSize * HEX_VERTICAL_OFFSET_MULTIPLIER +
-        ((Mathf.Abs(z) % 2) == 1 ? new Vector3(1, 0, 0) *
-        cellSize * .5f : Vector3.zero) +
-        originPosition;
+            new Vector3(x, 0, 0) * cellSize +
+            new Vector3(0, 0, x) * 1.75f + // flower
+            new Vector3(z, 0, 0) + // flower
+            new Vector3(0, 0, z) * cellSize +
+            originPosition;
+        //return
+        //new Vector3(x, 0, 0) * cellSize +
+        //new Vector3(0, 0, z) * cellSize * HEX_VERTICAL_OFFSET_MULTIPLIER +
+        //((Mathf.Abs(z) % 2) == 1 ? new Vector3(1, 0, 0) *
+        //cellSize * .5f : Vector3.zero) +
+        //originPosition;
 
     }
 
     public void GetXZ(Vector3 worldPosition, out int x, out int z)
     {
-        int roughX = Mathf.RoundToInt((worldPosition - originPosition).x
-        / cellSize);
-        int roughZ = Mathf.RoundToInt((worldPosition - originPosition).z
-        / cellSize / HEX_VERTICAL_OFFSET_MULTIPLIER);
-
-        Vector3Int roughXZ = new Vector3Int(roughX, 0, roughZ);
-
-        bool oddRow = roughZ % 2 == 1;
-
-        List<Vector3Int> neighbourXZList = new List<Vector3Int> {
-             roughXZ + new Vector3Int(-1, 0, 0),
-             roughXZ + new Vector3Int(+1, 0, 0),
-
-             roughXZ + new Vector3Int(oddRow ? +1 : -1, 0, +1),
-             roughXZ + new Vector3Int(+0, 0, +1),
-
-             roughXZ + new Vector3Int(oddRow ? +1 : -1, 0, -1),
-             roughXZ + new Vector3Int(+0, 0, -1),
-        };
-
-        Vector3Int cXZ = roughXZ;
-
-        foreach (Vector3Int nXZ in neighbourXZList)
-            if (Vector3.Distance(worldPosition, GetWorldPosition(nXZ.x, nXZ.z))
-                <
-                Vector3.Distance(worldPosition, GetWorldPosition(cXZ.x, cXZ.z)))
-                cXZ = nXZ; // Closer than closest
-
-        x = cXZ.x;
-        z = cXZ.z;
+        Vector3 offset = worldPosition - originPosition;
+        x = Mathf.RoundToInt((offset.x * 20 - offset.z * 4) / 93); // formula
+        z = Mathf.RoundToInt((offset.z * 20 - offset.x * 7) / 93);
     }
 
     public void SetGridObject(int x, int z, TGridObject value)
