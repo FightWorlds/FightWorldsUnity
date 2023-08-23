@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d152ab33b298fd41a6f9a66ca752c6b, type: 3}
+  m_Name: Buildings
+  m_EditorClassIdentifier: 
+  objectsData:
+  - <Name>k__BackingField: Hexagon
+    <ID>k__BackingField: 0
+    <Prefab>k__BackingField: {fileID: 5567518194027125919, guid: 895c7538ac211924086755c1c1a34c79,
+      type: 3}
+  - <Name>k__BackingField: Accumulator
+    <ID>k__BackingField: 1
+    <Prefab>k__BackingField: {fileID: 919132149155446097, guid: 8a4137be6addddc4db58cb6ee136d08c,
+      type: 3}

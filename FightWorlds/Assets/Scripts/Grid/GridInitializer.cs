@@ -34,7 +34,7 @@ public class GridInitializer : MonoBehaviour
                         pfHex,
                         worldPos,
                         Quaternion.identity, transform);
-                    gridHex.GetGridObject(x, z).VisualTransform =
+                    gridHex.GetGridObject(x, z).Hex =
                     visualTransform;
                 }
             }
