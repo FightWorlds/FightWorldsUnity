@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 public class GridInitializer : MonoBehaviour
@@ -10,16 +9,18 @@ public class GridInitializer : MonoBehaviour
     [SerializeField] private int height;
     [SerializeField] private int cellSize;
     [SerializeField] private int radius;
-    [SerializeField] private List<Vector3> startPlatforms;
 
-    public GridManager gridManager { get; private set; }
-
-    private GridHex<GridObject> gridHex;
-
-    private void Awake()
+    public GridHex<GridObject> GenerateHex()
     {
-        gridHex =
-            new GridHex<GridObject>(width, height, cellSize, offset, (GridHex<GridObject> g, int x, int y) => new GridObject(hexMaterial, x, y));
+        int hexagons = transform.childCount;
+        if (hexagons > 0)
+            for (int i = 0; i < hexagons; i++)
+                Destroy(transform.GetChild(i));
+
+        GridHex<GridObject> gridHex =
+            new GridHex<GridObject>(width, height, cellSize, offset,
+            (GridHex<GridObject> g, int x, int y) =>
+            new GridObject(hexMaterial, x, y));
 
         for (int x = 0; x < width; x++)
         {
@@ -29,7 +30,8 @@ public class GridInitializer : MonoBehaviour
                 float dist = Vector3.Distance(worldPos, Vector3.zero);
                 if (Mathf.Abs(dist) < radius)
                 {
-                    Transform visualTransform = Instantiate(pfHex,
+                    Transform visualTransform = Instantiate(
+                        pfHex,
                         worldPos,
                         Quaternion.identity, transform);
                     gridHex.GetGridObject(x, z).VisualTransform =
@@ -37,6 +39,6 @@ public class GridInitializer : MonoBehaviour
                 }
             }
         }
-        gridManager = new GridManager(gridHex, startPlatforms);
+        return gridHex;
     }
 }

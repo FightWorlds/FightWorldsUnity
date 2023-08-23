@@ -1,20 +1,23 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.IO.Compression;
 using UnityEngine;
 
-public class GridManager
+public class GridManager : MonoBehaviour
 {
-    private readonly Vector3 unclick = new Vector3(-999999, 0, 0);
-    private readonly float r = 7.5f;
+    [SerializeField] private List<Vector3> startPlatforms;
+    [SerializeField] private float r;
 
+    private readonly Vector3 unclick = new Vector3(-999999, 0, 0);
+
+    private GridInitializer initializer;
     private GridHex<GridObject> grid;
     private List<GridObject> filledHexagons;
     private Vector2 prevClickHex;
 
-    public GridManager(GridHex<GridObject> grid, List<Vector3> startPlatforms)
+    private void Awake()
     {
-        this.grid = grid;
+        initializer = GetComponent<GridInitializer>();
+        grid = initializer.GenerateHex();
         filledHexagons = new List<GridObject>();
         foreach (Vector3 coords in startPlatforms)
             FillHex(coords);

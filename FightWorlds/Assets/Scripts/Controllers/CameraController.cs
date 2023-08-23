@@ -3,64 +3,43 @@ using UnityEngine;
 public class CameraController : MonoBehaviour
 {
     [SerializeField] private int boundary;
-    [SerializeField] private LayerMask selectionMask;
-    [SerializeField] private GridInitializer grid;
 
     private float zOffset;
     private Vector3 newPosition;
     private Vector3 dragStartPosition;
     private Vector3 dragCurrentPosition;
-    private Ray mouseRay;
+    private new Camera camera;
 
-    void Start()
+    public Ray MouseRay(Vector3 pos) =>
+        camera.ScreenPointToRay(Input.mousePosition);
+
+    private void Awake()
     {
+        camera = gameObject.GetComponent<Camera>();
         newPosition = transform.position;
         zOffset = transform.position.z;
     }
 
-    void Update()
+    public void HandlePress(Ray mouseRay)
     {
-        HandleMouseInput();
+        dragStartPosition = CastOnPlane(dragStartPosition, mouseRay);
     }
 
-    void HandleMouseInput()
+    public void HandleDrag(Ray mouseRay)
     {
-        mouseRay = GetComponent<Camera>().ScreenPointToRay(Input.mousePosition);
-        if (Input.GetMouseButtonDown(0))
-        {
-            FindTarget();
-            dragStartPosition = DragOnPlane(dragStartPosition);
-        }
-
-
-        if (Input.GetMouseButton(0))
-        {
-            dragCurrentPosition = DragOnPlane(dragCurrentPosition);
-            newPosition = transform.position + dragStartPosition -
-                dragCurrentPosition;
-            newPosition.x = Mathf.Clamp(newPosition.x, -boundary, boundary);
-            newPosition.z = Mathf.Clamp(newPosition.z, -boundary,
-                boundary + zOffset);
-        }
-
+        dragCurrentPosition = CastOnPlane(dragCurrentPosition, mouseRay);
+        newPosition = transform.position + dragStartPosition -
+            dragCurrentPosition;
+        newPosition.x = Mathf.Clamp(newPosition.x, -boundary, boundary);
+        newPosition.z = Mathf.Clamp(newPosition.z, -boundary,
+            boundary + zOffset);
         transform.position = Vector3.Lerp(transform.position, newPosition,
             Time.deltaTime);
     }
 
-    private bool FindTarget()
-    {
-        if (Physics.Raycast(mouseRay, out RaycastHit hit, selectionMask))
-        {
-            grid.gridManager.TapOnHex(hit.collider.transform.position);
-            return true;
-        }
-        return false;
-    }
-
-    Vector3 DragOnPlane(Vector3 defaultVector)
+    private Vector3 CastOnPlane(Vector3 defaultVector, Ray mouseRay)
     {
         Plane plane = new Plane(Vector3.up, Vector3.zero);
-
         if (plane.Raycast(mouseRay, out float entry))
             return mouseRay.GetPoint(entry);
         else

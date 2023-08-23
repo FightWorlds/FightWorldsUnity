@@ -395,6 +395,7 @@ GameObject:
   - component: {fileID: 963194227}
   - component: {fileID: 963194226}
   - component: {fileID: 963194229}
+  - component: {fileID: 963194230}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -489,10 +490,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   boundary: 75
+--- !u!114 &963194230
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 963194225}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f27b3c5e96e6ad47992f9758732e656, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gridManager: {fileID: 1695125218}
   selectionMask:
     serializedVersion: 2
     m_Bits: 64
-  grid: {fileID: 1695125216}
 --- !u!1 &1251383847
 GameObject:
   m_ObjectHideFlags: 0
@@ -622,6 +635,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1695125217}
   - component: {fileID: 1695125216}
+  - component: {fileID: 1695125218}
   m_Layer: 0
   m_Name: Grid
   m_TagString: Untagged
@@ -648,14 +662,6 @@ MonoBehaviour:
   height: 51
   cellSize: 5
   radius: 85
-  startPlatforms:
-  - {x: 0, y: 0, z: 5.25}
-  - {x: -5, y: 0, z: 3.5}
-  - {x: -2, y: 0, z: -4.75}
-  - {x: -6, y: 0, z: -1.5}
-  - {x: 3, y: 0, z: -3}
-  - {x: -1, y: 0, z: 0.25}
-  - {x: 4, y: 0, z: 2}
 --- !u!4 &1695125217
 Transform:
   m_ObjectHideFlags: 0
@@ -671,6 +677,27 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1695125218
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1695125215}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a2ec5abe2a5160b4da607b211a8abdb7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  startPlatforms:
+  - {x: 0, y: 0, z: 5.25}
+  - {x: -5, y: 0, z: 3.5}
+  - {x: -2, y: 0, z: -4.75}
+  - {x: -6, y: 0, z: -1.5}
+  - {x: 3, y: 0, z: -3}
+  - {x: -1, y: 0, z: 0.25}
+  - {x: 4, y: 0, z: 2}
+  r: 7.5
 --- !u!1 &1876229636
 GameObject:
   m_ObjectHideFlags: 0
