@@ -44,7 +44,7 @@ public class GridHex<TGridObject>
     public TGridObject[,] GetGridArray() => gridArray;
 
     public Vector3 GetWorldPosition(int x, int z)
-    {//107 139.75
+    {
         return
             new Vector3(x, 0, 0) * cellSize +
             new Vector3(0, 0, x) * 1.75f + // flower

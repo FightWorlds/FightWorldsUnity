@@ -1,0 +1,63 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d152ab33b298fd41a6f9a66ca752c6b, type: 3}
+  m_Name: Buildings
+  m_EditorClassIdentifier: 
+  objectsData:
+  - <Name>k__BackingField: Hexagon
+    <ID>k__BackingField: 0
+    <Prefab>k__BackingField: {fileID: 5567518194027125919, guid: 895c7538ac211924086755c1c1a34c79,
+      type: 3}
+  - <Name>k__BackingField: Control Center
+    <ID>k__BackingField: 1
+    <Prefab>k__BackingField: {fileID: 919132149155446097, guid: 4332d0432efa3844e859c6b849f67afe,
+      type: 3}
+  - <Name>k__BackingField: Mine
+    <ID>k__BackingField: 2
+    <Prefab>k__BackingField: {fileID: 919132149155446097, guid: 9df1086c9e1030d42b3210a5b8c166b9,
+      type: 3}
+  - <Name>k__BackingField: Drill
+    <ID>k__BackingField: 3
+    <Prefab>k__BackingField: {fileID: 919132149155446097, guid: 797f86696f4a5ad49aa23d24f7c15d2e,
+      type: 3}
+  - <Name>k__BackingField: Accumulator
+    <ID>k__BackingField: 4
+    <Prefab>k__BackingField: {fileID: 919132149155446097, guid: 8a4137be6addddc4db58cb6ee136d08c,
+      type: 3}
+  - <Name>k__BackingField: Storage
+    <ID>k__BackingField: 5
+    <Prefab>k__BackingField: {fileID: 919132149155446097, guid: e8db610311211694585a1a20edbef852,
+      type: 3}
+  - <Name>k__BackingField: Settler
+    <ID>k__BackingField: 6
+    <Prefab>k__BackingField: {fileID: 919132149155446097, guid: 29fa83497b729d44a914ab4d02f2df8a,
+      type: 3}
+  - <Name>k__BackingField: Generator
+    <ID>k__BackingField: 7
+    <Prefab>k__BackingField: {fileID: 919132149155446097, guid: 132f49e4736fe74478e21372069504a6,
+      type: 3}
+  - <Name>k__BackingField: Turret
+    <ID>k__BackingField: 8
+    <Prefab>k__BackingField: {fileID: 919132149155446097, guid: 9eac6a2ede0334543bd7ac8c27c029d5,
+      type: 3}
+  - <Name>k__BackingField: Constructor Dock
+    <ID>k__BackingField: 9
+    <Prefab>k__BackingField: {fileID: 919132149155446097, guid: 22b75ad1d209e2c49b964bc3f47d6024,
+      type: 3}
+  - <Name>k__BackingField: Dockyard
+    <ID>k__BackingField: 10
+    <Prefab>k__BackingField: {fileID: 919132149155446097, guid: f2e03b1fb84d241479a3c84863f6451b,
+      type: 3}
+  - <Name>k__BackingField: Wall
+    <ID>k__BackingField: 11
+    <Prefab>k__BackingField: {fileID: 8596161468681693823, guid: 97884c403c3f70441a81fdd060d8f3e9,
+      type: 3}

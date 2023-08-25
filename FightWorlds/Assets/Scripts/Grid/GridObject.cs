@@ -2,7 +2,8 @@ using UnityEngine;
 
 public class GridObject
 {
-    public Transform VisualTransform;
+    public Transform Hex;
+    public bool HasBuilding;
     public bool IsFilled;
     public int X { get; private set; }
     public int Z { get; private set; }
@@ -20,7 +21,7 @@ public class GridObject
         if (IsFilled)
             return;
         IsFilled = true;
-        VisualTransform.GetChild(0).GetComponent<MeshRenderer>()
+        Hex.GetChild(0).GetComponent<MeshRenderer>()
         .material = fillMaterial;
     }
 }
