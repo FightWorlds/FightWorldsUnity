@@ -1,5 +1,6 @@
 using UnityEngine;
 
+[RequireComponent(typeof(Camera))]
 public class CameraController : MonoBehaviour
 {
     [SerializeField] private int boundary;
@@ -10,7 +11,7 @@ public class CameraController : MonoBehaviour
     private Vector3 dragCurrentPosition;
     private new Camera camera;
 
-    public Ray MouseRay(Vector3 pos) =>
+    public Ray MouseRay() =>
         camera.ScreenPointToRay(Input.mousePosition);
 
     private void Awake()
