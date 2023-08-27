@@ -15,13 +15,13 @@ public class Emitter : MonoBehaviour
     private System.Random random;
     private int len => emitters.Length;
 
-    void Awake()
+    private void Awake()
     {
         timePassed = lastSpawnTime = Time.time; // TODO: new Timer Class
         random = new System.Random();
     }
 
-    void Update()
+    private void Update()
     {
         timePassed += Time.deltaTime;
         if (timePassed - lastSpawnTime > startSpawnDelay)
@@ -36,7 +36,6 @@ public class Emitter : MonoBehaviour
         for (int i = 0; i < len; i++)
         {
             int currentChance = (int)(chances[i] * maxChance);
-            Debug.Log($"rand{currentChance + prevChance}");
             if (rand < currentChance + prevChance)
             {
                 dot = i;
@@ -45,11 +44,12 @@ public class Emitter : MonoBehaviour
             else
                 prevChance = currentChance;
         }
-        Instantiate(npcPrefab, emitters[dot].position, Quaternion.identity);
-        if (random.Next(0, 3) == 0)
+        for (int i = 0; i < random.Next(0, 4); i++)
             Instantiate(npcPrefab,
-            emitters[dot].position + Vector3.forward * random.Next(-1, 1) * 2 +
-            Vector3.right * random.Next(-1, 1) * 2, Quaternion.identity);
+            emitters[dot].position +
+            Vector3.forward * random.Next(-1, 1) * 2 +
+            Vector3.right * random.Next(-1, 1) * 2,
+            Quaternion.identity);
         // TODO: replace instantiate with object pool
         lastSpawnTime = timePassed;
     }
