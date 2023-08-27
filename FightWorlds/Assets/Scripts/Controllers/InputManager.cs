@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 
+[RequireComponent(typeof(CameraController))]
 public class InputManager : MonoBehaviour
 {
     [SerializeField] private PlacementSystem placement;
@@ -22,7 +23,7 @@ public class InputManager : MonoBehaviour
     {
         if (IsPointerOverUI())
             return;
-        mouseRay = cameraController.MouseRay(Input.mousePosition);
+        mouseRay = cameraController.MouseRay();
         if (Input.GetMouseButtonDown(0))
         {
             lastPosition = Input.mousePosition;
