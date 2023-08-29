@@ -12,17 +12,20 @@ public abstract class Damageable : MonoBehaviour
     [SerializeField] private float attackDelay;
     //[SerializeField] private Slider hpBar;
 
-    public event Action<float> DamageTaken;
+    public PlacementSystem placement;
+    public event Action<int> DamageTaken;
 
     protected const float rotationSpeed = 5f;
 
-    protected float currentHp;
+    protected int currentHp;
     protected bool isAttacking;
+    protected bool isDead;
     protected Vector3 destination;
     protected Collider target;
-    protected Collider[] detections;
+    protected abstract Collider[] Detections();
 
     protected Vector3 currentPosition => transform.position;
+    public int Hp => currentHp;
 
     protected void OnEnable() => SubscribeOnEvents();
     protected void OnDisable() => UnsubscribeFromEvents();
@@ -40,8 +43,9 @@ public abstract class Damageable : MonoBehaviour
         isAttacking = true;
         while (target != null)
         {
-            Damageable damageable = target.GetComponent<Damageable>();
-            damageable.TakeDamage(damage);
+            target.TryGetComponent<Damageable>(out Damageable damageable);
+            if (damageable)
+                damageable.TakeDamage(damage);
             Debug.Log($"BAM BAM {target.name} by unit {transform.name}");
             yield return new WaitForSeconds(attackDelay);
         }
@@ -49,16 +53,17 @@ public abstract class Damageable : MonoBehaviour
         destination = Vector3.positiveInfinity;
     }
 
-    public void TakeDamage(float damage) => DamageTaken?.Invoke(damage);
+    public void TakeDamage(int damage) => DamageTaken?.Invoke(damage);
     private void SubscribeOnEvents() => DamageTaken += OnDamageTaken;
     private void UnsubscribeFromEvents() => DamageTaken -= OnDamageTaken;
-    private void OnDamageTaken(float damage)
+    protected virtual void OnDamageTaken(int damage)
     {
         if (damage < 0)
             return;
 
-        currentHp = Mathf.Clamp(currentHp - damage, 0, currentHp);
-        VisualizeHp();
+        currentHp = (int)Mathf.Clamp(currentHp - damage, 0, currentHp);
+        // VisualizeHp();
+        Debug.Log($"{gameObject.name} hp: {currentHp}");
         if (currentHp <= 0)
             Die();
     }

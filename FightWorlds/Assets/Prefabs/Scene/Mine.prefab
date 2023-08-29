@@ -76,6 +76,7 @@ MonoBehaviour:
   damage: 0
   startHp: 1000
   attackDelay: 0
+  placement: {fileID: 0}
   IsTurret: 0
 --- !u!1 &4818310538128566082
 GameObject:

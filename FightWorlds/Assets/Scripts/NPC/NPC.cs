@@ -15,17 +15,24 @@ public class NPC : Damageable
     private bool inAttackRadius =>
         Vector3.Distance(destination, currentPosition) < attackRadius;
     private float distance => Vector3.Distance(destination, currentPosition);
-    // move realization out of class:
-    protected new Collider[] detections => Physics.OverlapBox(Vector3.zero,
-                new Vector3(40, 4, 40), Quaternion.identity, mask);
+
+    protected override Collider[] Detections()
+    {
+        if (placement == null)
+            return null;
+        return placement.GetBuildingsColliders();
+    }
 
 
     private void Update()
     {
         if (target == null)
-            if (detections.Length != 0)
+        {
+            var detections = Detections();
+            if (detections != null && detections.Length != 0)
                 StartCoroutine(SearchTarget());
             else return;
+        }
         else
             MoveToTarget();
     }
@@ -42,12 +49,12 @@ public class NPC : Damageable
 
     protected override IEnumerator SearchTarget()
     {
+        destination = Vector3.positiveInfinity;
         while (!inAttackRadius)
         {
-            Collider[] hitColliders = detections;
+            Collider[] hitColliders = Detections();
             if (hitColliders.Length == 0)
             {
-                Debug.Log("GG YOU LOOSE");
                 destination = Vector3.positiveInfinity;
                 yield break;
             }

@@ -5,6 +5,7 @@ public class GridObject
     public Transform Hex;
     public bool HasBuilding;
     public bool IsFilled;
+    public bool IsDestroyed;
     public int X { get; private set; }
     public int Z { get; private set; }
     private Material fillMaterial;
@@ -14,6 +15,9 @@ public class GridObject
         this.fillMaterial = material;
         this.X = x;
         this.Z = z;
+        this.IsFilled = false;
+        this.HasBuilding = false;
+        this.IsDestroyed = false;
     }
 
     public void FillHex()

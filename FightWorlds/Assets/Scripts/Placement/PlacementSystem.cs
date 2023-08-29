@@ -1,21 +1,33 @@
 // CREDITS for: PetterSunnyVR
 
+using System;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
+using System.Linq;
+using UnityEngine.UI;
 
 public class PlacementSystem : MonoBehaviour
 {
     [SerializeField] private List<Vector3> startPlatforms;
+    [SerializeField] private List<StartBuilding> startBuildings;
     [SerializeField] private float radius;
     [SerializeField] private Vector3 heightOffset;
     [SerializeField] private BuildingsDatabase database;
     [SerializeField] private SoundFeedback soundFeedback;
+    [SerializeField] private GameObject evacuationButton;
+    [SerializeField] private GameObject shuttlePrefab;
 
+    private const int shuttleOffset = 16;
+    private const float evacuateMultiplier = 0.3f;
+
+    private int baseHp, baseMaxHp = 0;
+    private bool isShuttleCalled;
     private int id = -1;
     private List<GridObject> filledHexagons;
-    private List<GameObject> placedBuildings;
     private GridInitializer initializer;
     private GridHex<GridObject> grid;
+    private Shuttle shuttle;
 
     private void Awake()
     {
@@ -24,6 +36,38 @@ public class PlacementSystem : MonoBehaviour
         filledHexagons = new();
         foreach (Vector3 coords in startPlatforms)
             FillHex(coords);
+        foreach (StartBuilding building in startBuildings)
+        {
+            id = building.ID;
+            PlaceStructure(grid.GetGridObject(building.position), false);
+        }
+    }
+
+    private void Update()
+    {
+        if (baseHp < baseMaxHp * evacuateMultiplier && !isShuttleCalled)
+        {
+            evacuationButton.SetActive(true);
+            evacuationButton.GetComponent<Button>().onClick.AddListener(
+            () =>
+            {
+                if (isShuttleCalled)
+                    return;
+                var obj = Instantiate(shuttlePrefab, startBuildings[0].position +
+                Vector3.up * shuttleOffset, Quaternion.identity);
+                isShuttleCalled = true;
+                shuttle = obj.GetComponent<Shuttle>();
+                evacuationButton.SetActive(false);
+            });
+        }
+        if (baseHp <= 0)
+            if (isShuttleCalled)
+            {
+                Debug.Log("You win");
+                shuttle.Evacuate();
+            }
+            else
+                Debug.Log("You lose");
     }
 
     public void StartPlacement(int ID)
@@ -33,19 +77,24 @@ public class PlacementSystem : MonoBehaviour
         id = ID;
     }
 
-    private void PlaceStructure(GridObject gridObject)
+    private void PlaceStructure(GridObject gridObject, bool withSound)
     {
         if (gridObject.HasBuilding || !gridObject.IsFilled)
         {
             WrongPlace();
             return;
         }
-        soundFeedback.PlaySound(SoundType.Place);
+        if (withSound)
+            soundFeedback.PlaySound(SoundType.Place);
         gridObject.HasBuilding = true;
-        Instantiate(database.objectsData[id].Prefab,
+        GameObject building = Instantiate(database.objectsData[id].Prefab,
         gridObject.Hex.position + heightOffset,
         Quaternion.identity, gridObject.Hex);
-
+        Damageable damageable = building.GetComponent<Damageable>();
+        damageable.placement = this;
+        int newHp = damageable.Hp;
+        baseHp += newHp;
+        baseMaxHp += newHp;
         StopPlacement();
     }
 
@@ -75,7 +124,7 @@ public class PlacementSystem : MonoBehaviour
             else
                 WrongPlace();
         else
-            PlaceStructure(obj);
+            PlaceStructure(obj, true);
     }
 
     private void FillHex(GridObject obj)
@@ -98,5 +147,27 @@ public class PlacementSystem : MonoBehaviour
             hex => Vector3.Distance(pos,
             grid.GetWorldPosition(hex.X, hex.Z)) <= radius)
             .Find(h => h.IsFilled) != null;
+    }
+
+    public void DamageBase(int damage, Vector3 pos, bool isDead)
+    {
+        baseHp -= damage;
+        if (isDead)
+        {
+            grid.GetXZ(pos, out int x, out int z);
+            GridObject obj = grid.GetGridObject(x, z);
+            obj.IsDestroyed = true;
+        }
+    }
+
+    public Collider[] GetBuildingsColliders()
+    {
+        return
+            filledHexagons.FindAll(hex => hex.HasBuilding && !hex.IsDestroyed)
+            .Select(hex => hex.Hex.GetChild(1).GetComponent<Collider>())
+            .ToArray();
+
+        //return Physics.OverlapBox(Vector3.zero,
+        //        new Vector3(40, 4, 40), Quaternion.identity, buildingsMask);
     }
 }

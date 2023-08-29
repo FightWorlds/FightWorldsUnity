@@ -493,4 +493,5 @@ MonoBehaviour:
   damage: 0
   startHp: 1000
   attackDelay: 0
+  placement: {fileID: 0}
   IsTurret: 0

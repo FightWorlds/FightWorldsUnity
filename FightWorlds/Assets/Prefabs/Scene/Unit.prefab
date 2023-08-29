@@ -110,7 +110,8 @@ MonoBehaviour:
   attackRadius: 6
   damage: 50
   startHp: 100
-  attackDelay: 4
+  attackDelay: 3
+  placement: {fileID: 0}
   character: {fileID: 2079000515610047713}
   speed: 5
 --- !u!1001 &6352237350277193772

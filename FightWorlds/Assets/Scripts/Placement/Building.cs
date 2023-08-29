@@ -6,7 +6,7 @@ using UnityEngine;
 public class Building : Damageable
 {
     [SerializeField] private bool IsTurret;
-    protected new Collider[] detections =>
+    protected override Collider[] Detections() =>
         Physics.OverlapCapsule(currentPosition + Vector3.up,
         currentPosition + Vector3.up, attackRadius, mask);
 
@@ -15,7 +15,7 @@ public class Building : Damageable
         if (!IsTurret)
             return;
         if (target == null)
-            if (detections.Length != 0)
+            if (Detections().Length != 0)
                 StartCoroutine(SearchTarget());
             else return;
         else
@@ -24,7 +24,7 @@ public class Building : Damageable
 
     protected override IEnumerator SearchTarget()
     {
-        Collider[] hitColliders = detections;
+        Collider[] hitColliders = Detections();
         foreach (var collider in hitColliders)
         {
             Vector3 colPos = collider.transform.position;
@@ -40,9 +40,18 @@ public class Building : Damageable
             StartCoroutine(AttackTarget());
         yield return null;
     }
+
+    protected override void OnDamageTaken(int damage)
+    {
+        base.OnDamageTaken(damage);
+        placement.DamageBase(damage,
+        currentPosition - Vector3.down * 1.6f, isDead);
+    }
+
     protected override void Die()
     {
         base.Die();
+        isDead = true;
         Destroy(GetComponent<Collider>());
         gameObject.SetActive(false);
     }
