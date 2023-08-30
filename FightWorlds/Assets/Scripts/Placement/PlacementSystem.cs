@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 using System.Linq;
 using UnityEngine.UI;
@@ -17,6 +16,8 @@ public class PlacementSystem : MonoBehaviour
     [SerializeField] private SoundFeedback soundFeedback;
     [SerializeField] private GameObject evacuationButton;
     [SerializeField] private GameObject shuttlePrefab;
+
+    public PlayerController player;
 
     private const int shuttleOffset = 16;
     private const float evacuateMultiplier = 0.3f;
@@ -64,6 +65,7 @@ public class PlacementSystem : MonoBehaviour
             if (isShuttleCalled)
             {
                 Debug.Log("You win");
+                Debug.Log($"Player collect {player.GetArtifactsCount()} artifacts");
                 shuttle.Evacuate();
             }
             else
@@ -85,7 +87,15 @@ public class PlacementSystem : MonoBehaviour
             return;
         }
         if (withSound)
+        {
+            if (!player.UseResources(database.objectsData[id].Cost))
+            {
+                WrongPlace();
+                return;
+            }
             soundFeedback.PlaySound(SoundType.Place);
+        }
+
         gridObject.HasBuilding = true;
         GameObject building = Instantiate(database.objectsData[id].Prefab,
         gridObject.Hex.position + heightOffset,
@@ -116,11 +126,9 @@ public class PlacementSystem : MonoBehaviour
         GridObject obj = grid.GetGridObject(x, z);
         Debug.Log($"x{x} z{z}");
         if (id == 0)
-            if (!obj.IsFilled)
-                if (HaveFilledNeighbour(pos))
-                    FillHex(obj);
-                else
-                    WrongPlace();
+            if (!obj.IsFilled && HaveFilledNeighbour(pos)
+            && player.UseResources(database.objectsData[id].Cost))
+                FillHex(obj);
             else
                 WrongPlace();
         else
@@ -166,8 +174,5 @@ public class PlacementSystem : MonoBehaviour
             filledHexagons.FindAll(hex => hex.HasBuilding && !hex.IsDestroyed)
             .Select(hex => hex.Hex.GetChild(1).GetComponent<Collider>())
             .ToArray();
-
-        //return Physics.OverlapBox(Vector3.zero,
-        //        new Vector3(40, 4, 40), Quaternion.identity, buildingsMask);
     }
 }

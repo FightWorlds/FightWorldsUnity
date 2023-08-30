@@ -114,6 +114,8 @@ MonoBehaviour:
   placement: {fileID: 0}
   character: {fileID: 2079000515610047713}
   speed: 5
+  artifactsAfterDrop: 5
+  experienceForKill: 30
 --- !u!1001 &6352237350277193772
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -78,6 +78,9 @@ MonoBehaviour:
   attackDelay: 0
   placement: {fileID: 0}
   IsTurret: 0
+  IsResourceProducer: 1
+  produceTime: 2
+  resourcesPerOperation: 25
 --- !u!1 &4818310538128566082
 GameObject:
   m_ObjectHideFlags: 0

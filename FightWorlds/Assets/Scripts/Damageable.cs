@@ -91,4 +91,6 @@ public abstract class Damageable : MonoBehaviour
         //
         //hpBar.value = currentHp;
     }
+
+    protected abstract void GetBenefits();
 }

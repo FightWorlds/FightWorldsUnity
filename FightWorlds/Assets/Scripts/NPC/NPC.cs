@@ -1,14 +1,13 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
 [RequireComponent(typeof(CharacterController))]
 public class NPC : Damageable
 {
     [SerializeField] private CharacterController character;
     [SerializeField] private float speed;
+    [SerializeField] private int artifactsAfterDrop;
+    [SerializeField] private int experienceForKill;
 
     private const float searchDelayMultiplier = 0.1f;
 
@@ -77,6 +76,13 @@ public class NPC : Damageable
     protected override void Die()
     {
         base.Die();
+        GetBenefits();
         Destroy(gameObject);
+    }
+
+    protected override void GetBenefits()
+    {
+        placement.player.TakeXp(experienceForKill);
+        placement.player.TakeArtifacts(artifactsAfterDrop);
     }
 }
