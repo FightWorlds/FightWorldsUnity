@@ -93,4 +93,11 @@ public abstract class Damageable : MonoBehaviour
     }
 
     protected abstract void GetBenefits();
+
+    public virtual void UpdateLevel(float levelModifier)
+    {
+        damage = (int)(damage * levelModifier);
+        startHp = (int)(startHp * levelModifier);
+        currentHp = startHp;
+    }
 }

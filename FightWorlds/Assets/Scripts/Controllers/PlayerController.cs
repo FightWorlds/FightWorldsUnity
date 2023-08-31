@@ -1,5 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -8,11 +7,15 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private Text textLevel;
     [SerializeField] private Text textExperience;
     [SerializeField] private Text textResources;
+    [SerializeField] private Text textEnergy;
+    [SerializeField] private Text textArtifacts;
     [SerializeField] private Slider sliderLevel;
     [SerializeField] private int[] experiencePerLevel;
     [SerializeField] private int startResourcesAmount;
     private LevelSystem levelSystem;
     private ResourceSystem resourceSystem;
+
+    public event Action NewLevel;
 
     private void Awake()
     {
@@ -26,14 +29,14 @@ public class PlayerController : MonoBehaviour
 
     public void TakeXp(int amount)
     {
-        levelSystem.AddExperience(amount);
+        if (levelSystem.AddExperience(amount))
+            NewLevel?.Invoke();
         FillLevelUi();
-        // maybe change to events for less call amount 
-        // (for example if player have max level)
     }
 
     public bool UseResources(int amount)
     {
+        // TODO enum for type of res
         bool possible = resourceSystem.UseResources(amount);
         if (!possible)
             return possible;
@@ -59,14 +62,18 @@ public class PlayerController : MonoBehaviour
         int experience = levelSystem.Experience;
         int experienceNextLevel = levelSystem.NextLevelExperience;
         textLevel.text = $"Level: {level}";
-        textExperience.text = $"{experience} / {experienceNextLevel}";
-        sliderLevel.value = (float)experience / experienceNextLevel;
+        textExperience.text = levelSystem.IsMaxLvl() ?
+        $"{experienceNextLevel} / {experienceNextLevel}" :
+        $"{experience} / {experienceNextLevel}";
+        sliderLevel.value = levelSystem.IsMaxLvl() ? 1 :
+            (float)experience / experienceNextLevel;
     }
 
     private void FillResourcesUi()
     {
         int resource = resourceSystem.Resources;
         int artifacts = resourceSystem.Artifacts;
-        textResources.text = $"Resource: {resource}\n Artifacts: {artifacts}";
+        textArtifacts.text = $"Artifacts: {artifacts}";
+        textResources.text = $"Metal: {resource}\n Ore: <unknown>";
     }
 }

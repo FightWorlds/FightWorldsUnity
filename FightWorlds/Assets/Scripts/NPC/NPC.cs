@@ -22,7 +22,6 @@ public class NPC : Damageable
         return placement.GetBuildingsColliders();
     }
 
-
     private void Update()
     {
         if (target == null)
@@ -84,5 +83,11 @@ public class NPC : Damageable
     {
         placement.player.TakeXp(experienceForKill);
         placement.player.TakeArtifacts(artifactsAfterDrop);
+    }
+
+    public override void UpdateLevel(float levelModifier)
+    {
+        base.UpdateLevel(levelModifier);
+        speed *= levelModifier;
     }
 }

@@ -16,19 +16,19 @@ public class LevelSystem
         experiencePerLevel = levelsXp;
     }
 
-    public void AddExperience(int xp)
+    public bool AddExperience(int xp)
     {
         if (IsMaxLvl())
-            return;
+            return false;
         Experience += xp;
-        if (Experience >= NextLevelExperience)
-        {
-            Level++;
-            Experience = 0;
-        }
+        if (Experience < NextLevelExperience)
+            return false;
+        Level++;
+        Experience = 0;
+        return true;
     }
 
-    private bool IsMaxLvl()
+    public bool IsMaxLvl()
     {
         return Level == experiencePerLevel.Length;
     }
