@@ -75,11 +75,11 @@ public class NPC : Damageable
     protected override void Die()
     {
         base.Die();
-        GetBenefits();
+        Process();
         Destroy(gameObject);
     }
 
-    protected override void GetBenefits()
+    protected override void Process()
     {
         placement.player.TakeXp(experienceForKill);
         placement.player.TakeArtifacts(artifactsAfterDrop);

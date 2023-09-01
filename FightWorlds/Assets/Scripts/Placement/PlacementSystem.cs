@@ -69,7 +69,11 @@ public class PlacementSystem : MonoBehaviour
                 shuttle.Evacuate();
             }
             else
+            {
                 Debug.Log("You lose");
+                evacuationButton.SetActive(false);
+            }
+
     }
 
     public void StartPlacement(int ID)
@@ -88,7 +92,8 @@ public class PlacementSystem : MonoBehaviour
         }
         if (withSound)
         {
-            if (!player.UseResources(database.objectsData[id].Cost))
+            if (!player.UseResources(database.objectsData[id].Cost,
+            ResourceType.Metal))
             {
                 WrongPlace();
                 return;
@@ -127,7 +132,8 @@ public class PlacementSystem : MonoBehaviour
         Debug.Log($"x{x} z{z}");
         if (id == 0)
             if (!obj.IsFilled && HaveFilledNeighbour(pos)
-            && player.UseResources(database.objectsData[id].Cost))
+            && player.UseResources(database.objectsData[id].Cost,
+            ResourceType.Metal))
                 FillHex(obj);
             else
                 WrongPlace();

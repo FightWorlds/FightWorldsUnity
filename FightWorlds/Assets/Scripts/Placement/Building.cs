@@ -3,11 +3,11 @@ using UnityEngine;
 
 public class Building : Damageable
 {
-    [SerializeField] private bool IsTurret; // TODO change to enum of build type
-    [SerializeField] private bool IsResourceProducer;
+    [SerializeField] private BuildingType buildingType;
+    [SerializeField] private ResourceType resourceType;
     [SerializeField] private int produceTime;
     [SerializeField] private int resourcesPerOperation;
-    private const int xpMultiplier = 5;
+    private const float xpMultiplier = 0.2f;
     private bool isProducing;
     protected override Collider[] Detections() =>
         Physics.OverlapCapsule(currentPosition + Vector3.up,
@@ -15,16 +15,20 @@ public class Building : Damageable
 
     private void Update()
     {
-        if (IsResourceProducer && !isProducing)
-            StartCoroutine(ProduceResources());
-        if (!IsTurret)
+        if (buildingType == BuildingType.Default ||
+            buildingType == BuildingType.Storage)
             return;
-        if (target == null)
-            if (Detections().Length != 0)
-                StartCoroutine(SearchTarget());
-            else return;
-        else
-            RotateIntoTarget();
+        else if (!isProducing &&
+            (buildingType == BuildingType.Mine ||
+            buildingType == BuildingType.Recycle))
+            StartCoroutine(ProduceResources());
+        else if (buildingType == BuildingType.Defense)
+            if (target == null)
+                if (Detections().Length != 0)
+                    StartCoroutine(SearchTarget());
+                else return;
+            else
+                RotateIntoTarget();
     }
 
     protected override IEnumerator SearchTarget()
@@ -41,6 +45,8 @@ public class Building : Damageable
                 target = collider;
             }
         }
+        if (target != null)
+            UseEnergy();
         if (!isAttacking)
             StartCoroutine(AttackTarget());
         yield return null;
@@ -61,10 +67,24 @@ public class Building : Damageable
         gameObject.SetActive(false);
     }
 
-    protected override void GetBenefits()
+    protected override void Process()
     {
-        placement.player.TakeXp(resourcesPerOperation / xpMultiplier);
-        placement.player.TakeResources(resourcesPerOperation);
+        if (buildingType == BuildingType.Mine)
+            placement.player
+            .TakeResources(resourcesPerOperation, resourceType);
+        else
+        {
+            ResourceType type = resourceType == ResourceType.Ore ?
+            ResourceType.Metal : ResourceType.Energy;
+            bool possible = placement.player
+            .UseResources(resourcesPerOperation, resourceType);
+            if (!possible)
+                return;
+            placement.player
+            .TakeResources(resourcesPerOperation, type);
+            placement.player
+            .TakeXp((int)(resourcesPerOperation * xpMultiplier));
+        }
         // TODO remove from here to other cs
     }
 
@@ -72,7 +92,10 @@ public class Building : Damageable
     {
         isProducing = true;
         yield return new WaitForSeconds(produceTime);
-        GetBenefits();
+        Process();
         isProducing = false;
     }
+
+    private bool UseEnergy() =>
+    placement.player.UseResources(resourcesPerOperation, ResourceType.Energy);
 }

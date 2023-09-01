@@ -92,7 +92,7 @@ public abstract class Damageable : MonoBehaviour
         //hpBar.value = currentHp;
     }
 
-    protected abstract void GetBenefits();
+    protected abstract void Process();
 
     public virtual void UpdateLevel(float levelModifier)
     {

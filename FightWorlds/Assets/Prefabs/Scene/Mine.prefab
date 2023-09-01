@@ -77,8 +77,8 @@ MonoBehaviour:
   startHp: 1000
   attackDelay: 0
   placement: {fileID: 0}
-  IsTurret: 0
-  IsResourceProducer: 1
+  buildingType: 1
+  resourceType: 1
   produceTime: 2
   resourcesPerOperation: 25
 --- !u!1 &4818310538128566082

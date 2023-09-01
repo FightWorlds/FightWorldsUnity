@@ -12,6 +12,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private Slider sliderLevel;
     [SerializeField] private int[] experiencePerLevel;
     [SerializeField] private int startResourcesAmount;
+    [SerializeField] private int defaultStorageSize;
     private LevelSystem levelSystem;
     private ResourceSystem resourceSystem;
 
@@ -20,9 +21,11 @@ public class PlayerController : MonoBehaviour
     private void Awake()
     {
         levelSystem = new LevelSystem(experiencePerLevel);
-        resourceSystem = new ResourceSystem(startResourcesAmount);
+        resourceSystem =
+            new ResourceSystem(startResourcesAmount, defaultStorageSize);
         FillLevelUi();
         FillResourcesUi();
+        FillArtifactsUi();
     }
 
     public int GetArtifactsCount() => resourceSystem.Artifacts;
@@ -34,26 +37,34 @@ public class PlayerController : MonoBehaviour
         FillLevelUi();
     }
 
-    public bool UseResources(int amount)
+    public bool UseResources(int amount, ResourceType type)
     {
-        // TODO enum for type of res
-        bool possible = resourceSystem.UseResources(amount);
+        bool possible = resourceSystem.UseResources(amount, type);
         if (!possible)
             return possible;
         FillResourcesUi();
         return possible;
     }
 
-    public void TakeResources(int amount)
+    public void TakeResources(int amount, ResourceType type)
     {
-        resourceSystem.CollectResources(amount);
+        resourceSystem.CollectResources(amount, type);
         FillResourcesUi();
     }
 
     public void TakeArtifacts(int amount)
     {
         resourceSystem.CollectArtifacts(amount);
-        FillResourcesUi();
+        FillArtifactsUi();
+    }
+
+    public void NewStorage(ResourceType type) =>
+        resourceSystem.UpdateStorageSpace(type, true);
+
+    public void DestroyStorage(ResourceType type)
+    {
+        resourceSystem.UpdateStorageSpace(type, false);
+        resourceSystem.UseResources(defaultStorageSize, type);
     }
 
     private void FillLevelUi()
@@ -71,9 +82,14 @@ public class PlayerController : MonoBehaviour
 
     private void FillResourcesUi()
     {
-        int resource = resourceSystem.Resources;
-        int artifacts = resourceSystem.Artifacts;
-        textArtifacts.text = $"Artifacts: {artifacts}";
-        textResources.text = $"Metal: {resource}\n Ore: <unknown>";
+        int ore = resourceSystem.Resources[ResourceType.Ore];
+        int gas = resourceSystem.Resources[ResourceType.Gas];
+        int metal = resourceSystem.Resources[ResourceType.Metal];
+        int energy = resourceSystem.Resources[ResourceType.Energy];
+        textResources.text = $"Metal: {metal}\n Ore: {ore}";
+        textEnergy.text = $"Energy: {energy}\n Gas: {gas}";
     }
+
+    private void FillArtifactsUi() =>
+        textArtifacts.text = $"Artifacts: {resourceSystem.Artifacts}";
 }
