@@ -13,6 +13,13 @@ public class Building : Damageable
         Physics.OverlapCapsule(currentPosition + Vector3.up,
         currentPosition + Vector3.up, attackRadius, mask);
 
+    protected override void Awake()
+    {
+        base.Awake();
+        if (buildingType == BuildingType.Defense)
+            searchCoroutine = StartCoroutine(SearchTarget());
+    }
+
     private void Update()
     {
         if (buildingType == BuildingType.Default ||
@@ -23,11 +30,7 @@ public class Building : Damageable
             buildingType == BuildingType.Recycle))
             StartCoroutine(ProduceResources());
         else if (buildingType == BuildingType.Defense)
-            if (target == null)
-                if (Detections().Length != 0)
-                    StartCoroutine(SearchTarget());
-                else return;
-            else
+            if (target != null)
                 RotateIntoTarget();
     }
 
@@ -46,15 +49,20 @@ public class Building : Damageable
             }
         }
         if (target != null)
+        {
             UseEnergy();
-        if (!isAttacking)
-            StartCoroutine(AttackTarget());
+            if (!isAttacking)
+                StartCoroutine(AttackTarget());
+        }
+
         yield return null;
     }
 
     protected override void OnDamageTaken(int damage)
     {
         base.OnDamageTaken(damage);
+        if (currentHp <= 0) return;
+        placement.ui.AddBuildUnderAttack(this);
         placement.DamageBase(damage,
         currentPosition - Vector3.down * 1.6f, isDead);
     }
@@ -62,6 +70,7 @@ public class Building : Damageable
     protected override void Die()
     {
         base.Die();
+        placement.ui.RemoveFromUnderAttack(this);
         isDead = true;
         Destroy(GetComponent<Collider>());
         gameObject.SetActive(false);

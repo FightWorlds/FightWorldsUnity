@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public abstract class Damageable : MonoBehaviour
@@ -22,6 +23,7 @@ public abstract class Damageable : MonoBehaviour
     protected bool isDead;
     protected Vector3 destination;
     protected Collider target;
+    protected Coroutine searchCoroutine;
     protected abstract Collider[] Detections();
 
     protected Vector3 currentPosition => transform.position;
@@ -41,16 +43,18 @@ public abstract class Damageable : MonoBehaviour
     protected virtual IEnumerator AttackTarget()
     {
         isAttacking = true;
+        StopCoroutine(searchCoroutine);
         while (target != null)
         {
-            target.TryGetComponent<Damageable>(out Damageable damageable);
+            target.TryGetComponent(out Damageable damageable);
             if (damageable)
                 damageable.TakeDamage(damage);
-            Debug.Log($"BAM BAM {target.name} by unit {transform.name}");
+            Debug.Log($"BAM BAM {target.name} by {transform.name}");
             yield return new WaitForSeconds(attackDelay);
         }
         isAttacking = false;
         destination = Vector3.positiveInfinity;
+        searchCoroutine = StartCoroutine(SearchTarget());
     }
 
     public void TakeDamage(int damage) => DamageTaken?.Invoke(damage);

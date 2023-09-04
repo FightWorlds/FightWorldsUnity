@@ -9,11 +9,17 @@ public class NPC : Damageable
     [SerializeField] private int artifactsAfterDrop;
     [SerializeField] private int experienceForKill;
 
-    private const float searchDelayMultiplier = 0.1f;
+    private const float searchDelay = 3f;
 
     private bool inAttackRadius =>
         Vector3.Distance(destination, currentPosition) < attackRadius;
     private float distance => Vector3.Distance(destination, currentPosition);
+
+    protected override void Awake()
+    {
+        base.Awake();
+        searchCoroutine = StartCoroutine(SearchTarget());
+    }
 
     protected override Collider[] Detections()
     {
@@ -24,40 +30,35 @@ public class NPC : Damageable
 
     private void Update()
     {
-        if (target == null)
-        {
-            var detections = Detections();
-            if (detections != null && detections.Length != 0)
-                StartCoroutine(SearchTarget());
-            else return;
-        }
-        else
+        if (target != null)
             MoveToTarget();
     }
 
     private void MoveToTarget()
     {
-        if (inAttackRadius)
-            return;
         Vector3 direction = RotateIntoTarget();
-        if (direction == Vector3.positiveInfinity)
-            return;
-        character.Move(direction * speed * Time.deltaTime);
+        if (inAttackRadius)
+            if (!isAttacking)
+                StartCoroutine(AttackTarget());
+            else return;
+        else
+            character.Move(direction * speed * Time.deltaTime);
     }
 
     protected override IEnumerator SearchTarget()
     {
+        yield return new WaitForSeconds(1f);
         destination = Vector3.positiveInfinity;
         while (!inAttackRadius)
         {
             Collider[] hitColliders = Detections();
-            if (hitColliders.Length == 0)
+            if (hitColliders == null)
             {
                 destination = Vector3.positiveInfinity;
-                yield break;
             }
             foreach (var collider in hitColliders)
             {
+                if (collider == null) continue;
                 if (Vector3.Distance(collider.transform.position,
                     transform.position) < distance)
                 {
@@ -66,10 +67,8 @@ public class NPC : Damageable
                 }
             }
             yield return
-            new WaitForSeconds(distance * searchDelayMultiplier);
+            new WaitForSeconds(searchDelay);
         }
-        if (!isAttacking)
-            StartCoroutine(AttackTarget());
     }
 
     protected override void Die()

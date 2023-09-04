@@ -18,6 +18,7 @@ public class PlacementSystem : MonoBehaviour
     [SerializeField] private GameObject shuttlePrefab;
 
     public PlayerController player;
+    public UIController ui;
 
     private const int shuttleOffset = 16;
     private const float evacuateMultiplier = 0.3f;
