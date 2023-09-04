@@ -43,5 +43,7 @@ public class ResourceSystem
                 return;
         Resources[type] += amount;
     }
-
+    public bool IsPossibleToConvert(int amount,
+        ResourceType rawType, ResourceType type) =>
+        Resources[type] < StorageSpace[type] && amount < Resources[rawType];
 }

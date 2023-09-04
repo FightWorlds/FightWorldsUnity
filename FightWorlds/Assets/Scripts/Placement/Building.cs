@@ -7,7 +7,6 @@ public class Building : Damageable
     [SerializeField] private ResourceType resourceType;
     [SerializeField] private int produceTime;
     [SerializeField] private int resourcesPerOperation;
-    private const float xpMultiplier = 0.2f;
     private bool isProducing;
     protected override Collider[] Detections() =>
         Physics.OverlapCapsule(currentPosition + Vector3.up,
@@ -36,26 +35,25 @@ public class Building : Damageable
 
     protected override IEnumerator SearchTarget()
     {
-        Collider[] hitColliders = Detections();
-        foreach (var collider in hitColliders)
+        while (target == null)
         {
-            Vector3 colPos = collider.transform.position;
-            if (Vector3.Distance(colPos, currentPosition)
-                <
-                Vector3.Distance(destination, currentPosition))
+            Collider[] hitColliders = Detections();
+            foreach (var collider in hitColliders)
             {
-                destination = colPos;
-                target = collider;
+                Vector3 colPos = collider.transform.position;
+                if (Vector3.Distance(colPos, currentPosition)
+                    <
+                    Vector3.Distance(destination, currentPosition))
+                {
+                    destination = colPos;
+                    target = collider;
+                }
             }
-        }
-        if (target != null)
-        {
+            yield return new WaitForSeconds(produceTime);
             UseEnergy();
-            if (!isAttacking)
-                StartCoroutine(AttackTarget());
         }
-
-        yield return null;
+        if (!isAttacking)
+            StartCoroutine(AttackTarget());
     }
 
     protected override void OnDamageTaken(int damage)
@@ -86,13 +84,11 @@ public class Building : Damageable
             ResourceType type = resourceType == ResourceType.Ore ?
             ResourceType.Metal : ResourceType.Energy;
             bool possible = placement.player
-            .UseResources(resourcesPerOperation, resourceType);
+            .IsPossibleToConvert(resourcesPerOperation, resourceType, type);
             if (!possible)
                 return;
-            placement.player
-            .TakeResources(resourcesPerOperation, type);
-            placement.player
-            .TakeXp((int)(resourcesPerOperation * xpMultiplier));
+            placement.player.UseResources(resourcesPerOperation, resourceType);
+            placement.player.TakeResources(resourcesPerOperation, type);
         }
         // TODO remove from here to other cs
     }

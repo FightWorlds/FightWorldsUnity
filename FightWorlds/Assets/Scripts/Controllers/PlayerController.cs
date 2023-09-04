@@ -10,7 +10,6 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private Text textEnergy;
     [SerializeField] private Text textArtifacts;
     [SerializeField] private Slider sliderLevel;
-    [SerializeField] private int[] experiencePerLevel;
     [SerializeField] private int startResourcesAmount;
     [SerializeField] private int defaultStorageSize;
     private LevelSystem levelSystem;
@@ -20,7 +19,7 @@ public class PlayerController : MonoBehaviour
 
     private void Awake()
     {
-        levelSystem = new LevelSystem(experiencePerLevel);
+        levelSystem = new LevelSystem();
         resourceSystem =
             new ResourceSystem(startResourcesAmount, defaultStorageSize);
         FillLevelUi();
@@ -36,6 +35,11 @@ public class PlayerController : MonoBehaviour
             NewLevel?.Invoke();
         FillLevelUi();
     }
+
+    public bool IsPossibleToConvert(int amount,
+        ResourceType rawType, ResourceType type) =>
+        resourceSystem.IsPossibleToConvert(amount, rawType, type);
+
 
     public bool UseResources(int amount, ResourceType type)
     {

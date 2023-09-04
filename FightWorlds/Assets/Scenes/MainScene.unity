@@ -3554,7 +3554,6 @@ MonoBehaviour:
   textEnergy: {fileID: 1923062357}
   textArtifacts: {fileID: 247125604}
   sliderLevel: {fileID: 2019206941}
-  experiencePerLevel: 64000000f401000020030000d0070000
   startResourcesAmount: 800
   defaultStorageSize: 2000
 --- !u!1001 &964034120

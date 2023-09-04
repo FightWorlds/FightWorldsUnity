@@ -5,15 +5,18 @@ public class LevelSystem
     public int Level { get; private set; }
     public int Experience { get; private set; }
 
-    private int[] experiencePerLevel;
+    private const int maxLevel = 30;
 
-    public int NextLevelExperience =>
-        experiencePerLevel[IsMaxLvl() ? Level - 1 : Level];
+    private float mainLevelFormula => Mathf.Round(Mathf.Log10(5 * Level + 1));
+    public int NextLevelExperience => (int)(((Level <= 15) ?
+    mainLevelFormula :
+    mainLevelFormula + (Level - 15)) *
+    Mathf.Round(500 * Mathf.Log10(5 * Level)));
 
-    public LevelSystem(int[] levelsXp)
+    public LevelSystem()
     {
-        Level = Experience = 0;
-        experiencePerLevel = levelsXp;
+        Level = 1;
+        Experience = 0;
     }
 
     public bool AddExperience(int xp)
@@ -30,6 +33,6 @@ public class LevelSystem
 
     public bool IsMaxLvl()
     {
-        return Level == experiencePerLevel.Length;
+        return Level == maxLevel;
     }
 }

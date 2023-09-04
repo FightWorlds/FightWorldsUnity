@@ -328,5 +328,5 @@ MonoBehaviour:
   placement: {fileID: 0}
   buildingType: 1
   resourceType: 2
-  produceTime: 2
-  resourcesPerOperation: 25
+  produceTime: 1
+  resourcesPerOperation: 150

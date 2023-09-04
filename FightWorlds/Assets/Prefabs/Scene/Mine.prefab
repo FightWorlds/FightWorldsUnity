@@ -79,8 +79,8 @@ MonoBehaviour:
   placement: {fileID: 0}
   buildingType: 1
   resourceType: 1
-  produceTime: 2
-  resourcesPerOperation: 25
+  produceTime: 1
+  resourcesPerOperation: 50
 --- !u!1 &4818310538128566082
 GameObject:
   m_ObjectHideFlags: 0

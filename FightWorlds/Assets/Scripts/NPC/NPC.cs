@@ -9,7 +9,7 @@ public class NPC : Damageable
     [SerializeField] private int artifactsAfterDrop;
     [SerializeField] private int experienceForKill;
 
-    private const float searchDelay = 3f;
+    private const float searchDelay = 1f;
 
     private bool inAttackRadius =>
         Vector3.Distance(destination, currentPosition) < attackRadius;
