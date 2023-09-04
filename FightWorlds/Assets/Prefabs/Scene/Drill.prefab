@@ -329,4 +329,5 @@ MonoBehaviour:
   buildingType: 1
   resourceType: 2
   produceTime: 1
+  buildingTime: 5
   resourcesPerOperation: 150

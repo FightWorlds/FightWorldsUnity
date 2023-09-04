@@ -84,14 +84,14 @@ public class PlacementSystem : MonoBehaviour
         id = ID;
     }
 
-    private void PlaceStructure(GridObject gridObject, bool withSound)
+    private void PlaceStructure(GridObject gridObject, bool playerPlace)
     {
         if (gridObject.HasBuilding || !gridObject.IsFilled)
         {
             WrongPlace();
             return;
         }
-        if (withSound)
+        if (playerPlace)
         {
             if (!player.UseResources(database.objectsData[id].Cost,
             ResourceType.Metal))
@@ -106,8 +106,9 @@ public class PlacementSystem : MonoBehaviour
         GameObject building = Instantiate(database.objectsData[id].Prefab,
         gridObject.Hex.position + heightOffset,
         Quaternion.identity, gridObject.Hex);
-        Damageable damageable = building.GetComponent<Damageable>();
+        Building damageable = building.GetComponent<Building>();
         damageable.placement = this;
+        if (!playerPlace) damageable.PermanentBuild();
         int newHp = damageable.Hp;
         baseHp += newHp;
         baseMaxHp += newHp;

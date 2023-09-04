@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 
@@ -6,8 +7,10 @@ public class Building : Damageable
     [SerializeField] private BuildingType buildingType;
     [SerializeField] private ResourceType resourceType;
     [SerializeField] private int produceTime;
+    [SerializeField] private int buildingTime;
     [SerializeField] private int resourcesPerOperation;
     private bool isProducing;
+    private bool isCompleted;
     protected override Collider[] Detections() =>
         Physics.OverlapCapsule(currentPosition + Vector3.up,
         currentPosition + Vector3.up, attackRadius, mask);
@@ -15,12 +18,37 @@ public class Building : Damageable
     protected override void Awake()
     {
         base.Awake();
+        StartCoroutine(Build());
+    }
+
+    private IEnumerator Build()
+    {
+        yield return null;
+        Collider collider = GetComponent<Collider>();
+        collider.enabled = false;
+        placement.ui.NewActiveProcess(gameObject);
+        yield return new WaitForSeconds(buildingTime);
+        PermanentBuild(collider);
+    }
+
+    public void PermanentBuild()
+    {
+        StopAllCoroutines();
+        PermanentBuild(GetComponent<Collider>());
+    }
+
+    private void PermanentBuild(Collider collider)
+    {
+        placement.ui.RemoveProcess(gameObject);
+        collider.enabled = true;
+        isCompleted = true;
         if (buildingType == BuildingType.Defense)
             searchCoroutine = StartCoroutine(SearchTarget());
     }
 
     private void Update()
     {
+        if (!isCompleted) return;
         if (buildingType == BuildingType.Default ||
             buildingType == BuildingType.Storage)
             return;

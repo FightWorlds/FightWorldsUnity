@@ -76,7 +76,7 @@ public class PlayerController : MonoBehaviour
         int level = levelSystem.Level;
         int experience = levelSystem.Experience;
         int experienceNextLevel = levelSystem.NextLevelExperience;
-        textLevel.text = $"Level: {level}";
+        textLevel.text = level.ToString();
         textExperience.text = levelSystem.IsMaxLvl() ?
         $"{experienceNextLevel} / {experienceNextLevel}" :
         $"{experience} / {experienceNextLevel}";

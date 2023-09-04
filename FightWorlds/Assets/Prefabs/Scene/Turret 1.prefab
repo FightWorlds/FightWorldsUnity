@@ -245,6 +245,7 @@ MonoBehaviour:
   buildingType: 4
   resourceType: 0
   produceTime: 1
+  buildingTime: 5
   resourcesPerOperation: 1
 --- !u!1 &3084912020506705264
 GameObject:
