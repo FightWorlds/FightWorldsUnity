@@ -94,7 +94,7 @@ public class PlacementSystem : MonoBehaviour
         if (playerPlace)
         {
             if (!player.UseResources(database.objectsData[id].Cost,
-            ResourceType.Metal))
+            ResourceType.Metal) || ui.IsProcessesFulled())
             {
                 WrongPlace();
                 return;
@@ -127,12 +127,16 @@ public class PlacementSystem : MonoBehaviour
 
     public void TapOnHex(Vector3 pos)
     {
-        if (id < 0)
-            return;
         grid.GetXZ(pos, out int x, out int z);
         GridObject obj = grid.GetGridObject(x, z);
         Debug.Log($"x{x} z{z}");
-        if (id == 0)
+        if (id < 0)
+            if (pos.y == heightOffset.y)
+                ui.ShowBuildingMenu(obj.Hex.GetChild(1)
+                .GetComponent<Building>());
+            else
+                ui.CloseBuildingMenu();
+        else if (id == 0)
             if (!obj.IsFilled && HaveFilledNeighbour(pos)
             && player.UseResources(database.objectsData[id].Cost,
             ResourceType.Metal))
@@ -165,15 +169,13 @@ public class PlacementSystem : MonoBehaviour
             .Find(h => h.IsFilled) != null;
     }
 
-    public void DamageBase(int damage, Vector3 pos, bool isDead)
+    public void DamageBase(int damage) => baseHp -= damage;
+
+    public void DestroyObj(Vector3 pos)
     {
-        baseHp -= damage;
-        if (isDead)
-        {
-            grid.GetXZ(pos, out int x, out int z);
-            GridObject obj = grid.GetGridObject(x, z);
-            obj.IsDestroyed = true;
-        }
+        grid.GetXZ(pos - heightOffset, out int x, out int z);
+        GridObject obj = grid.GetGridObject(x, z);
+        obj.IsDestroyed = true;
     }
 
     public Collider[] GetBuildingsColliders()
@@ -181,6 +183,7 @@ public class PlacementSystem : MonoBehaviour
         return
             filledHexagons.FindAll(hex => hex.HasBuilding && !hex.IsDestroyed)
             .Select(hex => hex.Hex.GetChild(1).GetComponent<Collider>())
+            .Where(build => build.GetComponent<Building>().IsCompleted)
             .ToArray();
     }
 }

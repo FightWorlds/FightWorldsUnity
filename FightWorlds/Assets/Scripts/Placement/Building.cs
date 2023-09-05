@@ -9,8 +9,8 @@ public class Building : Damageable
     [SerializeField] private int produceTime;
     [SerializeField] private int buildingTime;
     [SerializeField] private int resourcesPerOperation;
+    public bool IsCompleted;
     private bool isProducing;
-    private bool isCompleted;
     protected override Collider[] Detections() =>
         Physics.OverlapCapsule(currentPosition + Vector3.up,
         currentPosition + Vector3.up, attackRadius, mask);
@@ -24,31 +24,30 @@ public class Building : Damageable
     private IEnumerator Build()
     {
         yield return null;
-        Collider collider = GetComponent<Collider>();
-        collider.enabled = false;
+        placement.ui.ShowBuildingMenu(this);
         placement.ui.NewActiveProcess(gameObject);
         yield return new WaitForSeconds(buildingTime);
-        PermanentBuild(collider);
+        PermanentBuild(true);
     }
 
     public void PermanentBuild()
     {
         StopAllCoroutines();
-        PermanentBuild(GetComponent<Collider>());
+        PermanentBuild(true);
     }
 
-    private void PermanentBuild(Collider collider)
+    private void PermanentBuild(bool flag)
     {
+        placement.ui.CloseBuildingMenu();
         placement.ui.RemoveProcess(gameObject);
-        collider.enabled = true;
-        isCompleted = true;
+        IsCompleted = true;
         if (buildingType == BuildingType.Defense)
             searchCoroutine = StartCoroutine(SearchTarget());
     }
 
     private void Update()
     {
-        if (!isCompleted) return;
+        if (!IsCompleted) return;
         if (buildingType == BuildingType.Default ||
             buildingType == BuildingType.Storage)
             return;
@@ -89,15 +88,14 @@ public class Building : Damageable
         base.OnDamageTaken(damage);
         if (currentHp <= 0) return;
         placement.ui.AddBuildUnderAttack(this);
-        placement.DamageBase(damage,
-        currentPosition - Vector3.down * 1.6f, isDead);
+        placement.DamageBase(damage);
     }
 
     protected override void Die()
     {
         base.Die();
+        placement.DestroyObj(currentPosition);
         placement.ui.RemoveFromUnderAttack(this);
-        isDead = true;
         Destroy(GetComponent<Collider>());
         gameObject.SetActive(false);
     }

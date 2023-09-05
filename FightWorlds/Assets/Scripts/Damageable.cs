@@ -20,7 +20,6 @@ public abstract class Damageable : MonoBehaviour
 
     protected int currentHp;
     protected bool isAttacking;
-    protected bool isDead;
     protected Vector3 destination;
     protected Collider target;
     protected Coroutine searchCoroutine;

@@ -11,10 +11,17 @@ public class UIController : MonoBehaviour
     [SerializeField] GameObject activeProcessPrefab;
     [SerializeField] Transform activeProcessContainer;
     [SerializeField] Text activeProcessCounter;
+    [SerializeField] GameObject buildingMenu;
+    [SerializeField] Text simpleText;
+    [SerializeField] Text instantText;
+    [SerializeField] Vector2 bmMinBorders;
+    [SerializeField] Vector2 bmMaxBorders;
 
+    private Building selectedBuilding;
     private Dictionary<Building, GameObject> buildingsUnderAttack;
     private Dictionary<GameObject, GameObject> activeProcesses;
     private const int listSize = 5;
+    private const int rotationAngle = 60;
     private const string underAttackText = "Buildings Under Attack: ";
     private const string buildingText = "BUILDING:\n";
 
@@ -51,7 +58,7 @@ public class UIController : MonoBehaviour
 
     internal void NewActiveProcess(GameObject gameObject)
     {
-        if (activeProcesses.Count >= listSize ||
+        if (IsProcessesFulled() ||
             activeProcesses.ContainsKey(gameObject))
             return;
         var newProcessUI = Instantiate(activeProcessPrefab, activeProcessContainer);
@@ -69,9 +76,39 @@ public class UIController : MonoBehaviour
         UpdateProcessCounter();
     }
 
-    private void UpdateProcessCounter()
-    {
+    private void UpdateProcessCounter() =>
         activeProcessCounter.text =
-            $"Active Process {activeProcesses.Count}/{listSize}";
+        $"Active Process {activeProcesses.Count}/{listSize}";
+
+    public bool IsProcessesFulled() => activeProcesses.Count == listSize;
+
+    public void ShowBuildingMenu(Building building)
+    {
+        selectedBuilding = building;
+        buildingMenu.SetActive(true);
+        string text;
+        if (building.IsCompleted)
+            text = "REPAIR";
+        else
+            text = "BUILD";
+        simpleText.text = text;
+        instantText.text = "INSTANT " + text;
+        Vector3 screenPos =
+            Camera.main.WorldToScreenPoint(building.transform.position);
+        float x = Mathf.Clamp(screenPos.x, bmMinBorders.x, bmMaxBorders.x);
+        float y = Mathf.Clamp(screenPos.y, bmMinBorders.y, bmMaxBorders.y);
+        buildingMenu.transform.position = new Vector3(x, y);
+    }
+
+    public void CloseBuildingMenu()
+    {
+        selectedBuilding = null;
+        buildingMenu.SetActive(false);
+    }
+
+    public void RotateBuilding()
+    {
+        if (selectedBuilding != null)
+            selectedBuilding.transform.Rotate(Vector3.up, rotationAngle);
     }
 }

@@ -28,6 +28,7 @@ public class InputManager : MonoBehaviour
         {
             lastPosition = Input.mousePosition;
             cameraController.HandlePress(mouseRay);
+            placement.ui.CloseBuildingMenu();
         }
         if (Input.GetMouseButtonUp(0))
         {
