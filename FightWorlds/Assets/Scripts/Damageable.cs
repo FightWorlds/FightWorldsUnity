@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public abstract class Damageable : MonoBehaviour
@@ -8,8 +7,8 @@ public abstract class Damageable : MonoBehaviour
     //[SerializeField] protected AnimatorController animator;
     [SerializeField] protected LayerMask mask;
     [SerializeField] protected float attackRadius;
-    [SerializeField] private int damage;
-    [SerializeField] private int startHp;
+    [SerializeField] protected int damage;
+    [SerializeField] protected int startHp;
     [SerializeField] private float attackDelay;
     //[SerializeField] private Slider hpBar;
 

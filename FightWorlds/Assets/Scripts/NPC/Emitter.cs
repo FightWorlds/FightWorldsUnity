@@ -19,8 +19,7 @@ public class Emitter : MonoBehaviour
     private System.Random random;
     private int len => emitters.Length;
 
-    private void OnEnable() => placement.player.NewLevel += OnNewLevel;
-    private void OnDisable() => placement.player.NewLevel -= OnNewLevel;
+    private void OnDestroy() => placement.player.NewLevel -= OnNewLevel;
 
     private void OnNewLevel() => levelModifier *= nextLevelMultiplier;
     private void Awake()
@@ -35,6 +34,12 @@ public class Emitter : MonoBehaviour
         if (timePassed - lastSpawnTime > startSpawnDelay)
             SpawnNpc();
         //Debug.Log(timePassed);
+    }
+
+    private IEnumerator Subscribe()
+    {
+        yield return null;
+        placement.player.NewLevel += OnNewLevel;
     }
 
     private void SpawnNpc()

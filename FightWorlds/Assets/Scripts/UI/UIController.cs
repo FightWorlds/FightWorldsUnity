@@ -1,30 +1,54 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class UIController : MonoBehaviour
 {
-    [SerializeField] GameObject damageNotificationPrefab;
-    [SerializeField] Transform damageNotificationContainer;
-    [SerializeField] Text damageNotificationCounter;
-    [SerializeField] GameObject activeProcessPrefab;
-    [SerializeField] Transform activeProcessContainer;
-    [SerializeField] Text activeProcessCounter;
-    [SerializeField] GameObject buildingMenu;
-    [SerializeField] Text simpleText;
-    [SerializeField] Text instantText;
-    [SerializeField] Vector2 bmMinBorders;
-    [SerializeField] Vector2 bmMaxBorders;
+    [Header("Damage Notification")]
+    [SerializeField] private GameObject damageNotificationPrefab;
+    [SerializeField] private Transform damageNotificationContainer;
+    [SerializeField] private Text damageNotificationCounter;
+    [Header("Active Processes")]
+    [SerializeField] private GameObject activeProcessPrefab;
+    [SerializeField] private Transform activeProcessContainer;
+    [SerializeField] private Text activeProcessCounter;
+    [Header("Building Menu")]
+    [SerializeField] private GameObject buildingMenu;
+    [SerializeField] private Text simpleText;
+    [SerializeField] private Text instantText;
+    [SerializeField] private Vector2 bmMinBorders;
+    [SerializeField] private Vector2 bmMaxBorders;
+    [Header("Level")]
+    [SerializeField] private Text textLevel;
+    [SerializeField] private Text textExperience;
+    [SerializeField] private Slider sliderLevel;
+    [SerializeField] private GameObject levelUpPopUp;
+    [SerializeField] private Text textLevelUpPopUp;
+    [SerializeField] private Text textDescriptionPopUp;
+    [Header("Resources")]
+    [SerializeField] private Text textResources;
+    [SerializeField] private Text textEnergy;
+    [SerializeField] private Text textArtifacts;
+    [SerializeField] private Text textCredits;
+    [Header("VIP")]
+    [SerializeField] private Text textPreferences;
+    [SerializeField] private GameObject vip;
+    [Header("PopUp")]
+    [SerializeField] private Text textPopUp;
+    [SerializeField] private GameObject popUp;
 
     private Building selectedBuilding;
     private Dictionary<Building, GameObject> buildingsUnderAttack;
     private Dictionary<GameObject, GameObject> activeProcesses;
+    private const int cloneLen = 7;
     private const int listSize = 5;
     private const int rotationAngle = 60;
     private const string underAttackText = "Buildings Under Attack: ";
-    private const string buildingText = "BUILDING:\n";
-
+    private const string buildingText = "BUILDING";
+    private const string repairingText = "REPAIRING";
+    private const string productionText = "PRODUCTION";
+    private const string upgradingText = "UPGRADING";
+    // TODO single open panel (other should close)
     private void Awake()
     {
         buildingsUnderAttack = new Dictionary<Building, GameObject>();
@@ -56,14 +80,32 @@ public class UIController : MonoBehaviour
         buildingsUnderAttack.Count;
     }
 
-    internal void NewActiveProcess(GameObject gameObject)
+    public void NewActiveProcess(GameObject gameObject, ProcessType type)
     {
         if (IsProcessesFulled() ||
             activeProcesses.ContainsKey(gameObject))
             return;
         var newProcessUI = Instantiate(activeProcessPrefab, activeProcessContainer);
+        string text = "";
+        switch (type)
+        {
+            case ProcessType.Building:
+                text = buildingText;
+                break;
+            case ProcessType.Repairing:
+                text = repairingText;
+                break;
+            case ProcessType.Production:
+                text = productionText;
+                break;
+            case ProcessType.Upgrading:
+                text = upgradingText;
+                break;
+            default: break;
+        }
+        string name = gameObject.name;
         newProcessUI.transform.GetChild(0).GetComponent<Text>().text =
-            buildingText + gameObject.name;
+            text + ":\n" + name.Remove(name.Length - cloneLen);
         activeProcesses.Add(gameObject, newProcessUI);
         UpdateProcessCounter();
     }
@@ -76,21 +118,46 @@ public class UIController : MonoBehaviour
         UpdateProcessCounter();
     }
 
-    private void UpdateProcessCounter() =>
-        activeProcessCounter.text =
-        $"Active Process {activeProcesses.Count}/{listSize}";
+    public void FillLevelUi(int level, int experience,
+    int experienceNextLevel, bool isMaxLvl)
+    {
+        textLevel.text = level.ToString();
+        textExperience.text = isMaxLvl ?
+        $"{experienceNextLevel} / {experienceNextLevel}" :
+        $"{experience} / {experienceNextLevel}";
+        sliderLevel.value = isMaxLvl ? 1 :
+            (float)experience / experienceNextLevel;
+        // TODO slidervalue to image (filled) - horizontal - amount
+    }
+
+    public void FillResourcesUi(int ore, int gas,
+    int metal, int energy, int credits, int artifacts)
+    {
+        textResources.text = $"Metal: {metal}\n Ore: {ore}";
+        textEnergy.text = $"Energy: {energy}\n Gas: {gas}";
+        textCredits.text = $"Credits: {credits}";
+        textArtifacts.text = $"Artifacts: {artifacts}";
+    }
 
     public bool IsProcessesFulled() => activeProcesses.Count == listSize;
 
     public void ShowBuildingMenu(Building building)
     {
+        string text = "";
         selectedBuilding = building;
         buildingMenu.SetActive(true);
-        string text;
-        if (building.IsCompleted)
-            text = "REPAIR";
-        else
-            text = "BUILD";
+        switch (building.State)
+        {
+            case BuildingState.Building:
+                text = "BUILD";
+                break;
+            case BuildingState.Damaged:
+                text = "REPAIR";
+                break;
+            case BuildingState.Default:
+                text = "UPGRADE";
+                break;
+        }
         simpleText.text = text;
         instantText.text = "INSTANT " + text;
         Vector3 screenPos =
@@ -111,4 +178,58 @@ public class UIController : MonoBehaviour
         if (selectedBuilding != null)
             selectedBuilding.transform.Rotate(Vector3.up, rotationAngle);
     }
+
+    public void Action(bool instant)
+    {
+        if (selectedBuilding == null)
+            return;
+        switch (selectedBuilding.State)
+        {
+            case BuildingState.Building:
+                selectedBuilding.PermanentBuild(instant, false);
+                break;
+            case BuildingState.Damaged:
+                selectedBuilding.TryRepair(instant);
+                break;
+            case BuildingState.Default:
+                selectedBuilding.TryUpgrade(instant);
+                break;
+        }
+    }
+
+    public void FillVipUi(float mltpl)
+    {
+        if (mltpl <= 1)
+            vip.SetActive(false);
+        else
+        {
+            vip.SetActive(true);
+            textPreferences.text = $"VIP\n{(mltpl - 1) * 10}";
+        }
+    }
+
+    public void ShowLevelUp(int level, int credits)
+    {
+        textLevelUpPopUp.text = level.ToString();
+        textDescriptionPopUp.text =
+        $"You reached LVL {level}\n\nCredits: {credits}";
+        levelUpPopUp.SetActive(true);
+    }
+
+    public void ShowResourcePopUp(ResourceType type, int amount)
+    {
+        string text = "There is no enough ";
+        if (type == ResourceType.Credits)
+            text += "credits";
+        else
+            text += $"{type} resources\n" +
+            "Would you like instant Build/Repair/Upgrade for\n" +
+            $"<{amount}> credits";
+        textPopUp.text = text;
+        popUp.SetActive(true);
+    }
+
+    private void UpdateProcessCounter() =>
+        activeProcessCounter.text =
+        $"Active Process\n{activeProcesses.Count}/{listSize}";
 }

@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using UnityEngine;
 
@@ -9,8 +8,13 @@ public class Building : Damageable
     [SerializeField] private int produceTime;
     [SerializeField] private int buildingTime;
     [SerializeField] private int resourcesPerOperation;
-    public bool IsCompleted;
+    public BuildingData BuildingData;
+    public BuildingState State;
+
+    public int BuildingLvl { get; private set; }
     private bool isProducing;
+    private const int buildingMaxLvl = 3;
+    private const int instBuildCost = 100;
     protected override Collider[] Detections() =>
         Physics.OverlapCapsule(currentPosition + Vector3.up,
         currentPosition + Vector3.up, attackRadius, mask);
@@ -18,36 +22,47 @@ public class Building : Damageable
     protected override void Awake()
     {
         base.Awake();
+        BuildingLvl = 1;
         StartCoroutine(Build());
     }
 
     private IEnumerator Build()
     {
+        State = BuildingState.Building;
         yield return null;
         placement.ui.ShowBuildingMenu(this);
-        placement.ui.NewActiveProcess(gameObject);
+        placement.ui.NewActiveProcess(gameObject, ProcessType.Building);
         yield return new WaitForSeconds(buildingTime);
-        PermanentBuild(true);
+        PermanentBuild();
     }
 
-    public void PermanentBuild()
+    public void PermanentBuild(bool instant, bool flag)
     {
-        StopAllCoroutines();
-        PermanentBuild(true);
+        if (!instant) return;
+        if (flag)
+        {
+            StopAllCoroutines();
+            PermanentBuild();
+            return;
+        }
+        if (placement.player.UseResources(instBuildCost,
+        ResourceType.Credits, true))
+            PermanentBuild();
     }
 
-    private void PermanentBuild(bool flag)
+    private void PermanentBuild()
     {
         placement.ui.CloseBuildingMenu();
         placement.ui.RemoveProcess(gameObject);
-        IsCompleted = true;
+        State = BuildingState.Default;
+        damage = (int)(damage * placement.player.VipMultiplier);
         if (buildingType == BuildingType.Defense)
             searchCoroutine = StartCoroutine(SearchTarget());
     }
 
     private void Update()
     {
-        if (!IsCompleted) return;
+        if (State == BuildingState.Building) return;
         if (buildingType == BuildingType.Default ||
             buildingType == BuildingType.Storage)
             return;
@@ -86,16 +101,20 @@ public class Building : Damageable
     protected override void OnDamageTaken(int damage)
     {
         base.OnDamageTaken(damage);
-        if (currentHp <= 0) return;
-        placement.ui.AddBuildUnderAttack(this);
         placement.DamageBase(damage);
+        if (currentHp <= 0) return;
+        State = BuildingState.Damaged;
+        placement.ui.AddBuildUnderAttack(this);
     }
 
     protected override void Die()
     {
         base.Die();
+        if (BuildingData.ID == 1)
+            placement.FinishGame();
         placement.DestroyObj(currentPosition);
         placement.ui.RemoveFromUnderAttack(this);
+        placement.ui.RemoveProcess(gameObject);
         Destroy(GetComponent<Collider>());
         gameObject.SetActive(false);
     }
@@ -113,7 +132,8 @@ public class Building : Damageable
             .IsPossibleToConvert(resourcesPerOperation, resourceType, type);
             if (!possible)
                 return;
-            placement.player.UseResources(resourcesPerOperation, resourceType);
+            placement.player.UseResources(resourcesPerOperation,
+            resourceType, false);
             placement.player.TakeResources(resourcesPerOperation, type);
         }
         // TODO remove from here to other cs
@@ -128,5 +148,80 @@ public class Building : Damageable
     }
 
     private bool UseEnergy() =>
-    placement.player.UseResources(resourcesPerOperation, ResourceType.Energy);
+    placement.player.UseResources(resourcesPerOperation,
+    ResourceType.Energy, false);
+
+    public bool TryRepair(bool instant)
+    {
+        if (!placement.player.UseResources(BuildingData.Cost *
+        currentHp / startHp, ResourceType.Metal, true))
+            return false;
+        if (instant)
+        {
+            if (placement.player.UseResources(10, ResourceType.Credits, true))
+            {
+                PermanentRepair();
+                return true;
+            }
+        }
+        StartCoroutine(Repair());
+        return true;
+    }
+
+    private IEnumerator Repair()
+    {
+        isProducing = true;
+        placement.ui.NewActiveProcess(gameObject, ProcessType.Repairing);
+        yield return new WaitForSeconds((startHp - currentHp) / 100);
+        PermanentRepair();
+    }
+
+    private void PermanentRepair()
+    {
+        placement.ui.CloseBuildingMenu();
+        placement.ui.RemoveProcess(gameObject);
+        State = BuildingState.Default;
+        currentHp = startHp;
+        isProducing = false;
+    }
+
+    public bool TryUpgrade(bool instant)
+    {
+        if (BuildingLvl >= buildingMaxLvl)
+            return false;
+        if (!placement.player.UseResources(BuildingData.Cost,
+        ResourceType.Metal, true))
+            return false;
+        if (instant)
+        {
+            if (placement.player.UseResources(instBuildCost * BuildingLvl,
+            ResourceType.Credits, true))
+            {
+                PermanentUpgrade();
+                return true;
+            }
+        }
+        StartCoroutine(Upgrade());
+        return true;
+    }
+
+    private IEnumerator Upgrade()
+    {
+        isProducing = true;
+        placement.ui.NewActiveProcess(gameObject, ProcessType.Upgrading);
+        yield return new WaitForSeconds(buildingTime);
+        PermanentUpgrade();
+    }
+
+    private void PermanentUpgrade()
+    {
+        placement.ui.CloseBuildingMenu();
+        placement.ui.RemoveProcess(gameObject);
+        State = BuildingState.Default;
+        BuildingLvl++;
+        damage += damage;
+        startHp += startHp;
+        currentHp = startHp;
+        isProducing = false;
+    }
 }

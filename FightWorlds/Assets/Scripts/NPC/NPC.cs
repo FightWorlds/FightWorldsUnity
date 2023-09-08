@@ -32,6 +32,8 @@ public class NPC : Damageable
     {
         if (target != null)
             MoveToTarget();
+        // TODO FIX losing target when previous destroyed
+        // and npc yet not reached attacking radius
     }
 
     private void MoveToTarget()
@@ -81,7 +83,8 @@ public class NPC : Damageable
     protected override void Process()
     {
         placement.player.TakeXp(experienceForKill);
-        placement.player.TakeArtifacts(artifactsAfterDrop);
+        placement.player.TakeResources(artifactsAfterDrop,
+        ResourceType.Artifacts);
     }
 
     public override void UpdateLevel(float levelModifier)

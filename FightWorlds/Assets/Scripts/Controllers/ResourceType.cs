@@ -4,5 +4,7 @@ public enum ResourceType
     Ore,
     Gas,
     Metal,
-    Energy
+    Energy,
+    Artifacts,
+    Credits
 }

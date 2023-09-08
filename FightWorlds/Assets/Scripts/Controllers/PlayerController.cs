@@ -1,38 +1,40 @@
 using System;
-using UnityEngine;
-using UnityEngine.UI;
 
-public class PlayerController : MonoBehaviour
+public class PlayerController
 {
-    [SerializeField] private Text textLevel;
-    [SerializeField] private Text textExperience;
-    [SerializeField] private Text textResources;
-    [SerializeField] private Text textEnergy;
-    [SerializeField] private Text textArtifacts;
-    [SerializeField] private Slider sliderLevel;
-    [SerializeField] private int startResourcesAmount;
-    [SerializeField] private int defaultStorageSize;
+    private UIController ui;
+    private const int creditsMultiplier = 100;
+    private const int startResourcesAmount = 800;
+    private const int defaultStorageSize = 2000;
+    private const float vip = 1f;
     private LevelSystem levelSystem;
     private ResourceSystem resourceSystem;
-
+    public float VipMultiplier { get; private set; }
     public event Action NewLevel;
 
-    private void Awake()
+    public PlayerController(UIController ui)
     {
         levelSystem = new LevelSystem();
         resourceSystem =
             new ResourceSystem(startResourcesAmount, defaultStorageSize);
+        VipMultiplier = vip;
+        this.ui = ui;
         FillLevelUi();
         FillResourcesUi();
-        FillArtifactsUi();
+        FillVipUi();
     }
 
-    public int GetArtifactsCount() => resourceSystem.Artifacts;
+    public int Level() => levelSystem.Level;
 
     public void TakeXp(int amount)
     {
-        if (levelSystem.AddExperience(amount))
+        if (levelSystem.AddExperience((int)(amount * VipMultiplier)))
+        {
             NewLevel?.Invoke();
+            int credits = Level() * creditsMultiplier;
+            ui.ShowLevelUp(Level(), credits);
+            resourceSystem.CollectResources(credits, ResourceType.Credits);
+        }
         FillLevelUi();
     }
 
@@ -41,25 +43,22 @@ public class PlayerController : MonoBehaviour
         resourceSystem.IsPossibleToConvert(amount, rawType, type);
 
 
-    public bool UseResources(int amount, ResourceType type)
+    public bool UseResources(int amount, ResourceType type, bool needPopUp)
     {
         bool possible = resourceSystem.UseResources(amount, type);
         if (!possible)
+        {
+            if (needPopUp) ui.ShowResourcePopUp(type, amount);
             return possible;
+        }
         FillResourcesUi();
         return possible;
     }
 
     public void TakeResources(int amount, ResourceType type)
     {
-        resourceSystem.CollectResources(amount, type);
+        resourceSystem.CollectResources((int)(amount * VipMultiplier), type);
         FillResourcesUi();
-    }
-
-    public void TakeArtifacts(int amount)
-    {
-        resourceSystem.CollectArtifacts(amount);
-        FillArtifactsUi();
     }
 
     public void NewStorage(ResourceType type) =>
@@ -76,12 +75,8 @@ public class PlayerController : MonoBehaviour
         int level = levelSystem.Level;
         int experience = levelSystem.Experience;
         int experienceNextLevel = levelSystem.NextLevelExperience;
-        textLevel.text = level.ToString();
-        textExperience.text = levelSystem.IsMaxLvl() ?
-        $"{experienceNextLevel} / {experienceNextLevel}" :
-        $"{experience} / {experienceNextLevel}";
-        sliderLevel.value = levelSystem.IsMaxLvl() ? 1 :
-            (float)experience / experienceNextLevel;
+        ui.FillLevelUi(level, experience,
+        experienceNextLevel, levelSystem.IsMaxLvl());
     }
 
     private void FillResourcesUi()
@@ -90,10 +85,11 @@ public class PlayerController : MonoBehaviour
         int gas = resourceSystem.Resources[ResourceType.Gas];
         int metal = resourceSystem.Resources[ResourceType.Metal];
         int energy = resourceSystem.Resources[ResourceType.Energy];
-        textResources.text = $"Metal: {metal}\n Ore: {ore}";
-        textEnergy.text = $"Energy: {energy}\n Gas: {gas}";
+        int credits = resourceSystem.Resources[ResourceType.Credits];
+        int artifacts = resourceSystem.Resources[ResourceType.Artifacts];
+        ui.FillResourcesUi(ore, gas, metal, energy, credits, artifacts);
     }
 
-    private void FillArtifactsUi() =>
-        textArtifacts.text = $"Artifacts: {resourceSystem.Artifacts}";
+    private void FillVipUi() =>
+        ui.FillVipUi(VipMultiplier);
 }
