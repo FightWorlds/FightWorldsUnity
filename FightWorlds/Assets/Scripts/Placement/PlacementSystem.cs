@@ -16,6 +16,8 @@ public class PlacementSystem : MonoBehaviour
     [SerializeField] private Button evacuationButton;
     [SerializeField] private Slider baseHpSlider;
     [SerializeField] private GameObject shuttlePrefab;
+    //public List<GameObject> objects;
+    //public List<Vector3> pos;
 
     public PlayerController player { get; private set; }
     public UIController ui;
@@ -81,7 +83,7 @@ public class PlacementSystem : MonoBehaviour
             else
                 WrongPlace();
         else
-            PlaceStructure(obj, true);
+            PlaceStructure(obj, 0, true);
     }
 
     public void FinishGame()
@@ -89,20 +91,16 @@ public class PlacementSystem : MonoBehaviour
         if (isGameFinished) return;
         evacuationButton.gameObject.SetActive(false);
         isGameFinished = true;
+        ui.FinishGamePopUp(isShuttleCalled, collectedArtifacts);
         if (isShuttleCalled)
-        {
-            Debug.Log("You win");
-            Debug.Log($"Player collect {collectedArtifacts} artifacts");
             shuttle.Evacuate();
-        }
-        else
-        {
-            Debug.Log("You lose");
-        }
+        Time.timeScale = 0;
     }
 
     private void Awake()
     {
+        // foreach (var obj in objects)
+        //     pos.Add(obj.transform.position);
         player = new(ui);
         initializer = GetComponent<GridInitializer>();
         grid = initializer.GenerateHex();
@@ -115,7 +113,8 @@ public class PlacementSystem : MonoBehaviour
         foreach (StartBuilding building in startBuildings)
         {
             id = building.ID;
-            PlaceStructure(grid.GetGridObject(building.position), false);
+            PlaceStructure(grid.GetGridObject(building.position),
+            building.yRotationAngle, false);
         }
     }
 
@@ -149,7 +148,8 @@ public class PlacementSystem : MonoBehaviour
         FinishGame();
     }
 
-    private void PlaceStructure(GridObject gridObject, bool playerPlace)
+    private void PlaceStructure(GridObject gridObject,
+    int rotation, bool playerPlace)
     {
         BuildingData data = database.objectsData[id];
         if (gridObject.HasBuilding ||
@@ -172,7 +172,7 @@ public class PlacementSystem : MonoBehaviour
         gridObject.HasBuilding = true;
         GameObject obj = Instantiate(data.Prefab,
         gridObject.Hex.position + heightOffset,
-        Quaternion.identity, gridObject.Hex);
+        Quaternion.Euler(0, rotation, 0), gridObject.Hex);
         Building building = obj.GetComponent<Building>();
         building.placement = this;
         building.BuildingData = data;

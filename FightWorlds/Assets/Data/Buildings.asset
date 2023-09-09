@@ -95,5 +95,5 @@ MonoBehaviour:
     <Cost>k__BackingField: 100
     <Prefab>k__BackingField: {fileID: 8596161468681693823, guid: 97884c403c3f70441a81fdd060d8f3e9,
       type: 3}
-    <MaxBuildingsAdd>k__BackingField: 0
+    <MaxBuildingsAdd>k__BackingField: 50
     <MaxBuildingsPerLevel>k__BackingField: 10

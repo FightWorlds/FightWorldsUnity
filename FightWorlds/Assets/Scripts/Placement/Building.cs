@@ -58,6 +58,8 @@ public class Building : Damageable
         damage = (int)(damage * placement.player.VipMultiplier);
         if (buildingType == BuildingType.Defense)
             searchCoroutine = StartCoroutine(SearchTarget());
+        else if (buildingType == BuildingType.Storage)
+            placement.player.NewStorage(resourceType);
     }
 
     private void Update()
@@ -115,6 +117,8 @@ public class Building : Damageable
         placement.DestroyObj(currentPosition);
         placement.ui.RemoveFromUnderAttack(this);
         placement.ui.RemoveProcess(gameObject);
+        if (buildingType == BuildingType.Storage)
+            placement.player.DestroyStorage(resourceType);
         Destroy(GetComponent<Collider>());
         gameObject.SetActive(false);
     }

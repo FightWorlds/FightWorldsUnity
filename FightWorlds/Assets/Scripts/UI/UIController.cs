@@ -229,6 +229,17 @@ public class UIController : MonoBehaviour
         popUp.SetActive(true);
     }
 
+    public void FinishGamePopUp(bool win, int artifacts)
+    {
+        levelUpPopUp.SetActive(true);
+        levelUpPopUp.transform.GetChild(1).GetChild(0).GetComponent<Text>()
+        .text = "";
+        levelUpPopUp.transform.GetChild(2).GetChild(0).GetComponent<Text>()
+        .text = win ? "SUCCESS" : "UNLUCKY";
+        levelUpPopUp.transform.GetChild(3).GetChild(0).GetComponent<Text>()
+        .text = $"Session result:\n\n{artifacts} artifacts";
+    }
+
     private void UpdateProcessCounter() =>
         activeProcessCounter.text =
         $"Active Process\n{activeProcesses.Count}/{listSize}";
