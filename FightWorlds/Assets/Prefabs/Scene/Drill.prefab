@@ -325,4 +325,9 @@ MonoBehaviour:
   damage: 0
   startHp: 1000
   attackDelay: 0
-  IsTurret: 0
+  placement: {fileID: 0}
+  buildingType: 1
+  resourceType: 2
+  produceTime: 1
+  buildingTime: 5
+  resourcesPerOperation: 150

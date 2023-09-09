@@ -1,58 +1,66 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
 [RequireComponent(typeof(CharacterController))]
 public class NPC : Damageable
 {
     [SerializeField] private CharacterController character;
     [SerializeField] private float speed;
+    [SerializeField] private int artifactsAfterDrop;
+    [SerializeField] private int experienceForKill;
 
-    private const float searchDelayMultiplier = 0.1f;
+    private const float searchDelay = 1f;
 
     private bool inAttackRadius =>
         Vector3.Distance(destination, currentPosition) < attackRadius;
     private float distance => Vector3.Distance(destination, currentPosition);
-    // move realization out of class:
-    protected new Collider[] detections => Physics.OverlapBox(Vector3.zero,
-                new Vector3(40, 4, 40), Quaternion.identity, mask);
 
+    protected override void Awake()
+    {
+        base.Awake();
+        searchCoroutine = StartCoroutine(SearchTarget());
+    }
+
+    protected override Collider[] Detections()
+    {
+        if (placement == null)
+            return null;
+        return placement.GetBuildingsColliders();
+    }
 
     private void Update()
     {
-        if (target == null)
-            if (detections.Length != 0)
-                StartCoroutine(SearchTarget());
-            else return;
-        else
+        if (target != null)
             MoveToTarget();
+        // TODO FIX losing target when previous destroyed
+        // and npc yet not reached attacking radius
     }
 
     private void MoveToTarget()
     {
-        if (inAttackRadius)
-            return;
         Vector3 direction = RotateIntoTarget();
-        if (direction == Vector3.positiveInfinity)
-            return;
-        character.Move(direction * speed * Time.deltaTime);
+        if (inAttackRadius)
+            if (!isAttacking)
+                StartCoroutine(AttackTarget());
+            else return;
+        else
+            character.Move(direction * speed * Time.deltaTime);
     }
 
     protected override IEnumerator SearchTarget()
     {
+        yield return new WaitForSeconds(1f);
+        destination = Vector3.positiveInfinity;
         while (!inAttackRadius)
         {
-            Collider[] hitColliders = detections;
-            if (hitColliders.Length == 0)
+            Collider[] hitColliders = Detections();
+            if (hitColliders == null)
             {
-                Debug.Log("GG YOU LOOSE");
                 destination = Vector3.positiveInfinity;
-                yield break;
             }
             foreach (var collider in hitColliders)
             {
+                if (collider == null) continue;
                 if (Vector3.Distance(collider.transform.position,
                     transform.position) < distance)
                 {
@@ -61,15 +69,27 @@ public class NPC : Damageable
                 }
             }
             yield return
-            new WaitForSeconds(distance * searchDelayMultiplier);
+            new WaitForSeconds(searchDelay);
         }
-        if (!isAttacking)
-            StartCoroutine(AttackTarget());
     }
 
     protected override void Die()
     {
         base.Die();
+        Process();
         Destroy(gameObject);
+    }
+
+    protected override void Process()
+    {
+        placement.player.TakeXp(experienceForKill);
+        placement.player.TakeResources(artifactsAfterDrop,
+        ResourceType.Artifacts);
+    }
+
+    public override void UpdateLevel(float levelModifier)
+    {
+        base.UpdateLevel(levelModifier);
+        speed *= levelModifier;
     }
 }

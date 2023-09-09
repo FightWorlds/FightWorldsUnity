@@ -93,7 +93,6 @@ GameObject:
   m_Component:
   - component: {fileID: 3631212564612866104}
   - component: {fileID: 1929705225545681813}
-  - component: {fileID: 3610995491149917175}
   - component: {fileID: 965505338168594750}
   m_Layer: 7
   m_Name: Wall
@@ -137,30 +136,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
---- !u!64 &3610995491149917175
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8596161468681693823}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 0
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 8259004804083047981, guid: 1cb5a383953418a4d8c16baacc423830, type: 3}
+  m_Size: {x: 6, y: 3, z: 6}
+  m_Center: {x: 0, y: 1.5, z: 0}
 --- !u!114 &965505338168594750
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -180,4 +157,10 @@ MonoBehaviour:
   damage: 0
   startHp: 1500
   attackDelay: 0
-  IsTurret: 0
+  placement: {fileID: 0}
+  buildingType: 0
+  resourceType: 0
+  produceTime: 0
+  buildingTime: 5
+  resourcesPerOperation: 0
+  IsCompleted: 0
