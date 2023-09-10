@@ -42,7 +42,6 @@ public class UIController : MonoBehaviour
     private Dictionary<GameObject, GameObject> activeProcesses;
     private const int cloneLen = 7;
     private const int listSize = 5;
-    private const int rotationAngle = 60;
     private const string underAttackText = "Buildings Under Attack: ";
     private const string buildingText = "BUILDING";
     private const string repairingText = "REPAIRING";
@@ -176,7 +175,7 @@ public class UIController : MonoBehaviour
     public void RotateBuilding()
     {
         if (selectedBuilding != null)
-            selectedBuilding.transform.Rotate(Vector3.up, rotationAngle);
+            selectedBuilding.Rotate();
     }
 
     public void Action(bool instant)

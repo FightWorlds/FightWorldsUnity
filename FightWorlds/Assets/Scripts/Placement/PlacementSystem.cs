@@ -172,10 +172,11 @@ public class PlacementSystem : MonoBehaviour
         gridObject.HasBuilding = true;
         GameObject obj = Instantiate(data.Prefab,
         gridObject.Hex.position + heightOffset,
-        Quaternion.Euler(0, rotation, 0), gridObject.Hex);
+        Quaternion.identity, gridObject.Hex);
         Building building = obj.GetComponent<Building>();
         building.placement = this;
         building.BuildingData = data;
+        building.Rotate(rotation);
         if (!playerPlace) building.PermanentBuild(true, true);
         int newHp = building.Hp;
         baseHp += newHp;

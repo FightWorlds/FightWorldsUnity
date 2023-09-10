@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 
@@ -100,9 +101,9 @@ public class Building : Damageable
             StartCoroutine(AttackTarget());
     }
 
-    protected override void OnDamageTaken(int damage)
+    protected override void OnDamageTaken(int damage, Vector3 fromPos)
     {
-        base.OnDamageTaken(damage);
+        base.OnDamageTaken(damage, fromPos);
         placement.DamageBase(damage);
         if (currentHp <= 0) return;
         State = BuildingState.Damaged;
@@ -119,8 +120,7 @@ public class Building : Damageable
         placement.ui.RemoveProcess(gameObject);
         if (buildingType == BuildingType.Storage)
             placement.player.DestroyStorage(resourceType);
-        Destroy(GetComponent<Collider>());
-        gameObject.SetActive(false);
+        Destroy(gameObject);
     }
 
     protected override void Process()

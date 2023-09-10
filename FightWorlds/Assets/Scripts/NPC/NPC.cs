@@ -32,8 +32,6 @@ public class NPC : Damageable
     {
         if (target != null)
             MoveToTarget();
-        // TODO FIX losing target when previous destroyed
-        // and npc yet not reached attacking radius
     }
 
     private void MoveToTarget()
@@ -54,10 +52,8 @@ public class NPC : Damageable
         while (!inAttackRadius)
         {
             Collider[] hitColliders = Detections();
-            if (hitColliders == null)
-            {
+            if (hitColliders == null || target == null)
                 destination = Vector3.positiveInfinity;
-            }
             foreach (var collider in hitColliders)
             {
                 if (collider == null) continue;
