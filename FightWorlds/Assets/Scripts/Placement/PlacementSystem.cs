@@ -173,6 +173,7 @@ public class PlacementSystem : MonoBehaviour
         GameObject obj = Instantiate(data.Prefab,
         gridObject.Hex.position + heightOffset,
         Quaternion.identity, gridObject.Hex);
+        // TODO add order of building to name
         Building building = obj.GetComponent<Building>();
         building.placement = this;
         building.BuildingData = data;

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,34 +8,34 @@ public class UIController : MonoBehaviour
     [Header("Damage Notification")]
     [SerializeField] private GameObject damageNotificationPrefab;
     [SerializeField] private Transform damageNotificationContainer;
-    [SerializeField] private Text damageNotificationCounter;
+    [SerializeField] private TextMeshProUGUI damageNotificationCounter;
     [Header("Active Processes")]
     [SerializeField] private GameObject activeProcessPrefab;
     [SerializeField] private Transform activeProcessContainer;
-    [SerializeField] private Text activeProcessCounter;
+    [SerializeField] private TextMeshProUGUI activeProcessCounter;
     [Header("Building Menu")]
     [SerializeField] private GameObject buildingMenu;
-    [SerializeField] private Text simpleText;
-    [SerializeField] private Text instantText;
+    [SerializeField] private TextMeshProUGUI simpleText;
+    [SerializeField] private TextMeshProUGUI instantText;
     [SerializeField] private Vector2 bmMinBorders;
     [SerializeField] private Vector2 bmMaxBorders;
     [Header("Level")]
-    [SerializeField] private Text textLevel;
-    [SerializeField] private Text textExperience;
+    [SerializeField] private TextMeshProUGUI textLevel;
+    [SerializeField] private TextMeshProUGUI textExperience;
     [SerializeField] private Slider sliderLevel;
     [SerializeField] private GameObject levelUpPopUp;
     [SerializeField] private Text textLevelUpPopUp;
     [SerializeField] private Text textDescriptionPopUp;
     [Header("Resources")]
-    [SerializeField] private Text textResources;
-    [SerializeField] private Text textEnergy;
-    [SerializeField] private Text textArtifacts;
-    [SerializeField] private Text textCredits;
+    [SerializeField] private TextMeshProUGUI textResources;
+    [SerializeField] private TextMeshProUGUI textEnergy;
+    [SerializeField] private TextMeshProUGUI textArtifacts;
+    [SerializeField] private TextMeshProUGUI textCredits;
     [Header("VIP")]
-    [SerializeField] private Text textPreferences;
+    //[SerializeField] private TextMeshProUGUI textPreferences;
     [SerializeField] private GameObject vip;
     [Header("PopUp")]
-    [SerializeField] private Text textPopUp;
+    [SerializeField] private TextMeshProUGUI textPopUp;
     [SerializeField] private GameObject popUp;
 
     private Building selectedBuilding;
@@ -42,7 +43,6 @@ public class UIController : MonoBehaviour
     private Dictionary<GameObject, GameObject> activeProcesses;
     private const int cloneLen = 7;
     private const int listSize = 5;
-    private const string underAttackText = "Buildings Under Attack: ";
     private const string buildingText = "BUILDING";
     private const string repairingText = "REPAIRING";
     private const string productionText = "PRODUCTION";
@@ -60,8 +60,9 @@ public class UIController : MonoBehaviour
             buildingsUnderAttack.ContainsKey(building))
             return;
         var newDamagedObj = Instantiate(damageNotificationPrefab, damageNotificationContainer);
-        newDamagedObj.transform.GetChild(0).GetComponent<Text>().text =
-            building.name;
+        string name = building.name;
+        newDamagedObj.transform.GetChild(0).GetComponent<TextMeshProUGUI>()
+        .text = name.Remove(name.Length - cloneLen);
         buildingsUnderAttack.Add(building, newDamagedObj);
         UpdateAttackCounter();
     }
@@ -75,8 +76,7 @@ public class UIController : MonoBehaviour
 
     private void UpdateAttackCounter()
     {
-        damageNotificationCounter.text = underAttackText +
-        buildingsUnderAttack.Count;
+        damageNotificationCounter.text = buildingsUnderAttack.Count.ToString();
     }
 
     public void NewActiveProcess(GameObject gameObject, ProcessType type)
@@ -103,8 +103,8 @@ public class UIController : MonoBehaviour
             default: break;
         }
         string name = gameObject.name;
-        newProcessUI.transform.GetChild(0).GetComponent<Text>().text =
-            text + ":\n" + name.Remove(name.Length - cloneLen);
+        newProcessUI.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text
+        = text + ":\n" + name.Remove(name.Length - cloneLen);
         activeProcesses.Add(gameObject, newProcessUI);
         UpdateProcessCounter();
     }
@@ -134,8 +134,8 @@ public class UIController : MonoBehaviour
     {
         textResources.text = $"Metal: {metal}\n Ore: {ore}";
         textEnergy.text = $"Energy: {energy}\n Gas: {gas}";
-        textCredits.text = $"Credits: {credits}";
-        textArtifacts.text = $"Artifacts: {artifacts}";
+        textCredits.text = $"Credits:\n{credits}";
+        textArtifacts.text = $"Artifacts:\n{artifacts}";
     }
 
     public bool IsProcessesFulled() => activeProcesses.Count == listSize;
@@ -203,7 +203,7 @@ public class UIController : MonoBehaviour
         else
         {
             vip.SetActive(true);
-            textPreferences.text = $"VIP\n{(mltpl - 1) * 10}";
+            //textPreferences.text = $"VIP\n{(mltpl - 1) * 10}";
         }
     }
 
@@ -240,6 +240,5 @@ public class UIController : MonoBehaviour
     }
 
     private void UpdateProcessCounter() =>
-        activeProcessCounter.text =
-        $"Active Process\n{activeProcesses.Count}/{listSize}";
+        activeProcessCounter.text = $"{activeProcesses.Count}/{listSize}";
 }
