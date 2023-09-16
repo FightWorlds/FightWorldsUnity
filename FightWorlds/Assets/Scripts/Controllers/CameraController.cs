@@ -5,7 +5,8 @@ public class CameraController : MonoBehaviour
 {
     [SerializeField] private int boundary;
 
-    private float zOffset;
+    public float zOffset { get; private set; }
+    public float yOffset { get; private set; }
     private Vector3 newPosition;
     private Vector3 dragStartPosition;
     private Vector3 dragCurrentPosition;
@@ -19,6 +20,7 @@ public class CameraController : MonoBehaviour
         camera = gameObject.GetComponent<Camera>();
         newPosition = transform.position;
         zOffset = transform.position.z;
+        yOffset = transform.position.y;
     }
 
     public void HandlePress(Ray mouseRay)
@@ -29,15 +31,19 @@ public class CameraController : MonoBehaviour
     public void HandleDrag(Ray mouseRay)
     {
         dragCurrentPosition = CastOnPlane(dragCurrentPosition, mouseRay);
-        newPosition = transform.position + dragStartPosition -
-            dragCurrentPosition;
+        MoveToNewPosition(transform.position + dragStartPosition -
+            dragCurrentPosition, false);
+    }
+
+    public void MoveToNewPosition(Vector3 pos, bool instant)
+    {
+        newPosition = pos;
         newPosition.x = Mathf.Clamp(newPosition.x, -boundary, boundary);
         newPosition.z = Mathf.Clamp(newPosition.z, -boundary,
             boundary + zOffset);
-        transform.position = Vector3.Lerp(transform.position, newPosition,
-            Time.deltaTime);
+        transform.position = instant ? newPosition :
+        Vector3.Lerp(transform.position, newPosition, Time.deltaTime);
     }
-
     private Vector3 CastOnPlane(Vector3 defaultVector, Ray mouseRay)
     {
         Plane plane = new Plane(Vector3.up, Vector3.zero);

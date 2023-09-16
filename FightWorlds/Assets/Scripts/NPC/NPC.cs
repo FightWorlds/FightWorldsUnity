@@ -1,24 +1,29 @@
+using System;
 using System.Collections;
 using UnityEngine;
 
 [RequireComponent(typeof(CharacterController))]
 public class NPC : Damageable
 {
-    [SerializeField] private CharacterController character;
     [SerializeField] private float speed;
     [SerializeField] private int artifactsAfterDrop;
     [SerializeField] private int experienceForKill;
 
     private const float searchDelay = 1f;
 
-    private bool inAttackRadius =>
-        Vector3.Distance(destination, currentPosition) < attackRadius;
-    private float distance => Vector3.Distance(destination, currentPosition);
+    private Action<GameObject> DeadAction;
+    private CharacterController character;
+    public NPC Init(Action<GameObject> action)
+    {
+        DeadAction = action;
+        return this;
+    }
 
     protected override void Awake()
     {
         base.Awake();
         searchCoroutine = StartCoroutine(SearchTarget());
+        character = gameObject.GetComponent<CharacterController>();
     }
 
     protected override Collider[] Detections()
@@ -31,7 +36,10 @@ public class NPC : Damageable
     private void Update()
     {
         if (target != null)
-            MoveToTarget();
+            if (target.enabled)
+                MoveToTarget();
+            else
+                target = null;
     }
 
     private void MoveToTarget()
@@ -47,25 +55,13 @@ public class NPC : Damageable
 
     protected override IEnumerator SearchTarget()
     {
-        yield return new WaitForSeconds(1f);
+        yield return null;
+        UpdateStats(placement.GetNPCFiringStats());
         destination = Vector3.positiveInfinity;
         while (!inAttackRadius)
         {
-            Collider[] hitColliders = Detections();
-            if (hitColliders == null || target == null)
-                destination = Vector3.positiveInfinity;
-            foreach (var collider in hitColliders)
-            {
-                if (collider == null) continue;
-                if (Vector3.Distance(collider.transform.position,
-                    transform.position) < distance)
-                {
-                    target = collider;
-                    destination = target.transform.position;
-                }
-            }
-            yield return
-            new WaitForSeconds(searchDelay);
+            FindTargetInDetections();
+            yield return new WaitForSeconds(searchDelay);
         }
     }
 
@@ -73,19 +69,19 @@ public class NPC : Damageable
     {
         base.Die();
         Process();
-        Destroy(gameObject);
+        DeadAction(gameObject);
     }
 
     protected override void Process()
     {
         placement.player.TakeXp(experienceForKill);
-        placement.player.TakeResources(artifactsAfterDrop,
+        placement.player.TakeResources(startHp,
         ResourceType.Artifacts);
     }
 
-    public override void UpdateLevel(float levelModifier)
+    public void ResetLogic()
     {
-        base.UpdateLevel(levelModifier);
-        speed *= levelModifier;
+        base.Awake();
+        searchCoroutine = StartCoroutine(SearchTarget());
     }
 }

@@ -12,33 +12,31 @@ public class PlacementSystem : MonoBehaviour
     [SerializeField] private Vector3 heightOffset;
     [SerializeField] private BuildingsDatabase database;
     [SerializeField] private SoundFeedback soundFeedback;
-    [SerializeField] private Button callButton;
-    [SerializeField] private Button evacuationButton;
-    [SerializeField] private Slider baseHpSlider;
     [SerializeField] private GameObject shuttlePrefab;
     //public List<GameObject> objects;
     //public List<Vector3> pos;
 
     public PlayerController player { get; private set; }
     public UIController ui;
+    public EvacuationSystem evacuation;
 
     private const int shuttleOffset = 16;
-    private const float evacuateMultiplier = 0.5f;
-    private const float evacuateOperationTime = 1f;
-    private const int artifactsPerOperation = 5;
+    private const float evacuateMultiplier = 0.9f;
 
     private int baseHp, baseMaxHp = 0;
-    private bool isShuttleCalled;
-    private bool isGameFinished;
-    private int collectedArtifacts;
     private int id = -1;
     private List<GridObject> filledHexagons;
     private Dictionary<int, int> buildingCount;
     private GridInitializer initializer;
     private GridHex<GridObject> grid;
-    private Shuttle shuttle;
 
-    public void DamageBase(int damage) => baseHp -= damage;
+    public float HpPercent => (float)baseHp / baseMaxHp;
+
+    public void DamageBase(int damage)
+    {
+        baseHp -= damage;
+        UpdateBaseHpSlider();
+    }
 
     public void DestroyObj(Vector3 pos)
     {
@@ -68,7 +66,6 @@ public class PlacementSystem : MonoBehaviour
     {
         grid.GetXZ(pos, out int x, out int z);
         GridObject obj = grid.GetGridObject(x, z);
-        Debug.Log($"x{x} z{z}");
         if (id < 0)
             if (pos.y == heightOffset.y)
                 ui.ShowBuildingMenu(obj.Hex.GetChild(1)
@@ -84,17 +81,6 @@ public class PlacementSystem : MonoBehaviour
                 WrongPlace();
         else
             PlaceStructure(obj, 0, true);
-    }
-
-    public void FinishGame()
-    {
-        if (isGameFinished) return;
-        evacuationButton.gameObject.SetActive(false);
-        isGameFinished = true;
-        ui.FinishGamePopUp(isShuttleCalled, collectedArtifacts);
-        if (isShuttleCalled)
-            shuttle.Evacuate();
-        Time.timeScale = 0;
     }
 
     private void Awake()
@@ -118,34 +104,16 @@ public class PlacementSystem : MonoBehaviour
         }
     }
 
-    private void Update()
+    private void UpdateBaseHpSlider()
     {
-        // TODO Move out base + shuttle logic into other classes
-        baseHpSlider.value = (float)baseHp / baseMaxHp;
-        if (baseHp < baseMaxHp * evacuateMultiplier && !isShuttleCalled)
+        ui.UpdateBaseHpBar(HpPercent);
+        if (HpPercent < evacuateMultiplier && evacuation == null)
         {
-            callButton.gameObject.SetActive(true);
-            callButton.onClick.AddListener(() =>
-            { if (!isShuttleCalled) StartCoroutine(CollectArtifacts()); });
+            evacuation = Instantiate(shuttlePrefab, startBuildings[0].position +
+                Vector3.up * shuttleOffset, Quaternion.identity)
+                .GetComponent<EvacuationSystem>();
+            evacuation.placement = this;
         }
-    }
-
-    private IEnumerator CollectArtifacts()
-    {
-        var obj = Instantiate(shuttlePrefab, startBuildings[0].position +
-                Vector3.up * shuttleOffset, Quaternion.identity);
-        isShuttleCalled = true;
-        shuttle = obj.GetComponent<Shuttle>();
-        callButton.gameObject.SetActive(false);
-        int landingTime = 6;
-        yield return new WaitForSeconds(landingTime);
-        while (player.UseResources(artifactsPerOperation,
-        ResourceType.Artifacts, false) && !isGameFinished)
-        {
-            collectedArtifacts += artifactsPerOperation;
-            yield return new WaitForSeconds(evacuateOperationTime);
-        }
-        FinishGame();
     }
 
     private void PlaceStructure(GridObject gridObject,
@@ -179,9 +147,10 @@ public class PlacementSystem : MonoBehaviour
         building.BuildingData = data;
         building.Rotate(rotation);
         if (!playerPlace) building.PermanentBuild(true, true);
-        int newHp = building.Hp;
+        int newHp = GetTurretsFiringStats().Strength;
         baseHp += newHp;
         baseMaxHp += newHp;
+        UpdateBaseHpSlider();
         StopPlacement();
     }
 
@@ -215,7 +184,45 @@ public class PlacementSystem : MonoBehaviour
             .Find(h => h.IsFilled) != null;
     }
 
-    private bool LessThanLimit(BuildingData data) =>
-        buildingCount[id] <
-        data.MaxBuildingsPerLevel * player.Level() + data.MaxBuildingsAdd;
+    // NUMBERS TAKEN FROM <<GDD: Damage model>>
+    public int GetTurretsLimit() => 6 + Mathf.FloorToInt(player.Level() / 6);
+    private int GetWallsLimit() => 24 + GetTurretsLimit() * 5;
+    private bool LessThanLimit(BuildingData data)
+    {
+        if (id == 8) // turret
+            return buildingCount[id] < GetTurretsLimit();
+        else if (id == 11) // wall
+            return buildingCount[id] < GetWallsLimit();
+        else
+            return buildingCount[id] <
+            data.MaxBuildingsPerLevel * player.Level() + data.MaxBuildingsAdd;
+    }
+    public FiringStats GetTurretsFiringStats()
+    {
+        int turrets = GetTurretsLimit();
+        int firingDamage = turrets - 5;
+        int firingRate = turrets - 4;
+        FiringStats npc = GetNPCFiringStats();
+        int strength = turrets * firingDamage * firingRate - (npc.Damage * npc.Rate * npc.Strength * (10 + Mathf.CeilToInt(turrets / 10)));
+        return new FiringStats()
+        {
+            Damage = firingDamage,
+            Rate = firingRate,
+            Strength = strength
+        };
+    }
+
+    public FiringStats GetNPCFiringStats()
+    {
+        int turrets = GetTurretsLimit();
+        int firingStat = turrets - 5;
+        //  - NPC health * NPC Damage * NPC FireRate
+        return new FiringStats()
+        {
+            Damage = firingStat,
+            Rate = firingStat,
+            Strength = firingStat
+        };
+    }
+
 }

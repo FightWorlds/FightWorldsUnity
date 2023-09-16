@@ -1,10 +1,13 @@
+using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 public class UIController : MonoBehaviour
 {
+    [SerializeField] private CameraController cameraController;
     [Header("Damage Notification")]
     [SerializeField] private GameObject damageNotificationPrefab;
     [SerializeField] private Transform damageNotificationContainer;
@@ -37,6 +40,12 @@ public class UIController : MonoBehaviour
     [Header("PopUp")]
     [SerializeField] private TextMeshProUGUI textPopUp;
     [SerializeField] private GameObject popUp;
+    [Header("Evacuation")]
+    [SerializeField] private Slider baseHpSlider;
+    [SerializeField] private Button callButton;
+    [SerializeField] private Button evacuationButton;
+    [SerializeField] private Text timerText;
+    [SerializeField] private Button restartButton;
 
     private Building selectedBuilding;
     private Dictionary<Building, GameObject> buildingsUnderAttack;
@@ -63,20 +72,24 @@ public class UIController : MonoBehaviour
         string name = building.name;
         newDamagedObj.transform.GetChild(0).GetComponent<TextMeshProUGUI>()
         .text = name.Remove(name.Length - cloneLen);
+        newDamagedObj.GetComponent<Button>().onClick.AddListener(() =>
+        {
+            Vector3 buildingPos = building.transform.position;
+            Vector3 cameraPos = new Vector3(buildingPos.x,
+            cameraController.yOffset, buildingPos.z + cameraController.zOffset);
+            cameraController.MoveToNewPosition(cameraPos, true);
+            ShowBuildingMenu(building);
+        });
         buildingsUnderAttack.Add(building, newDamagedObj);
         UpdateAttackCounter();
     }
 
     public void RemoveFromUnderAttack(Building building)
     {
-        buildingsUnderAttack.Remove(building, out GameObject uiObj);
+        if (!buildingsUnderAttack.Remove(building, out GameObject uiObj))
+            return;
         Destroy(uiObj);
         UpdateAttackCounter();
-    }
-
-    private void UpdateAttackCounter()
-    {
-        damageNotificationCounter.text = buildingsUnderAttack.Count.ToString();
     }
 
     public void NewActiveProcess(GameObject gameObject, ProcessType type)
@@ -221,22 +234,57 @@ public class UIController : MonoBehaviour
         if (type == ResourceType.Credits)
             text += "credits";
         else
-            text += $"{type} resources\n" +
+            text += $"{type}\n" +
             "Would you like instant Build/Repair/Upgrade for\n" +
             $"<{amount}> credits";
         textPopUp.text = text;
         popUp.SetActive(true);
     }
 
-    public void FinishGamePopUp(bool win, int artifacts)
+    public void FinishGamePopUp(int artifacts)
     {
         levelUpPopUp.SetActive(true);
-        levelUpPopUp.transform.GetChild(1).GetChild(0).GetComponent<Text>()
-        .text = "";
         levelUpPopUp.transform.GetChild(2).GetChild(0).GetComponent<Text>()
-        .text = win ? "SUCCESS" : "UNLUCKY";
+        .text = "";
         levelUpPopUp.transform.GetChild(3).GetChild(0).GetComponent<Text>()
+        .text = "FINISH";
+        levelUpPopUp.transform.GetChild(4).GetChild(0).GetComponent<Text>()
         .text = $"Session result:\n\n{artifacts} artifacts";
+    }
+
+
+    public void AddListenerOnRestart(UnityAction act) =>
+        restartButton.onClick.AddListener(act);
+
+    public void AddListenerOnCall(UnityAction act) =>
+        callButton.onClick.AddListener(act);
+
+    public void AddListenerOnUp(UnityAction act) =>
+        evacuationButton.onClick.AddListener(act);
+
+    public void SwitchCallButtonState(bool value) =>
+        callButton.gameObject.SetActive(value);
+
+    public void SwitchEvacuationButtonState(bool value) =>
+        evacuationButton.gameObject.SetActive(value);
+
+    public void SwitchEvacuationTimerState(bool value) =>
+        timerText.transform.parent.gameObject.SetActive(value);
+
+    public void ChangeTimeText(float time)
+    {
+        int sec = Mathf.FloorToInt(time);
+        float mil = time - sec;
+        string sc = sec < 10 ? "0" + sec.ToString() : sec.ToString();
+        string ml = mil == 0f ? "00" : mil.ToString()[2..4];
+        timerText.text = $"00:{sc}:{ml}";
+    }
+
+    public void UpdateBaseHpBar(float value) => baseHpSlider.value = value;
+
+    private void UpdateAttackCounter()
+    {
+        damageNotificationCounter.text = buildingsUnderAttack.Count.ToString();
     }
 
     private void UpdateProcessCounter() =>

@@ -109,7 +109,7 @@ MonoBehaviour:
   mask:
     serializedVersion: 2
     m_Bits: 128
-  attackRadius: 6
+  attackRadius: 7.5
   damage: 30
   startHp: 75
   particleOffset: 1
@@ -118,10 +118,9 @@ MonoBehaviour:
   fire: {fileID: 2718211487374586960}
   hitParticle: {fileID: 5793477181889396385}
   placement: {fileID: 0}
-  character: {fileID: 2079000515610047713}
-  speed: 4
-  artifactsAfterDrop: 5
-  experienceForKill: 30
+  speed: 5
+  artifactsAfterDrop: 1
+  experienceForKill: 1
 --- !u!1001 &2601152914493101536
 PrefabInstance:
   m_ObjectHideFlags: 0

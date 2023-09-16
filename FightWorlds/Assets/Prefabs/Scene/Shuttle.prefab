@@ -151,6 +151,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   animator: {fileID: 3162080149423637807}
+  loadAmount: 10
+  evacuateOperationTime: 1
+  landingTime: 5
+  placement: {fileID: 0}
 --- !u!1 &4897252857202145838
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class Building : Damageable
@@ -15,7 +16,7 @@ public class Building : Damageable
     public int BuildingLvl { get; private set; }
     private bool isProducing;
     private const int buildingMaxLvl = 3;
-    private const int instBuildCost = 100;
+    private const int instBuildCost = 1;
     protected override Collider[] Detections() =>
         Physics.OverlapCapsule(currentPosition + Vector3.up,
         currentPosition + Vector3.up, attackRadius, mask);
@@ -30,6 +31,7 @@ public class Building : Damageable
     private IEnumerator Build()
     {
         State = BuildingState.Building;
+
         yield return null;
         placement.ui.ShowBuildingMenu(this);
         placement.ui.NewActiveProcess(gameObject, ProcessType.Building);
@@ -53,18 +55,23 @@ public class Building : Damageable
 
     private void PermanentBuild()
     {
+        UpdateStats(placement.GetTurretsFiringStats());
+        //TODO: make UpdateStats onNewLevel event
         placement.ui.CloseBuildingMenu();
         placement.ui.RemoveProcess(gameObject);
         State = BuildingState.Default;
         damage = (int)(damage * placement.player.VipMultiplier);
         if (buildingType == BuildingType.Defense)
+        {
             searchCoroutine = StartCoroutine(SearchTarget());
+        }
         else if (buildingType == BuildingType.Storage)
             placement.player.NewStorage(resourceType);
     }
 
     private void Update()
     {
+        //  TODO: upgrade to FSM
         if (State == BuildingState.Building) return;
         if (buildingType == BuildingType.Default ||
             buildingType == BuildingType.Storage)
@@ -75,30 +82,24 @@ public class Building : Damageable
             StartCoroutine(ProduceResources());
         else if (buildingType == BuildingType.Defense)
             if (target != null)
-                RotateIntoTarget();
+                if (target.enabled)
+                    RotateIntoTarget();
+                else target = null;
     }
 
     protected override IEnumerator SearchTarget()
     {
-        while (target == null)
+        yield return null;
+        destination = Vector3.positiveInfinity;
+        while (!inAttackRadius)
         {
-            Collider[] hitColliders = Detections();
-            foreach (var collider in hitColliders)
-            {
-                Vector3 colPos = collider.transform.position;
-                if (Vector3.Distance(colPos, currentPosition)
-                    <
-                    Vector3.Distance(destination, currentPosition))
-                {
-                    destination = colPos;
-                    target = collider;
-                }
-            }
+            FindTargetInDetections();
             yield return new WaitForSeconds(produceTime);
-            UseEnergy();
         }
         if (!isAttacking)
-            StartCoroutine(AttackTarget());
+            StartCoroutine(AttackTarget(
+                () => placement.player.UseResources
+                (damage, ResourceType.Energy, false)));
     }
 
     protected override void OnDamageTaken(int damage, Vector3 fromPos)
@@ -114,7 +115,7 @@ public class Building : Damageable
     {
         base.Die();
         if (BuildingData.ID == 1)
-            placement.FinishGame();
+            placement.evacuation.FinishGame();
         placement.DestroyObj(currentPosition);
         placement.ui.RemoveFromUnderAttack(this);
         placement.ui.RemoveProcess(gameObject);
@@ -140,7 +141,6 @@ public class Building : Damageable
             resourceType, false);
             placement.player.TakeResources(resourcesPerOperation, type);
         }
-        // TODO remove from here to other cs
     }
 
     private IEnumerator ProduceResources()
@@ -151,10 +151,6 @@ public class Building : Damageable
         isProducing = false;
     }
 
-    private bool UseEnergy() =>
-    placement.player.UseResources(resourcesPerOperation,
-    ResourceType.Energy, false);
-
     public bool TryRepair(bool instant)
     {
         if (!placement.player.UseResources(BuildingData.Cost *
@@ -162,7 +158,8 @@ public class Building : Damageable
             return false;
         if (instant)
         {
-            if (placement.player.UseResources(10, ResourceType.Credits, true))
+            if (placement.player.UseResources(instBuildCost * BuildingLvl,
+            ResourceType.Credits, true))
             {
                 PermanentRepair();
                 return true;
@@ -174,9 +171,10 @@ public class Building : Damageable
 
     private IEnumerator Repair()
     {
-        isProducing = true;
         placement.ui.NewActiveProcess(gameObject, ProcessType.Repairing);
+        isProducing = true;
         yield return new WaitForSeconds((startHp - currentHp) / 100);
+        isProducing = false;
         PermanentRepair();
     }
 
@@ -184,9 +182,10 @@ public class Building : Damageable
     {
         placement.ui.CloseBuildingMenu();
         placement.ui.RemoveProcess(gameObject);
+        placement.ui.RemoveFromUnderAttack(this);
         State = BuildingState.Default;
+        placement.DamageBase(currentHp - startHp);//rename method
         currentHp = startHp;
-        isProducing = false;
     }
 
     public bool TryUpgrade(bool instant)
@@ -211,9 +210,10 @@ public class Building : Damageable
 
     private IEnumerator Upgrade()
     {
-        isProducing = true;
         placement.ui.NewActiveProcess(gameObject, ProcessType.Upgrading);
+        isProducing = true;
         yield return new WaitForSeconds(buildingTime);
+        isProducing = false;
         PermanentUpgrade();
     }
 
@@ -223,9 +223,6 @@ public class Building : Damageable
         placement.ui.RemoveProcess(gameObject);
         State = BuildingState.Default;
         BuildingLvl++;
-        damage += damage;
-        startHp += startHp;
-        currentHp = startHp;
-        isProducing = false;
+        placement.DamageBase(startHp);//rename method
     }
 }

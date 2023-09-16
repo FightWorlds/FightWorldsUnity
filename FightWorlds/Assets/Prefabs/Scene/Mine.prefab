@@ -73,7 +73,7 @@ MonoBehaviour:
     m_Bits: 256
   attackRadius: 0
   damage: 0
-  startHp: 1000
+  startHp: 1200
   particleOffset: 2.5
   attackDelay: 0
   boom: {fileID: 3059733412971175574, guid: 45b2ad01a3976eb47886e2750190cd0e, type: 3}

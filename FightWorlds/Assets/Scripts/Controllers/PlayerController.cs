@@ -3,8 +3,9 @@ using System;
 public class PlayerController
 {
     private UIController ui;
-    private const int creditsMultiplier = 100;
+    private const int creditsMultiplier = 10;
     private const int startResourcesAmount = 800;
+    private const int startCreditsAmount = 10;
     private const int defaultStorageSize = 2000;
     private const float vip = 1f;
     private LevelSystem levelSystem;
@@ -15,8 +16,8 @@ public class PlayerController
     public PlayerController(UIController ui)
     {
         levelSystem = new LevelSystem();
-        resourceSystem =
-            new ResourceSystem(startResourcesAmount, defaultStorageSize);
+        resourceSystem = new ResourceSystem(startResourcesAmount,
+        defaultStorageSize, startCreditsAmount);
         VipMultiplier = vip;
         this.ui = ui;
         FillLevelUi();

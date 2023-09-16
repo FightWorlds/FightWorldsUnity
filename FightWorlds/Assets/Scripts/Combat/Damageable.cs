@@ -4,7 +4,6 @@ using UnityEngine;
 
 public abstract class Damageable : MonoBehaviour
 {
-    //[SerializeField] protected AnimatorController animator;
     [SerializeField] protected LayerMask mask;
     [SerializeField] protected float attackRadius;
     [SerializeField] protected int damage;
@@ -14,7 +13,6 @@ public abstract class Damageable : MonoBehaviour
     [SerializeField] private GameObject boom;
     [SerializeField] private ParticleSystem fire;
     [SerializeField] private ParticleSystem hitParticle;
-    //[SerializeField] private Slider hpBar;
 
     public PlacementSystem placement;
     public event Action<int, Vector3> DamageTaken;
@@ -30,7 +28,10 @@ public abstract class Damageable : MonoBehaviour
     protected Collider target;
     protected Coroutine searchCoroutine;
     protected abstract Collider[] Detections();
+    protected bool inAttackRadius =>
+        Vector3.Distance(destination, currentPosition) < attackRadius;
 
+    protected float distance => Vector3.Distance(destination, currentPosition);
     protected Vector3 currentPosition => transform.position;
     public int Hp => currentHp;
 
@@ -41,30 +42,45 @@ public abstract class Damageable : MonoBehaviour
     {
         destination = Vector3.positiveInfinity;
         currentHp = startHp;
+        isAttacking = false;
+        isDestroyed = false;
+        target = null;
     }
 
     protected abstract IEnumerator SearchTarget();
 
-    protected virtual IEnumerator AttackTarget()
+    protected virtual IEnumerator AttackTarget(Func<bool> Usage = null)
     {
         isAttacking = true;
         StopCoroutine(searchCoroutine);
-        while (target != null)
+        while (target != null && target.enabled)
         {
-            fire.Play();
-            target.TryGetComponent(out Damageable damageable);
-            if (damageable)
-                damageable.TakeDamage(damage, currentPosition);
-            Debug.Log($"BAM BAM {target.name} by {transform.name}");
+            if (Usage == null)
+                Attack();
+            else
+            {
+                if (Usage())
+                    Attack();
+            }
+
             yield return new WaitForSeconds(attackDelay);
         }
         isAttacking = false;
         destination = Vector3.positiveInfinity;
+        target = null;
         searchCoroutine = StartCoroutine(SearchTarget());
     }
 
+    private void Attack()
+    {
+        fire.Play();
+        target.TryGetComponent(out Damageable damageable);
+        if (damageable)
+            damageable.TakeDamage(damage, currentPosition);
+        Debug.Log($"BAM BAM {target.name} by {transform.name}");
+    }
     public void TakeDamage(int damage, Vector3 fromPos) =>
-        DamageTaken?.Invoke(damage, fromPos);
+            DamageTaken?.Invoke(damage, fromPos);
     private void SubscribeOnEvents() => DamageTaken += OnDamageTaken;
     private void UnsubscribeFromEvents() => DamageTaken -= OnDamageTaken;
     protected virtual void OnDamageTaken(int damage, Vector3 fromPos)
@@ -74,11 +90,9 @@ public abstract class Damageable : MonoBehaviour
 
         StartCoroutine(PlayHit(fromPos));
         currentHp = (int)Mathf.Clamp(currentHp - damage, 0, currentHp);
-        // VisualizeHp();
         Debug.Log($"{gameObject.name} hp: {currentHp}");
         if (currentHp <= 0 && !isDestroyed)
             Die();
-        //SPAWN PARTICLES OF FIRE (from SerializeField) from target side
     }
 
     private IEnumerator PlayHit(Vector3 hitFromPos)
@@ -97,6 +111,8 @@ public abstract class Damageable : MonoBehaviour
     protected virtual void Die()
     {
         isDestroyed = true;
+        isAttacking = false;
+        target = null;
         Instantiate(boom, transform.position, Quaternion.identity);
     }
 
@@ -120,20 +136,29 @@ public abstract class Damageable : MonoBehaviour
         return direction;
     }
 
-    private void VisualizeHp()
+    protected void FindTargetInDetections()
     {
-        //if (hpBar.maxValue < currentHp)
-        //    hpBar.maxValue = currentHp;
-        //
-        //hpBar.value = currentHp;
+        Collider[] hitColliders = Detections();
+        if (hitColliders == null || target == null)
+            destination = Vector3.positiveInfinity;
+        foreach (var collider in hitColliders)
+        {
+            if (collider == null || !collider.enabled) return;
+            if (Vector3.Distance(collider.transform.position,
+                transform.position) < distance)
+            {
+                target = collider;
+                destination = target.transform.position;
+            }
+        }
     }
 
     protected abstract void Process();
 
-    public virtual void UpdateLevel(float levelModifier)
+    public virtual void UpdateStats(FiringStats stats)
     {
-        damage = (int)(damage * levelModifier);
-        startHp = (int)(startHp * levelModifier);
-        currentHp = startHp;
+        damage = stats.Damage;
+        attackDelay = 1f / stats.Rate;
+        startHp = currentHp = stats.Strength;
     }
 }

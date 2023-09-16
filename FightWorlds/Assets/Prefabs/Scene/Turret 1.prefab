@@ -239,9 +239,9 @@ MonoBehaviour:
   mask:
     serializedVersion: 2
     m_Bits: 256
-  attackRadius: 25
+  attackRadius: 40
   damage: 25
-  startHp: 700
+  startHp: 600
   particleOffset: 1.5
   attackDelay: 0.5
   boom: {fileID: 3059733412971175574, guid: 45b2ad01a3976eb47886e2750190cd0e, type: 3}

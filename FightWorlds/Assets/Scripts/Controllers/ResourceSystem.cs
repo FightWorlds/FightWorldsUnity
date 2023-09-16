@@ -5,7 +5,8 @@ public class ResourceSystem
     public Dictionary<ResourceType, int> Resources { get; private set; }
     public Dictionary<ResourceType, int> StorageSpace { get; private set; }
     private int defaultSpace;
-    public ResourceSystem(int startResourcesAmount, int storageDefaultSpace)
+    public ResourceSystem(int startResourcesAmount, int storageDefaultSpace,
+    int credits)
     {
         defaultSpace = storageDefaultSpace;
         Resources = new Dictionary<ResourceType, int>()
@@ -15,7 +16,7 @@ public class ResourceSystem
             {ResourceType.Gas, 0},
             {ResourceType.Metal, startResourcesAmount},
             {ResourceType.Energy, startResourcesAmount},
-            {ResourceType.Credits, startResourcesAmount},
+            {ResourceType.Credits, credits},
         };
         StorageSpace = new Dictionary<ResourceType, int>()
         {
