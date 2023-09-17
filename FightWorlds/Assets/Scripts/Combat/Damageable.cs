@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public abstract class Damageable : MonoBehaviour
@@ -27,7 +28,7 @@ public abstract class Damageable : MonoBehaviour
     protected Vector3 destination;
     protected Collider target;
     protected Coroutine searchCoroutine;
-    protected abstract Collider[] Detections();
+    protected abstract List<Collider> Detections();
     protected bool inAttackRadius =>
         Vector3.Distance(destination, currentPosition) < attackRadius;
 
@@ -138,7 +139,7 @@ public abstract class Damageable : MonoBehaviour
 
     protected void FindTargetInDetections()
     {
-        Collider[] hitColliders = Detections();
+        List<Collider> hitColliders = Detections();
         if (hitColliders == null || target == null)
             destination = Vector3.positiveInfinity;
         foreach (var collider in hitColliders)

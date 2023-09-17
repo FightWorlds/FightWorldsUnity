@@ -44,12 +44,25 @@ public class PlayerController
         resourceSystem.IsPossibleToConvert(amount, rawType, type);
 
 
-    public bool UseResources(int amount, ResourceType type, bool needPopUp)
+    public bool UseResources(int amount, ResourceType type,
+    bool needPopUp, Action callback = null)
     {
         bool possible = resourceSystem.UseResources(amount, type);
         if (!possible)
         {
-            if (needPopUp) ui.ShowResourcePopUp(type, amount);
+            if (needPopUp)
+                ui.ShowResourcePopUp(type, amount, callback == null ? null :
+                () =>
+                {
+                    int require = amount / ui.CreditsDiv;
+                    require = require == 0 ? 1 : require;
+                    if (resourceSystem.UseResources(require,
+                    ResourceType.Credits))
+                    {
+                        callback();
+                        FillResourcesUi();
+                    }
+                });
             return possible;
         }
         FillResourcesUi();

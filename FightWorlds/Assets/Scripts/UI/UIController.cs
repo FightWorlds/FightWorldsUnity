@@ -20,8 +20,7 @@ public class UIController : MonoBehaviour
     [SerializeField] private GameObject buildingMenu;
     [SerializeField] private TextMeshProUGUI simpleText;
     [SerializeField] private TextMeshProUGUI instantText;
-    [SerializeField] private Vector2 bmMinBorders;
-    [SerializeField] private Vector2 bmMaxBorders;
+    [SerializeField] private TextMeshProUGUI infoText;
     [Header("Level")]
     [SerializeField] private TextMeshProUGUI textLevel;
     [SerializeField] private TextMeshProUGUI textExperience;
@@ -40,6 +39,7 @@ public class UIController : MonoBehaviour
     [Header("PopUp")]
     [SerializeField] private TextMeshProUGUI textPopUp;
     [SerializeField] private GameObject popUp;
+    [SerializeField] private Button agreeButton;
     [Header("Evacuation")]
     [SerializeField] private Slider baseHpSlider;
     [SerializeField] private Button callButton;
@@ -47,9 +47,16 @@ public class UIController : MonoBehaviour
     [SerializeField] private Text timerText;
     [SerializeField] private Button restartButton;
 
+    public readonly int CreditsDiv = 1000;
+    public Vector2 bmMinBorders;
+    public Vector2 bmMaxBorders;
     private Building selectedBuilding;
     private Dictionary<Building, GameObject> buildingsUnderAttack;
     private Dictionary<GameObject, GameObject> activeProcesses;
+    private const float widthMinKoef = 5.76f;
+    private const float widthMaxKoef = 2.93f;
+    private const float heightMinKoef = 6.4f;
+    private const float heightMaxKoef = 3.87f;
     private const int cloneLen = 7;
     private const int listSize = 5;
     private const string buildingText = "BUILDING";
@@ -61,6 +68,13 @@ public class UIController : MonoBehaviour
     {
         buildingsUnderAttack = new Dictionary<Building, GameObject>();
         activeProcesses = new Dictionary<GameObject, GameObject>();
+        int width = Screen.width;
+        int height = Screen.height;
+        bmMinBorders =
+            new Vector2(width / widthMinKoef, height / heightMinKoef);
+        bmMaxBorders =
+            new Vector2(width - (width / widthMaxKoef),
+            height - (height / heightMaxKoef));
     }
 
     public void AddBuildUnderAttack(Building building)
@@ -69,9 +83,8 @@ public class UIController : MonoBehaviour
             buildingsUnderAttack.ContainsKey(building))
             return;
         var newDamagedObj = Instantiate(damageNotificationPrefab, damageNotificationContainer);
-        string name = building.name;
         newDamagedObj.transform.GetChild(0).GetComponent<TextMeshProUGUI>()
-        .text = name.Remove(name.Length - cloneLen);
+        .text = building.name;
         newDamagedObj.GetComponent<Button>().onClick.AddListener(() =>
         {
             Vector3 buildingPos = building.transform.position;
@@ -115,9 +128,8 @@ public class UIController : MonoBehaviour
                 break;
             default: break;
         }
-        string name = gameObject.name;
         newProcessUI.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text
-        = text + ":\n" + name.Remove(name.Length - cloneLen);
+        = text + ":\n" + gameObject.name;
         activeProcesses.Add(gameObject, newProcessUI);
         UpdateProcessCounter();
     }
@@ -151,7 +163,13 @@ public class UIController : MonoBehaviour
         textArtifacts.text = $"Artifacts:\n{artifacts}";
     }
 
-    public bool IsProcessesFulled() => activeProcesses.Count == listSize;
+    public bool IsProcessesFulled()
+    {
+        if (activeProcesses.Count < listSize)
+            return false;
+        popUp.SetActive(false);
+        return true;
+    }
 
     public void ShowBuildingMenu(Building building)
     {
@@ -172,6 +190,12 @@ public class UIController : MonoBehaviour
         }
         simpleText.text = text;
         instantText.text = "INSTANT " + text;
+        string[] parts = building.name.Split(" ");
+        string namePart = parts.Length == 2 ? parts[0] : parts[0] + parts[1];
+        string[] coords = building.transform.parent.name.Split(" ");
+        infoText.text = namePart + "\nX:" + coords[1] + "\n\nY:" + coords[2] +
+            "\n#" + parts[parts.Length - 1];
+        infoText.gameObject.SetActive(false);
         Vector3 screenPos =
             Camera.main.WorldToScreenPoint(building.transform.position);
         float x = Mathf.Clamp(screenPos.x, bmMinBorders.x, bmMaxBorders.x);
@@ -228,16 +252,25 @@ public class UIController : MonoBehaviour
         levelUpPopUp.SetActive(true);
     }
 
-    public void ShowResourcePopUp(ResourceType type, int amount)
+    public void ShowResourcePopUp(ResourceType type, int amount, Action action)
     {
+        int require = amount / CreditsDiv;
+        require = require == 0 ? 1 : require;
         string text = "There is no enough ";
         if (type == ResourceType.Credits)
             text += "credits";
         else
             text += $"{type}\n" +
             "Would you like instant Build/Repair/Upgrade for\n" +
-            $"<{amount}> credits";
+            $"<{require}> credits";
         textPopUp.text = text;
+        agreeButton.onClick.RemoveAllListeners();
+        if (action != null)
+            agreeButton.onClick.AddListener(() =>
+            {
+                popUp.SetActive(false);
+                action();
+            });
         popUp.SetActive(true);
     }
 
@@ -281,6 +314,9 @@ public class UIController : MonoBehaviour
     }
 
     public void UpdateBaseHpBar(float value) => baseHpSlider.value = value;
+
+    public string CutClone(string name) =>
+    name.Remove(name.Length - cloneLen);
 
     private void UpdateAttackCounter()
     {

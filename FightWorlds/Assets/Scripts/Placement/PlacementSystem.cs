@@ -26,7 +26,7 @@ public class PlacementSystem : MonoBehaviour
     private int baseHp, baseMaxHp = 0;
     private int id = -1;
     private List<GridObject> filledHexagons;
-    private Dictionary<int, int> buildingCount;
+    private Dictionary<int, List<Building>> buildingsList;
     private GridInitializer initializer;
     private GridHex<GridObject> grid;
 
@@ -38,11 +38,12 @@ public class PlacementSystem : MonoBehaviour
         UpdateBaseHpSlider();
     }
 
-    public void DestroyObj(Vector3 pos)
+    public void DestroyObj(Vector3 pos, Building building)
     {
+        if (building != null)
+            buildingsList[building.BuildingData.ID].Remove(building);
         grid.GetXZ(pos - heightOffset, out int x, out int z);
-        GridObject obj = grid.GetGridObject(x, z);
-        obj.IsDestroyed = true;
+        grid.GetGridObject(x, z).HasBuilding = false;
     }
 
     public void StartPlacement(int ID)
@@ -52,15 +53,12 @@ public class PlacementSystem : MonoBehaviour
         id = ID;
     }
 
-    public Collider[] GetBuildingsColliders()
-    {
-        return
-            filledHexagons.FindAll(hex => hex.HasBuilding && !hex.IsDestroyed)
-            .Select(hex => hex.Hex.GetChild(1).GetComponent<Collider>())
-            .Where(build => build.GetComponent<Building>()
-            .State != BuildingState.Building)
-            .ToArray();
-    }
+    private List<Building> GetAllBuildings() =>
+        buildingsList.Values.SelectMany(x => x).ToList();
+
+    public List<Collider> GetBuildingsColliders() =>
+    GetAllBuildings().Select(build => build.GetComponent<Collider>()).ToList();
+
 
     public void TapOnHex(Vector3 pos)
     {
@@ -73,9 +71,10 @@ public class PlacementSystem : MonoBehaviour
             else
                 ui.CloseBuildingMenu();
         else if (id == 0)
-            if (!obj.IsFilled && HaveFilledNeighbour(pos)
-            && player.UseResources(database.objectsData[id].Cost,
-            ResourceType.Metal, true) && LessThanLimit(database.objectsData[id]))
+            if (!obj.IsFilled && HaveFilledNeighbour(pos) &&
+            LessThanLimit(database.objectsData[id]) &&
+            player.UseResources(database.objectsData[id].Cost,
+            ResourceType.Metal, true, () => FillHex(obj)))
                 FillHex(obj);
             else
                 WrongPlace();
@@ -90,9 +89,10 @@ public class PlacementSystem : MonoBehaviour
         player = new(ui);
         initializer = GetComponent<GridInitializer>();
         grid = initializer.GenerateHex();
-        buildingCount = new Dictionary<int, int>() {
-        { 0, 0 }, { 1, 0 }, { 2, 0 }, { 3, 0 }, { 4, 0 }, { 5, 0 },
-        { 6, 0 }, { 7, 0 }, { 8, 0 }, { 9, 0 }, { 10, 0 }, {11, 0} };
+        buildingsList = new Dictionary<int, List<Building>>() {
+        { 0, new () }, { 1, new() }, { 2, new() }, { 3, new() },
+        { 4, new() }, { 5, new() },{ 6, new() }, { 7, new() },
+        { 8, new() }, { 9, new() }, { 10, new() }, {11, new()} };
         filledHexagons = new();
         foreach (Vector3 coords in startPlatforms)
             FillHex(coords);
@@ -129,23 +129,31 @@ public class PlacementSystem : MonoBehaviour
         if (playerPlace)
         {
             if (!player.UseResources(data.Cost,
-            ResourceType.Metal, true) || ui.IsProcessesFulled())
+            ResourceType.Metal, true, () =>
+            Place(gridObject, rotation, playerPlace, data)) ||
+            ui.IsProcessesFulled())
             {
                 WrongPlace();
                 return;
             }
             soundFeedback.PlaySound(SoundType.Place);
         }
-        buildingCount[id]++;
+        Place(gridObject, rotation, playerPlace, data);
+    }
+
+    private void Place(GridObject gridObject, int rotation,
+    bool playerPlace, BuildingData data)
+    {
         gridObject.HasBuilding = true;
         GameObject obj = Instantiate(data.Prefab,
         gridObject.Hex.position + heightOffset,
         Quaternion.identity, gridObject.Hex);
-        // TODO add order of building to name
+        obj.name = ui.CutClone(obj.name) + " " + buildingsList[id].Count;
         Building building = obj.GetComponent<Building>();
         building.placement = this;
         building.BuildingData = data;
         building.Rotate(rotation);
+        buildingsList[id].Add(building);
         if (!playerPlace) building.PermanentBuild(true, true);
         int newHp = GetTurretsFiringStats().Strength;
         baseHp += newHp;
@@ -165,7 +173,8 @@ public class PlacementSystem : MonoBehaviour
     {
         obj.FillHex();
         filledHexagons.Add(obj);
-        if (id == 0) buildingCount[id]++;
+        if (id == 0)
+            buildingsList[id].Add(obj.Hex.GetComponent<Building>());
         StopPlacement();
     }
 
@@ -189,12 +198,13 @@ public class PlacementSystem : MonoBehaviour
     private int GetWallsLimit() => 24 + GetTurretsLimit() * 5;
     private bool LessThanLimit(BuildingData data)
     {
+        int count = buildingsList[id].Count;
         if (id == 8) // turret
-            return buildingCount[id] < GetTurretsLimit();
+            return count < GetTurretsLimit();
         else if (id == 11) // wall
-            return buildingCount[id] < GetWallsLimit();
+            return count < GetWallsLimit();
         else
-            return buildingCount[id] <
+            return count <
             data.MaxBuildingsPerLevel * player.Level() + data.MaxBuildingsAdd;
     }
     public FiringStats GetTurretsFiringStats()
@@ -203,7 +213,7 @@ public class PlacementSystem : MonoBehaviour
         int firingDamage = turrets - 5;
         int firingRate = turrets - 4;
         FiringStats npc = GetNPCFiringStats();
-        int strength = turrets * firingDamage * firingRate - (npc.Damage * npc.Rate * npc.Strength * (10 + Mathf.CeilToInt(turrets / 10)));
+        int strength = (turrets * firingDamage * firingRate - npc.Damage * npc.Rate * npc.Strength) * (10 + Mathf.CeilToInt(turrets / 10));
         return new FiringStats()
         {
             Damage = firingDamage,
@@ -216,7 +226,6 @@ public class PlacementSystem : MonoBehaviour
     {
         int turrets = GetTurretsLimit();
         int firingStat = turrets - 5;
-        //  - NPC health * NPC Damage * NPC FireRate
         return new FiringStats()
         {
             Damage = firingStat,

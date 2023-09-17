@@ -1,5 +1,7 @@
+using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using SystemInfo = UnityEngine.Device.SystemInfo;
 
 [RequireComponent(typeof(CameraController))]
 public class InputManager : MonoBehaviour
@@ -12,16 +14,20 @@ public class InputManager : MonoBehaviour
     private CameraController cameraController;
     private Ray mouseRay;
     private Vector3 lastPosition;
+    private Func<bool> PointerOverUi;
 
     private void Awake()
     {
         cameraController = gameObject.GetComponent<CameraController>();
         lastPosition = new();
+        PointerOverUi = SystemInfo.deviceType == DeviceType.Desktop ?
+        () => EventSystem.current.IsPointerOverGameObject() :
+        () => EventSystem.current.IsPointerOverGameObject(0);
     }
 
     private void Update()
     {
-        if (IsPointerOverUI())
+        if (PointerOverUi())
             return;
         mouseRay = cameraController.MouseRay();
         if (Input.GetMouseButtonDown(0))

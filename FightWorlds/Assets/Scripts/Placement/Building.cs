@@ -1,5 +1,7 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -17,9 +19,9 @@ public class Building : Damageable
     private bool isProducing;
     private const int buildingMaxLvl = 3;
     private const int instBuildCost = 1;
-    protected override Collider[] Detections() =>
+    protected override List<Collider> Detections() =>
         Physics.OverlapCapsule(currentPosition + Vector3.up,
-        currentPosition + Vector3.up, attackRadius, mask);
+        currentPosition + Vector3.up, attackRadius, mask).ToList();
 
     protected override void Awake()
     {
@@ -116,7 +118,7 @@ public class Building : Damageable
         base.Die();
         if (BuildingData.ID == 1)
             placement.evacuation.FinishGame();
-        placement.DestroyObj(currentPosition);
+        placement.DestroyObj(currentPosition, this);
         placement.ui.RemoveFromUnderAttack(this);
         placement.ui.RemoveProcess(gameObject);
         if (buildingType == BuildingType.Storage)
@@ -154,11 +156,11 @@ public class Building : Damageable
     public bool TryRepair(bool instant)
     {
         if (!placement.player.UseResources(BuildingData.Cost *
-        currentHp / startHp, ResourceType.Metal, true))
+        currentHp / startHp, ResourceType.Metal, true, PermanentRepair))
             return false;
         if (instant)
         {
-            if (placement.player.UseResources(instBuildCost * BuildingLvl,
+            if (placement.player.UseResources(instBuildCost,
             ResourceType.Credits, true))
             {
                 PermanentRepair();
@@ -193,11 +195,11 @@ public class Building : Damageable
         if (BuildingLvl >= buildingMaxLvl)
             return false;
         if (!placement.player.UseResources(BuildingData.Cost,
-        ResourceType.Metal, true))
+        ResourceType.Metal, true, PermanentUpgrade))
             return false;
         if (instant)
         {
-            if (placement.player.UseResources(instBuildCost * BuildingLvl,
+            if (placement.player.UseResources(instBuildCost,
             ResourceType.Credits, true))
             {
                 PermanentUpgrade();

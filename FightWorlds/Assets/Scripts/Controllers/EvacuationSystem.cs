@@ -14,7 +14,6 @@ public class EvacuationSystem : MonoBehaviour
 
     private bool isFlying;
     private bool isShuttleCalled;
-    private bool isShuttleEvacuated;
     private bool isGameFinished;
     private int collectedArtifacts;
     private float leftTime;
@@ -82,7 +81,6 @@ public class EvacuationSystem : MonoBehaviour
 
     private IEnumerator ShuttleEvacuating()
     {
-        isShuttleEvacuated = true;
         animator.SetBool("Evacuating", true);
         placement.ui.SwitchEvacuationButtonState(false);
         yield return FlyShuttle();
@@ -101,6 +99,13 @@ public class EvacuationSystem : MonoBehaviour
     private void StopGame()
     {
         placement.ui.FinishGamePopUp(collectedArtifacts);
-        placement.ui.AddListenerOnRestart(() => SceneManager.LoadScene(SceneManager.GetActiveScene().name));
+        Time.timeScale = 0f;
+        placement.ui.AddListenerOnRestart(RestartGame);
+    }
+
+    private void RestartGame()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        Time.timeScale = 1f;
     }
 }

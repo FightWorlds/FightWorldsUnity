@@ -4,9 +4,11 @@ using UnityEngine;
 public class CameraController : MonoBehaviour
 {
     [SerializeField] private int boundary;
+    [SerializeField] private float dragScaler;
 
     public float zOffset { get; private set; }
     public float yOffset { get; private set; }
+
     private Vector3 newPosition;
     private Vector3 dragStartPosition;
     private Vector3 dragCurrentPosition;
@@ -25,14 +27,15 @@ public class CameraController : MonoBehaviour
 
     public void HandlePress(Ray mouseRay)
     {
-        dragStartPosition = CastOnPlane(dragStartPosition, mouseRay);
+        dragStartPosition =
+            CastOnPlane(dragStartPosition, mouseRay);
     }
 
     public void HandleDrag(Ray mouseRay)
     {
         dragCurrentPosition = CastOnPlane(dragCurrentPosition, mouseRay);
-        MoveToNewPosition(transform.position + dragStartPosition -
-            dragCurrentPosition, false);
+        MoveToNewPosition(transform.position + dragScaler *
+        (dragStartPosition - dragCurrentPosition), false);
     }
 
     public void MoveToNewPosition(Vector3 pos, bool instant)

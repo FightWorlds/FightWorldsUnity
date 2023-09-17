@@ -1,12 +1,12 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(CharacterController))]
 public class NPC : Damageable
 {
     [SerializeField] private float speed;
-    [SerializeField] private int artifactsAfterDrop;
     [SerializeField] private int experienceForKill;
 
     private const float searchDelay = 1f;
@@ -26,7 +26,7 @@ public class NPC : Damageable
         character = gameObject.GetComponent<CharacterController>();
     }
 
-    protected override Collider[] Detections()
+    protected override List<Collider> Detections()
     {
         if (placement == null)
             return null;
@@ -56,7 +56,6 @@ public class NPC : Damageable
     protected override IEnumerator SearchTarget()
     {
         yield return null;
-        UpdateStats(placement.GetNPCFiringStats());
         destination = Vector3.positiveInfinity;
         while (!inAttackRadius)
         {

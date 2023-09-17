@@ -23,14 +23,16 @@ public class Emitter : MonoBehaviour
     private bool isWaveStopped;
     private Vector3 putAwayPosition = new Vector3(100, 100, 100);
     private System.Random random;
+    private FiringStats firingStats;
     private int len => emitters.Length;
 
     private void OnDestroy() => placement.player.NewLevel -= OnNewLevel;
 
     private void OnNewLevel()
     {
-        oneWaveNpcCount = (placement.GetTurretsLimit() +
-        Mathf.CeilToInt(placement.player.Level() / 10)) * 2;
+        oneWaveNpcCount = placement.GetTurretsLimit() +
+        Mathf.CeilToInt(placement.player.Level() / 10);
+        firingStats = placement.GetNPCFiringStats();
     }
     private void Awake()
     {
@@ -55,6 +57,7 @@ public class Emitter : MonoBehaviour
         NPC logic = npc.GetComponent<NPC>();
         //logic.UpdateLevel(levelModifier); // TODO: move from OnGet
         logic.ResetLogic();
+        logic.UpdateStats(firingStats);
     }
 
     private void OnReleaseNpc(GameObject npc)
