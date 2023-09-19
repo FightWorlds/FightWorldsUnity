@@ -8,6 +8,7 @@ using UnityEngine.UI;
 public class UIController : MonoBehaviour
 {
     [SerializeField] private CameraController cameraController;
+    [SerializeField] private LeaderBoard leaderBoard;
     [Header("Damage Notification")]
     [SerializeField] private GameObject damageNotificationPrefab;
     [SerializeField] private Transform damageNotificationContainer;
@@ -254,8 +255,7 @@ public class UIController : MonoBehaviour
 
     public void ShowResourcePopUp(ResourceType type, int amount, Action action)
     {
-        int require = amount / CreditsDiv;
-        require = require == 0 ? 1 : require;
+        int require = Mathf.CeilToInt((float)amount / CreditsDiv);
         string text = "There is no enough ";
         if (type == ResourceType.Credits)
             text += "credits";
@@ -316,12 +316,13 @@ public class UIController : MonoBehaviour
     public void UpdateBaseHpBar(float value) => baseHpSlider.value = value;
 
     public string CutClone(string name) =>
-    name.Remove(name.Length - cloneLen);
+        name.Remove(name.Length - cloneLen);
 
-    private void UpdateAttackCounter()
-    {
+    public void UpdateLeaderBoard(int record) =>
+        leaderBoard.UpdateBoard(record);
+
+    private void UpdateAttackCounter() =>
         damageNotificationCounter.text = buildingsUnderAttack.Count.ToString();
-    }
 
     private void UpdateProcessCounter() =>
         activeProcessCounter.text = $"{activeProcesses.Count}/{listSize}";

@@ -78,7 +78,7 @@ public abstract class Damageable : MonoBehaviour
         target.TryGetComponent(out Damageable damageable);
         if (damageable)
             damageable.TakeDamage(damage, currentPosition);
-        Debug.Log($"BAM BAM {target.name} by {transform.name}");
+        //Debug.Log($"BAM BAM {target.name} by {transform.name}");
     }
     public void TakeDamage(int damage, Vector3 fromPos) =>
             DamageTaken?.Invoke(damage, fromPos);
@@ -91,7 +91,7 @@ public abstract class Damageable : MonoBehaviour
 
         StartCoroutine(PlayHit(fromPos));
         currentHp = (int)Mathf.Clamp(currentHp - damage, 0, currentHp);
-        Debug.Log($"{gameObject.name} hp: {currentHp}");
+        //Debug.Log($"{gameObject.name} hp: {currentHp}");
         if (currentHp <= 0 && !isDestroyed)
             Die();
     }
@@ -114,7 +114,6 @@ public abstract class Damageable : MonoBehaviour
         isDestroyed = true;
         isAttacking = false;
         target = null;
-        Instantiate(boom, transform.position, Quaternion.identity);
     }
 
     public void Rotate(float angle = rotationAngle)

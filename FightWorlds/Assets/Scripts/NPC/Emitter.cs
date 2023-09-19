@@ -15,8 +15,12 @@ public class Emitter : MonoBehaviour
     [SerializeField] private int bottomSpawnRate;
     [SerializeField] private float spawnRadius;
     [SerializeField] private GameObject npcPrefab;
+    [SerializeField] private GameObject buildingsExplosion;
+    [SerializeField] private GameObject npcsExplosion;
     [SerializeField] private PlacementSystem placement;
     private ObjectPool<GameObject> poolOfNpc;
+    private ObjectPool<GameObject> poolOfBuildingsExplosion;
+    private ObjectPool<GameObject> poolOfNPCsExplosion;
     private const int maxChance = 100;
     private float timePassed;
     private float lastSpawnTime; // TODO: maybe switch to coroutine?
@@ -26,19 +30,31 @@ public class Emitter : MonoBehaviour
     private FiringStats firingStats;
     private int len => emitters.Length;
 
+    public GameObject GetBoomExplosion(bool isNpc) =>
+    isNpc ? poolOfNPCsExplosion.Get() : poolOfBuildingsExplosion.Get();
+
     private void OnDestroy() => placement.player.NewLevel -= OnNewLevel;
 
     private void OnNewLevel()
     {
         oneWaveNpcCount = placement.GetTurretsLimit() +
-        Mathf.CeilToInt(placement.player.Level() / 10);
+        Mathf.CeilToInt(placement.player.Level() / 10f);
         firingStats = placement.GetNPCFiringStats();
     }
+
     private void Awake()
     {
         timePassed = lastSpawnTime = Time.time; // TODO: new Timer Class
         random = new System.Random();
-        poolOfNpc = new ObjectPool<GameObject>(CreateNpc, OnGetNpc, OnReleaseNpc, OnDestroyNpc, false, maxSpawnSize / 10, maxSpawnSize);
+        poolOfNpc = new ObjectPool<GameObject>(CreateNpc, OnGetNpc, OnReleaseNpc, OnDestroyNpc, false, maxSpawnSize / 5, maxSpawnSize);
+        StartCoroutine(Subscribe());
+        poolOfBuildingsExplosion = new ObjectPool<GameObject>(
+            CreateBuildingExplosion, OnGetExplosion, OnReleaseExplosion,
+            OnDestroyExplosion, maxSize: maxSpawnSize);
+        poolOfNPCsExplosion = new ObjectPool<GameObject>(
+            CreateNPCExplosion, OnGetExplosion, OnReleaseExplosion,
+            OnDestroyExplosion, maxSize: maxSpawnSize);
+        placement.GetBoomExplosion = GetBoomExplosion;
         StartCoroutine(Subscribe());
     }
 
@@ -55,7 +71,6 @@ public class Emitter : MonoBehaviour
         npc.SetActive(true);
         npc.GetComponent<CharacterController>().enabled = true;
         NPC logic = npc.GetComponent<NPC>();
-        //logic.UpdateLevel(levelModifier); // TODO: move from OnGet
         logic.ResetLogic();
         logic.UpdateStats(firingStats);
     }
@@ -67,10 +82,31 @@ public class Emitter : MonoBehaviour
         npc.transform.position = putAwayPosition;
     }
 
-    private void OnDestroyNpc(GameObject npc)
+    private void OnDestroyNpc(GameObject npc) => Destroy(npc);
+
+    private GameObject CreateNPCExplosion()
     {
-        Destroy(npc);
+        GameObject explosion = Instantiate(npcsExplosion, transform);
+        explosion.GetComponent<Explosion>().UnActive = poolOfNPCsExplosion.Release;
+        return explosion;
     }
+
+    private GameObject CreateBuildingExplosion()
+    {
+        GameObject explosion = Instantiate(buildingsExplosion, transform);
+        explosion.GetComponent<Explosion>().UnActive =
+        poolOfBuildingsExplosion.Release;
+        return explosion;
+    }
+
+    private void OnGetExplosion(GameObject explosion) =>
+        explosion.SetActive(true);
+
+    private void OnReleaseExplosion(GameObject explosion) =>
+        explosion.SetActive(false);
+
+    private void OnDestroyExplosion(GameObject explosion) =>
+        Destroy(explosion);
 
     private void Update()
     {

@@ -13,10 +13,11 @@ public class LevelSystem
     mainLevelFormula + (Level - 15)) *
     Mathf.Round(500 * Mathf.Log10(5 * Level)));
 
-    public LevelSystem()
+    public LevelSystem(PlayerInfo info)
     {
-        Level = 1;
-        Experience = 0;
+        Level = info.Level;
+        Experience = info.Experience;
+
     }
 
     public bool AddExperience(int xp)

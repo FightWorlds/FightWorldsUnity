@@ -68,6 +68,8 @@ public class NPC : Damageable
     {
         base.Die();
         Process();
+        var boom = placement.GetBoomExplosion(true);
+        boom.transform.position = currentPosition;
         DeadAction(gameObject);
     }
 

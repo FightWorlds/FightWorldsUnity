@@ -1,8 +1,8 @@
-using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
-using UnityEngine.UI;
 using System.Collections;
+using System.Collections.Generic;
+using System;
 
 public class PlacementSystem : MonoBehaviour
 {
@@ -19,6 +19,7 @@ public class PlacementSystem : MonoBehaviour
     public PlayerController player { get; private set; }
     public UIController ui;
     public EvacuationSystem evacuation;
+    public Func<bool, GameObject> GetBoomExplosion;
 
     private const int shuttleOffset = 16;
     private const float evacuateMultiplier = 0.9f;
@@ -44,6 +45,8 @@ public class PlacementSystem : MonoBehaviour
             buildingsList[building.BuildingData.ID].Remove(building);
         grid.GetXZ(pos - heightOffset, out int x, out int z);
         grid.GetGridObject(x, z).HasBuilding = false;
+        var boom = GetBoomExplosion(false);
+        boom.transform.position = pos;
     }
 
     public void StartPlacement(int ID)
@@ -52,9 +55,6 @@ public class PlacementSystem : MonoBehaviour
         soundFeedback.PlaySound(SoundType.Click);
         id = ID;
     }
-
-    private List<Building> GetAllBuildings() =>
-        buildingsList.Values.SelectMany(x => x).ToList();
 
     public List<Collider> GetBuildingsColliders() =>
     GetAllBuildings().Select(build => build.GetComponent<Collider>()).ToList();
@@ -82,6 +82,33 @@ public class PlacementSystem : MonoBehaviour
             PlaceStructure(obj, 0, true);
     }
 
+    public FiringStats GetTurretsFiringStats()
+    {
+        int turrets = GetTurretsLimit();
+        int firingDamage = turrets - 5;
+        int firingRate = turrets - 4;
+        FiringStats npc = GetNPCFiringStats();
+        int strength = (turrets * firingDamage * firingRate - npc.Damage * npc.Rate * npc.Strength) * (10 + Mathf.CeilToInt(turrets / 10f));
+        return new FiringStats()
+        {
+            Damage = firingDamage,
+            Rate = firingRate,
+            Strength = strength
+        };
+    }
+
+    public FiringStats GetNPCFiringStats()
+    {
+        int turrets = GetTurretsLimit();
+        int firingStat = turrets - 5;
+        return new FiringStats()
+        {
+            Damage = firingStat,
+            Rate = firingStat,
+            Strength = firingStat
+        };
+    }
+
     private void Awake()
     {
         // foreach (var obj in objects)
@@ -103,6 +130,9 @@ public class PlacementSystem : MonoBehaviour
             building.yRotationAngle, false);
         }
     }
+
+    private List<Building> GetAllBuildings() =>
+        buildingsList.Values.SelectMany(x => x).ToList();
 
     private void UpdateBaseHpSlider()
     {
@@ -162,7 +192,7 @@ public class PlacementSystem : MonoBehaviour
         StopPlacement();
     }
 
-    private void StopPlacement() => id = -1;
+    public void StopPlacement() => id = -1;
 
     private void WrongPlace()
     {
@@ -207,31 +237,13 @@ public class PlacementSystem : MonoBehaviour
             return count <
             data.MaxBuildingsPerLevel * player.Level() + data.MaxBuildingsAdd;
     }
-    public FiringStats GetTurretsFiringStats()
-    {
-        int turrets = GetTurretsLimit();
-        int firingDamage = turrets - 5;
-        int firingRate = turrets - 4;
-        FiringStats npc = GetNPCFiringStats();
-        int strength = (turrets * firingDamage * firingRate - npc.Damage * npc.Rate * npc.Strength) * (10 + Mathf.CeilToInt(turrets / 10));
-        return new FiringStats()
-        {
-            Damage = firingDamage,
-            Rate = firingRate,
-            Strength = strength
-        };
-    }
 
-    public FiringStats GetNPCFiringStats()
-    {
-        int turrets = GetTurretsLimit();
-        int firingStat = turrets - 5;
-        return new FiringStats()
-        {
-            Damage = firingStat,
-            Rate = firingStat,
-            Strength = firingStat
-        };
-    }
+    private void OnEnable() => player.NewLevel += OnNewLevel;
+    private void OnDisable() => player.NewLevel -= OnNewLevel;
 
+    private void OnNewLevel()
+    {
+        foreach (var building in GetAllBuildings())
+            building.UpdateStats(GetTurretsFiringStats());
+    }
 }

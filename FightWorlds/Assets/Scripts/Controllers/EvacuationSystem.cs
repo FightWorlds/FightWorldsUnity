@@ -99,6 +99,7 @@ public class EvacuationSystem : MonoBehaviour
     private void StopGame()
     {
         placement.ui.FinishGamePopUp(collectedArtifacts);
+        placement.player.SavePlayerResult(collectedArtifacts);
         Time.timeScale = 0f;
         placement.ui.AddListenerOnRestart(RestartGame);
     }

@@ -1,28 +1,31 @@
 using System;
+using UnityEngine;
 
 public class PlayerController
 {
     private UIController ui;
     private const int creditsMultiplier = 10;
     private const int startResourcesAmount = 800;
-    private const int startCreditsAmount = 10;
     private const int defaultStorageSize = 2000;
     private const float vip = 1f;
     private LevelSystem levelSystem;
     private ResourceSystem resourceSystem;
     public float VipMultiplier { get; private set; }
+    public PlayerInfo Info { get; private set; }
     public event Action NewLevel;
 
     public PlayerController(UIController ui)
     {
-        levelSystem = new LevelSystem();
+        Info = SaveManager.Load();
+        levelSystem = new LevelSystem(Info);
         resourceSystem = new ResourceSystem(startResourcesAmount,
-        defaultStorageSize, startCreditsAmount);
+        defaultStorageSize, Info);
         VipMultiplier = vip;
         this.ui = ui;
         FillLevelUi();
         FillResourcesUi();
         FillVipUi();
+        FillLeaderBoardUi();
     }
 
     public int Level() => levelSystem.Level;
@@ -54,9 +57,8 @@ public class PlayerController
                 ui.ShowResourcePopUp(type, amount, callback == null ? null :
                 () =>
                 {
-                    int require = amount / ui.CreditsDiv;
-                    require = require == 0 ? 1 : require;
-                    if (resourceSystem.UseResources(require,
+                    if (resourceSystem.UseResources(
+                    Mathf.CeilToInt((float)amount / ui.CreditsDiv),
                     ResourceType.Credits))
                     {
                         callback();
@@ -84,6 +86,13 @@ public class PlayerController
         resourceSystem.UseResources(defaultStorageSize, type);
     }
 
+    public void SavePlayerResult(int record)
+    {
+        PlayerInfo saveInfo = new(levelSystem.Level, levelSystem.Experience,
+            resourceSystem.Resources[ResourceType.Credits], record);
+        SaveManager.Save(saveInfo);
+    }
+
     private void FillLevelUi()
     {
         int level = levelSystem.Level;
@@ -106,4 +115,7 @@ public class PlayerController
 
     private void FillVipUi() =>
         ui.FillVipUi(VipMultiplier);
+
+    private void FillLeaderBoardUi() =>
+        ui.UpdateLeaderBoard(Info.Record);
 }

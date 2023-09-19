@@ -44,6 +44,7 @@ public class Building : Damageable
     public void PermanentBuild(bool instant, bool flag)
     {
         if (!instant) return;
+        placement.ui.CloseBuildingMenu();
         if (flag)
         {
             StopAllCoroutines();
@@ -59,7 +60,6 @@ public class Building : Damageable
     {
         UpdateStats(placement.GetTurretsFiringStats());
         //TODO: make UpdateStats onNewLevel event
-        placement.ui.CloseBuildingMenu();
         placement.ui.RemoveProcess(gameObject);
         State = BuildingState.Default;
         damage = (int)(damage * placement.player.VipMultiplier);
@@ -118,6 +118,8 @@ public class Building : Damageable
         base.Die();
         if (BuildingData.ID == 1)
             placement.evacuation.FinishGame();
+        var boom = placement.GetBoomExplosion(false);
+        boom.transform.position = currentPosition;
         placement.DestroyObj(currentPosition, this);
         placement.ui.RemoveFromUnderAttack(this);
         placement.ui.RemoveProcess(gameObject);
@@ -155,6 +157,7 @@ public class Building : Damageable
 
     public bool TryRepair(bool instant)
     {
+        placement.ui.CloseBuildingMenu();
         if (!placement.player.UseResources(BuildingData.Cost *
         currentHp / startHp, ResourceType.Metal, true, PermanentRepair))
             return false;
@@ -182,7 +185,6 @@ public class Building : Damageable
 
     private void PermanentRepair()
     {
-        placement.ui.CloseBuildingMenu();
         placement.ui.RemoveProcess(gameObject);
         placement.ui.RemoveFromUnderAttack(this);
         State = BuildingState.Default;
@@ -194,6 +196,8 @@ public class Building : Damageable
     {
         if (BuildingLvl >= buildingMaxLvl)
             return false;
+        Debug.Log(BuildingLvl);
+        placement.ui.CloseBuildingMenu();
         if (!placement.player.UseResources(BuildingData.Cost,
         ResourceType.Metal, true, PermanentUpgrade))
             return false;
@@ -221,10 +225,10 @@ public class Building : Damageable
 
     private void PermanentUpgrade()
     {
-        placement.ui.CloseBuildingMenu();
         placement.ui.RemoveProcess(gameObject);
         State = BuildingState.Default;
         BuildingLvl++;
+        Debug.Log("NEW LVL " + BuildingLvl);
         placement.DamageBase(startHp);//rename method
     }
 }
