@@ -1,4 +1,5 @@
-public struct PlayerInfo
+[System.Serializable]
+public class PlayerInfo
 {
     public int Level;
     public int Experience;

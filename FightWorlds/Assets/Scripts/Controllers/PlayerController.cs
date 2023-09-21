@@ -88,9 +88,15 @@ public class PlayerController
 
     public void SavePlayerResult(int record)
     {
-        PlayerInfo saveInfo = new(levelSystem.Level, levelSystem.Experience,
-            resourceSystem.Resources[ResourceType.Credits], record);
-        SaveManager.Save(saveInfo);
+        int newRecord = record > Info.Record ? record : Info.Record;
+        SaveManager.Save(new(levelSystem.Level, levelSystem.Experience,
+            resourceSystem.Resources[ResourceType.Credits], newRecord));
+    }
+
+    public void RegularSave()
+    {
+        SaveManager.Save(new(levelSystem.Level, levelSystem.Experience,
+            resourceSystem.Resources[ResourceType.Credits], Info.Record));
     }
 
     private void FillLevelUi()

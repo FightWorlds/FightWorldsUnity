@@ -284,6 +284,7 @@ MonoBehaviour:
   produceTime: 0
   buildingTime: 5
   resourcesPerOperation: 0
+  unActive: {fileID: 2100000, guid: b9bbabadfb1ce8a40bb0131aa48448b8, type: 2}
   BuildingData:
     <Name>k__BackingField: 
     <ID>k__BackingField: 0

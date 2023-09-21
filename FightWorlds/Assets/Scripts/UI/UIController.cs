@@ -152,7 +152,7 @@ public class UIController : MonoBehaviour
         $"{experience} / {experienceNextLevel}";
         sliderLevel.value = isMaxLvl ? 1 :
             (float)experience / experienceNextLevel;
-        // TODO slidervalue to image (filled) - horizontal - amount
+        // TODO switch slidervalue on image (filled)-horizontal-amount
     }
 
     public void FillResourcesUi(int ore, int gas,
@@ -223,7 +223,7 @@ public class UIController : MonoBehaviour
         switch (selectedBuilding.State)
         {
             case BuildingState.Building:
-                selectedBuilding.PermanentBuild(instant, false);
+                selectedBuilding.TryBuild(instant);
                 break;
             case BuildingState.Damaged:
                 selectedBuilding.TryRepair(instant);

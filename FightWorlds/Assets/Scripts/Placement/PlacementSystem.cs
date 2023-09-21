@@ -13,6 +13,7 @@ public class PlacementSystem : MonoBehaviour
     [SerializeField] private BuildingsDatabase database;
     [SerializeField] private SoundFeedback soundFeedback;
     [SerializeField] private GameObject shuttlePrefab;
+    [SerializeField] private float saveDelay;
     //public List<GameObject> objects;
     //public List<Vector3> pos;
 
@@ -26,10 +27,12 @@ public class PlacementSystem : MonoBehaviour
 
     private int baseHp, baseMaxHp = 0;
     private int id = -1;
+    private int buildingsCounter = 0;
     private List<GridObject> filledHexagons;
     private Dictionary<int, List<Building>> buildingsList;
     private GridInitializer initializer;
     private GridHex<GridObject> grid;
+    private Building selectedBuilding;
 
     public float HpPercent => (float)baseHp / baseMaxHp;
 
@@ -66,10 +69,18 @@ public class PlacementSystem : MonoBehaviour
         GridObject obj = grid.GetGridObject(x, z);
         if (id < 0)
             if (pos.y == heightOffset.y)
-                ui.ShowBuildingMenu(obj.Hex.GetChild(1)
-                .GetComponent<Building>());
+            {
+                var building = obj.Hex.GetChild(1)
+                .GetComponent<Building>();
+                ui.ShowBuildingMenu(building);
+                selectedBuilding = (building.State == BuildingState.Building) ?
+                building : null;
+            }
             else
+            {
                 ui.CloseBuildingMenu();
+                MoveStructure(obj);
+            }
         else if (id == 0)
             if (!obj.IsFilled && HaveFilledNeighbour(pos) &&
             LessThanLimit(database.objectsData[id]) &&
@@ -85,7 +96,7 @@ public class PlacementSystem : MonoBehaviour
     public FiringStats GetTurretsFiringStats()
     {
         int turrets = GetTurretsLimit();
-        int firingDamage = turrets - 5;
+        int firingDamage = (int)((turrets - 5) * player.VipMultiplier);
         int firingRate = turrets - 4;
         FiringStats npc = GetNPCFiringStats();
         int strength = (turrets * firingDamage * firingRate - npc.Damage * npc.Rate * npc.Strength) * (10 + Mathf.CeilToInt(turrets / 10f));
@@ -129,6 +140,7 @@ public class PlacementSystem : MonoBehaviour
             PlaceStructure(grid.GetGridObject(building.position),
             building.yRotationAngle, false);
         }
+        StartCoroutine(Saving());
     }
 
     private List<Building> GetAllBuildings() =>
@@ -146,6 +158,24 @@ public class PlacementSystem : MonoBehaviour
         }
     }
 
+    private void MoveStructure(GridObject newHex)
+    {
+        if (selectedBuilding == null) return;
+        if (!newHex.IsFilled || newHex.HasBuilding)
+        {
+            selectedBuilding = null;
+            WrongPlace();
+            return;
+        }
+        grid.GetXZ(selectedBuilding.transform.position, out int x, out int z);
+        GridObject prevHex = grid.GetGridObject(x, z);
+        prevHex.HasBuilding = false;
+        newHex.HasBuilding = true;
+        selectedBuilding.transform.position =
+            newHex.Hex.position + heightOffset;
+        selectedBuilding.transform.SetParent(newHex.Hex);
+
+    }
     private void PlaceStructure(GridObject gridObject,
     int rotation, bool playerPlace)
     {
@@ -174,22 +204,28 @@ public class PlacementSystem : MonoBehaviour
     private void Place(GridObject gridObject, int rotation,
     bool playerPlace, BuildingData data)
     {
+        buildingsCounter++;
         gridObject.HasBuilding = true;
         GameObject obj = Instantiate(data.Prefab,
         gridObject.Hex.position + heightOffset,
         Quaternion.identity, gridObject.Hex);
-        obj.name = ui.CutClone(obj.name) + " " + buildingsList[id].Count;
+        obj.name = ui.CutClone(obj.name) + " " + buildingsCounter;
         Building building = obj.GetComponent<Building>();
         building.placement = this;
         building.BuildingData = data;
         building.Rotate(rotation);
-        buildingsList[id].Add(building);
-        if (!playerPlace) building.PermanentBuild(true, true);
+        building.OnBuilded = OnPlaceFinish;
+        if (!playerPlace) building.PermanentBuild();
+        StopPlacement();
+    }
+
+    private void OnPlaceFinish(Building building)
+    {
+        buildingsList[building.BuildingData.ID].Add(building);
         int newHp = GetTurretsFiringStats().Strength;
         baseHp += newHp;
         baseMaxHp += newHp;
         UpdateBaseHpSlider();
-        StopPlacement();
     }
 
     public void StopPlacement() => id = -1;
@@ -245,5 +281,15 @@ public class PlacementSystem : MonoBehaviour
     {
         foreach (var building in GetAllBuildings())
             building.UpdateStats(GetTurretsFiringStats());
+    }
+
+    private IEnumerator Saving()
+    {
+        while (evacuation == null || !evacuation.IsGameFinished)
+        {
+            yield return new WaitForSeconds(saveDelay);
+            player.RegularSave();
+        }
+
     }
 }

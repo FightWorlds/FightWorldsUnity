@@ -37,7 +37,7 @@ public class Emitter : MonoBehaviour
 
     private void OnNewLevel()
     {
-        oneWaveNpcCount = placement.GetTurretsLimit() +
+        oneWaveNpcCount = placement.GetTurretsLimit() / 2 +
         Mathf.CeilToInt(placement.player.Level() / 10f);
         firingStats = placement.GetNPCFiringStats();
     }

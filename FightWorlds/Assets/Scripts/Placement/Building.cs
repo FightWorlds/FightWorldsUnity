@@ -12,13 +12,19 @@ public class Building : Damageable
     [SerializeField] private int produceTime;
     [SerializeField] private int buildingTime;
     [SerializeField] private int resourcesPerOperation;
+    [SerializeField] private Material unActive;
     public BuildingData BuildingData;
     public BuildingState State;
-
     public int BuildingLvl { get; private set; }
-    private bool isProducing;
+    public Action<Building> OnBuilded;
+
     private const int buildingMaxLvl = 3;
     private const int instBuildCost = 1;
+
+    private List<Material> defaultMaterials;
+    private bool isProducing;
+    private Collider modelCollider;
+
     protected override List<Collider> Detections() =>
         Physics.OverlapCapsule(currentPosition + Vector3.up,
         currentPosition + Vector3.up, attackRadius, mask).ToList();
@@ -27,42 +33,40 @@ public class Building : Damageable
     {
         base.Awake();
         BuildingLvl = 1;
-        StartCoroutine(Build());
+        State = BuildingState.Building;
+        defaultMaterials = new();
+        foreach (Transform child in transform.GetChild(0))
+        {
+            var meshRender = child.GetComponent<MeshRenderer>();
+            defaultMaterials.Add(meshRender.material);
+            meshRender.material = unActive;
+        }
+        modelCollider = GetComponent<Collider>();
+        modelCollider.isTrigger = true;
     }
 
     private IEnumerator Build()
     {
-        State = BuildingState.Building;
-
-        yield return null;
-        placement.ui.ShowBuildingMenu(this);
+        placement.ui.CloseBuildingMenu();
         placement.ui.NewActiveProcess(gameObject, ProcessType.Building);
         yield return new WaitForSeconds(buildingTime);
         PermanentBuild();
     }
 
-    public void PermanentBuild(bool instant, bool flag)
+    public void PermanentBuild()
     {
-        if (!instant) return;
-        placement.ui.CloseBuildingMenu();
-        if (flag)
-        {
-            StopAllCoroutines();
-            PermanentBuild();
-            return;
-        }
-        if (placement.player.UseResources(instBuildCost,
-        ResourceType.Credits, true))
-            PermanentBuild();
-    }
-
-    private void PermanentBuild()
-    {
+        int counter = 0;
+        OnBuilded(this);
         UpdateStats(placement.GetTurretsFiringStats());
-        //TODO: make UpdateStats onNewLevel event
         placement.ui.RemoveProcess(gameObject);
+        modelCollider.isTrigger = false;
+        foreach (Transform child in transform.GetChild(0))
+        {
+            child.GetComponent<MeshRenderer>().material =
+            defaultMaterials[counter];
+            counter++;
+        }
         State = BuildingState.Default;
-        damage = (int)(damage * placement.player.VipMultiplier);
         if (buildingType == BuildingType.Defense)
         {
             searchCoroutine = StartCoroutine(SearchTarget());
@@ -153,6 +157,22 @@ public class Building : Damageable
         yield return new WaitForSeconds(produceTime);
         Process();
         isProducing = false;
+    }
+
+    public bool TryBuild(bool instant)
+    {
+        placement.ui.CloseBuildingMenu();
+        if (instant)
+        {
+            if (placement.player.UseResources(instBuildCost,
+            ResourceType.Credits, true))
+            {
+                PermanentBuild();
+                return true;
+            }
+        }
+        StartCoroutine(Build());
+        return true;
     }
 
     public bool TryRepair(bool instant)

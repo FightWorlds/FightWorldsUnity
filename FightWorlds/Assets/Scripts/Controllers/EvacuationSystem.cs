@@ -1,6 +1,4 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -11,17 +9,17 @@ public class EvacuationSystem : MonoBehaviour
     [SerializeField] private float evacuateOperationTime;
     [SerializeField] private float landingTime;
     public PlacementSystem placement;
+    public bool IsGameFinished;
 
     private bool isFlying;
     private bool isShuttleCalled;
-    private bool isGameFinished;
     private int collectedArtifacts;
     private float leftTime;
 
     public void FinishGame()
     {
-        if (isGameFinished) return;
-        isGameFinished = true;
+        if (IsGameFinished) return;
+        IsGameFinished = true;
         if (isShuttleCalled) return;
         StopGame();
     }
@@ -57,7 +55,7 @@ public class EvacuationSystem : MonoBehaviour
     private IEnumerator CollectArtifacts()
     {
         int artifactsPerOperation;
-        while (!isGameFinished)
+        while (!IsGameFinished)
         {
             artifactsPerOperation =
             (int)(loadAmount * (1 - placement.HpPercent));
