@@ -1,6 +1,9 @@
-public struct FiringStats
+namespace FightWorlds.Combat
 {
-    public int Damage;
-    public int Rate;
-    public int Strength;
+    public struct FiringStats
+    {
+        public int Damage;
+        public int Rate;
+        public int Strength;
+    }
 }

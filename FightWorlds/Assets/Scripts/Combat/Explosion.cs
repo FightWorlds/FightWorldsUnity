@@ -1,17 +1,19 @@
 using System;
 using System.Collections;
 using UnityEngine;
-
-public class Explosion : MonoBehaviour
+namespace FightWorlds.Combat
 {
-    [SerializeField] private float boomTime;
-    public Action<GameObject> UnActive;
-    private void OnEnable() =>
-        StartCoroutine(DestroyMyself());
-
-    IEnumerator DestroyMyself()
+    public class Explosion : MonoBehaviour
     {
-        yield return new WaitForSeconds(boomTime);
-        UnActive(gameObject);
+        [SerializeField] private float boomTime;
+        public Action<GameObject> UnActive;
+        private void OnEnable() =>
+            StartCoroutine(DestroyMyself());
+
+        IEnumerator DestroyMyself()
+        {
+            yield return new WaitForSeconds(boomTime);
+            UnActive(gameObject);
+        }
     }
 }

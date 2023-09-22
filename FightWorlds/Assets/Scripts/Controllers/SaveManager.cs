@@ -1,43 +1,56 @@
+using System;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
 
-public static class SaveManager
+namespace FightWorlds.Controllers
 {
-    private const string saveFile = "/info.dat";
-    private const int startCredits = 10;
-    private const int startLvl = 1;
-    private const int startXp = 0;
-    private const int startRecord = 0;
-
-    public static void Save(PlayerInfo player)
+    public static class SaveManager
     {
-        string savePath =
-            Path.Combine(Application.persistentDataPath, saveFile);
-        BinaryFormatter formatter = new();
-        using (FileStream stream = new(savePath, FileMode.Create))
-            formatter.Serialize(stream, player);
-    }
+        private const string saveFile = "/info.dat";
+        private const int startCredits = 10;
+        private const int startLvl = 1;
+        private const int startXp = 0;
+        private const int startRecord = 0;
 
-    public static PlayerInfo Load()
-    {
-        string savePath =
-            Path.Combine(Application.persistentDataPath, saveFile);
-        if (!File.Exists(savePath))
-            return Reset();
-        BinaryFormatter formatter = new();
-        using (FileStream stream = new(savePath, FileMode.Open))
+        public static void Save(PlayerInfo player)
         {
-            PlayerInfo info = formatter.Deserialize(stream) as PlayerInfo;
-            return info;
+            string savePath =
+                Path.Combine(Application.persistentDataPath, saveFile);
+            BinaryFormatter formatter = new();
+            using (FileStream stream = new(savePath, FileMode.Create))
+                formatter.Serialize(stream, player);
         }
-    }
 
-    public static PlayerInfo Reset()
-    {
-        PlayerInfo startInfo =
-                new(startLvl, startXp, startCredits, startRecord);
-        Save(startInfo);
-        return startInfo;
+        public static PlayerInfo Load()
+        {
+            string savePath =
+                Path.Combine(Application.persistentDataPath, saveFile);
+            if (!File.Exists(savePath))
+                return Reset();
+            BinaryFormatter formatter = new();
+            using (FileStream stream = new(savePath, FileMode.Open))
+            {
+                try
+                {
+                    PlayerInfo info = formatter.Deserialize(stream) as PlayerInfo;
+                    return info;
+                }
+                catch (Exception e)
+                {
+                    Debug.Log(e.Message);
+                    File.Delete(savePath);
+                    return Reset();
+                }
+            }
+        }
+
+        public static PlayerInfo Reset()
+        {
+            PlayerInfo startInfo =
+                    new(startLvl, startXp, startCredits, startRecord);
+            Save(startInfo);
+            return startInfo;
+        }
     }
 }

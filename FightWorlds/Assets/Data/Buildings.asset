@@ -48,7 +48,7 @@ MonoBehaviour:
       type: 3}
     <MaxBuildingsAdd>k__BackingField: 1
     <MaxBuildingsPerLevel>k__BackingField: 1
-  - <Name>k__BackingField: Storage
+  - <Name>k__BackingField: StorageDepot
     <ID>k__BackingField: 5
     <Cost>k__BackingField: 1200
     <Prefab>k__BackingField: {fileID: 654559432848585271, guid: 6df1904e08cba394bb8a8223e96327b4,
@@ -76,7 +76,7 @@ MonoBehaviour:
       type: 3}
     <MaxBuildingsAdd>k__BackingField: 6
     <MaxBuildingsPerLevel>k__BackingField: 1
-  - <Name>k__BackingField: Repairdock
+  - <Name>k__BackingField: Repair Dock
     <ID>k__BackingField: 9
     <Cost>k__BackingField: 1000
     <Prefab>k__BackingField: {fileID: 4216818199535243520, guid: a0576426a77de65488fdfbab44815296,

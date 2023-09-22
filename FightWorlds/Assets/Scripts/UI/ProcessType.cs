@@ -1,7 +1,11 @@
-public enum ProcessType
+
+namespace FightWorlds.UI
 {
-    Building,
-    Repairing,
-    Production,
-    Upgrading
+    public enum ProcessType
+    {
+        Building,
+        Repairing,
+        Production,
+        Upgrading
+    }
 }

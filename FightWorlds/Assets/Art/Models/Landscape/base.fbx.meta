@@ -5,6 +5,46 @@ ModelImporter:
   internalIDToNameTable: []
   externalObjects:
   - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Aluminum - Anodized Glossy (Blue).007
+    second: {fileID: 2100000, guid: 2c3e7d25d3ae5ce459c13c0c17c9df04, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Aluminum - Anodized Glossy (Blue).008
+    second: {fileID: 2100000, guid: b6cbd54b1f772b748a7882af6c8f6f8d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Buildings
+    second: {fileID: 2100000, guid: aac916c63ba12ba4397af9ffbc5a575b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: DefaultMaterial.004
+    second: {fileID: 2100000, guid: cc23f37377e9ef74d899395f353fc39b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Material.004
+    second: {fileID: 2100000, guid: 88c5a4478d3393f4e912a807228f26bc, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Material.005
+    second: {fileID: 2100000, guid: 97a57f851a71c6a46ba3132838a3b88c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Steel - Satin.001
+    second: {fileID: 2100000, guid: f9a6cd5cca7f2a241aed2af162e6df89, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Tough 2000 (with Formlabs SLA 3D Printers).001
+    second: {fileID: 2100000, guid: cde978eb6cd9b6b40b87874b472e85f0, type: 2}
+  - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
       name: LandWbase2_low_Material.002_BaseColor

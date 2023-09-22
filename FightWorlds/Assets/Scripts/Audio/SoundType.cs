@@ -1,7 +1,10 @@
-public enum SoundType
+namespace FightWorlds.Audio
 {
-    Click,
-    Place,
-    WrongPlacement,
-    Break
+    public enum SoundType
+    {
+        Click,
+        Place,
+        WrongPlacement,
+        Break
+    }
 }
