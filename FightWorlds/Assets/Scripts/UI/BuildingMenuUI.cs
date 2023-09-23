@@ -64,7 +64,6 @@ namespace FightWorlds.UI
             buildingMenu.transform.position = new Vector3(x, y);
         }
 
-
         public void CloseBuildingMenu()
         {
             selectedBuilding = null;

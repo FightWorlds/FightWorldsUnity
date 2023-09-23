@@ -12,6 +12,7 @@ namespace FightWorlds.Controllers
         private const int startLvl = 1;
         private const int startXp = 0;
         private const int startRecord = 0;
+        private const int startBots = 1;
 
         public static void Save(PlayerInfo player)
         {
@@ -33,7 +34,8 @@ namespace FightWorlds.Controllers
             {
                 try
                 {
-                    PlayerInfo info = formatter.Deserialize(stream) as PlayerInfo;
+                    PlayerInfo info =
+                    formatter.Deserialize(stream) as PlayerInfo;
                     return info;
                 }
                 catch (Exception e)
@@ -48,7 +50,7 @@ namespace FightWorlds.Controllers
         public static PlayerInfo Reset()
         {
             PlayerInfo startInfo =
-                    new(startLvl, startXp, startCredits, startRecord);
+                new(startLvl, startXp, startCredits, startRecord, startBots);
             Save(startInfo);
             return startInfo;
         }

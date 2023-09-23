@@ -41,14 +41,14 @@ MonoBehaviour:
       type: 3}
     <MaxBuildingsAdd>k__BackingField: 1
     <MaxBuildingsPerLevel>k__BackingField: 1
-  - <Name>k__BackingField: Accumulator
+  - <Name>k__BackingField: Accum
     <ID>k__BackingField: 4
     <Cost>k__BackingField: 1200
     <Prefab>k__BackingField: {fileID: 6146262199646247111, guid: 579a19a224b39e346bd7016ab91147f9,
       type: 3}
     <MaxBuildingsAdd>k__BackingField: 1
     <MaxBuildingsPerLevel>k__BackingField: 1
-  - <Name>k__BackingField: StorageDepot
+  - <Name>k__BackingField: Storage Depot
     <ID>k__BackingField: 5
     <Cost>k__BackingField: 1200
     <Prefab>k__BackingField: {fileID: 654559432848585271, guid: 6df1904e08cba394bb8a8223e96327b4,
@@ -81,7 +81,7 @@ MonoBehaviour:
     <Cost>k__BackingField: 1000
     <Prefab>k__BackingField: {fileID: 4216818199535243520, guid: a0576426a77de65488fdfbab44815296,
       type: 3}
-    <MaxBuildingsAdd>k__BackingField: 1
+    <MaxBuildingsAdd>k__BackingField: 4
     <MaxBuildingsPerLevel>k__BackingField: 0
   - <Name>k__BackingField: Dockyard
     <ID>k__BackingField: 10

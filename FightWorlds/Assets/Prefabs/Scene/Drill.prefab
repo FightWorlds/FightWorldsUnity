@@ -273,7 +273,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6008428333528050676}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -282,7 +282,7 @@ Transform:
   - {fileID: 2595313115869082920}
   - {fileID: 6851585553323500675}
   m_Father: {fileID: 5322614243354891243}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
 --- !u!1 &7975108708184227411
 GameObject:
   m_ObjectHideFlags: 0
@@ -366,7 +366,7 @@ MonoBehaviour:
   buildingType: 1
   resourceType: 2
   produceTime: 1
-  buildingTime: 5
+  buildingTime: 10
   resourcesPerOperation: 150
   unActive: {fileID: 2100000, guid: b9bbabadfb1ce8a40bb0131aa48448b8, type: 2}
   BuildingData:

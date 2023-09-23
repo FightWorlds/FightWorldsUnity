@@ -93,6 +93,21 @@ namespace FightWorlds.UI
             popUp.SetActive(true);
         }
 
+        public void ShowBotsPopUp(int amount, Action action)
+        {
+            textPopUp.text = "There is no enough Bots" +
+                "\nWould you like buy one for\n" +
+                $"<{amount}> credits";
+            agreeButton.onClick.RemoveAllListeners();
+            agreeButton.onClick.AddListener(() =>
+            {
+                popUp.SetActive(false);
+                action();
+            });
+            popUp.SetActive(true);
+        }
+
+
         public void FinishGamePopUp(int artifacts)
         {
             levelUpPopUp.SetActive(true);

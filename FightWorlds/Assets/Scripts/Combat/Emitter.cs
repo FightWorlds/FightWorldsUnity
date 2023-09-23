@@ -39,7 +39,7 @@ namespace FightWorlds.Combat
 
         private void OnNewLevel()
         {
-            oneWaveNpcCount = placement.GetTurretsLimit() / 2 +
+            oneWaveNpcCount = placement.GetTurretsLimit() +
             Mathf.CeilToInt(placement.player.Level() / 10f);
             firingStats = placement.GetNPCFiringStats();
         }
@@ -150,23 +150,24 @@ namespace FightWorlds.Combat
 
         private void SpawnNpc()
         {
-            for (int i = 0; i < oneWaveNpcCount; i++)
+            if (isWaveStopped)
             {
-                if (isWaveStopped)
-                {
-                    if (poolOfNpc.CountActive < bottomSpawnRate)
-                        isWaveStopped = false;
-                    else
-                        return;
-                }
+                if (poolOfNpc.CountActive < bottomSpawnRate)
+                    isWaveStopped = false;
                 else
+                    return;
+            }
+            else
+                for (int i = 0; i < oneWaveNpcCount; i++)
                 {
                     if (poolOfNpc.CountActive < maxSpawnSize)
                         poolOfNpc.Get();
                     else
+                    {
                         isWaveStopped = true;
+                        return;
+                    }
                 }
-            }
             lastSpawnTime = timePassed;
         }
     }

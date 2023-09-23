@@ -29,13 +29,17 @@ namespace FightWorlds.UI
         #endregion
 
         #region ActiveProcesses
-        public void NewActiveProcess(GameObject obj, ProcessType type) =>
+        public bool NewActiveProcess(GameObject obj, ProcessType type) =>
         activeProcesses.NewActiveProcess(obj, type);
 
         public void RemoveProcess(GameObject obj) =>
             activeProcesses.RemoveProcess(obj);
 
-        public bool IsProcessesFulled() => activeProcesses.IsProcessesFulled();
+        public void AddRepairBot(Building bot) =>
+            activeProcesses.AddRepairBot(bot);
+
+        public void RemoveRepairBot(Building bot) =>
+            activeProcesses.RemoveRepairBot(bot);
         #endregion
 
         #region BuildingsUnderAttack

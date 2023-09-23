@@ -13,6 +13,7 @@ namespace FightWorlds.UI
         [SerializeField] private GameObject damageNotificationPrefab;
         [SerializeField] private Transform damageNotificationContainer;
         [SerializeField] private TextMeshProUGUI damageNotificationCounter;
+        [SerializeField] private BuildingMenuUI buildingMenu;
         private Dictionary<Building, GameObject> buildingsUnderAttack;
 
         private const int listSize = 5;
@@ -37,7 +38,7 @@ namespace FightWorlds.UI
                     cameraController.yOffset,
                     buildingPos.z + cameraController.zOffset);
                 cameraController.MoveToNewPosition(cameraPos, true);
-                //ShowBuildingMenu(building);
+                buildingMenu.ShowBuildingMenu(building);
             });
             buildingsUnderAttack.Add(building, newDamagedObj);
             UpdateAttackCounter();

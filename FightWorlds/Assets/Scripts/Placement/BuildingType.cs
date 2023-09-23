@@ -6,6 +6,7 @@ namespace FightWorlds.Placement
         Mine,
         Recycle,
         Storage,
-        Defense
+        Defense,
+        Dock
     }
 }

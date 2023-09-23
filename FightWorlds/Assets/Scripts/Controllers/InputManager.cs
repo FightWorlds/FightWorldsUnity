@@ -30,25 +30,27 @@ namespace FightWorlds.Controllers
 
         private void Update()
         {
-            if (PointerOverUi())
-                return;
             mouseRay = cameraController.MouseRay();
-            if (Input.GetMouseButtonDown(0))
+            bool isOverUi = PointerOverUi();
+            if (Input.GetMouseButtonDown(0) && !isOverUi)
             {
                 lastPosition = Input.mousePosition;
                 cameraController.HandlePress(mouseRay);
-                placement.ui.CloseBuildingMenu();
-            }
-            if (Input.GetMouseButtonUp(0))
-            {
-                if (Vector3.Distance
-                    (lastPosition, Input.mousePosition)
+                if (Vector3.Distance(lastPosition, Input.mousePosition)
                     < mouseMinMove)
                     FindTarget();
-                lastPosition = Vector3.positiveInfinity;
             }
-            if (Input.GetMouseButton(0))
-                cameraController.HandleDrag(mouseRay);
+            else if (Input.GetMouseButtonUp(0))
+            {
+                lastPosition = Vector3.positiveInfinity;
+                placement.ResetSelectedBuilding();
+            }
+            else if (Input.GetMouseButton(0) && !isOverUi)
+            {
+                placement.ui.CloseBuildingMenu();
+                if (!DragTarget())
+                    cameraController.HandleDrag(mouseRay);
+            }
         }
 
         public bool IsPointerOverUI()
@@ -61,6 +63,13 @@ namespace FightWorlds.Controllers
                 placement.TapOnHex(hit.collider.transform.position);
                 return true;
             }
+            return false;
+        }
+
+        private bool DragTarget()
+        {
+            if (Physics.Raycast(mouseRay, out RaycastHit hit, selectionMask))
+                return placement.DragOnHex(hit.collider.transform.position);
             return false;
         }
     }

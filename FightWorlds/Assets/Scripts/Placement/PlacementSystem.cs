@@ -43,7 +43,7 @@ namespace FightWorlds.Placement
 
         public float HpPercent => (float)baseHp / baseMaxHp;
 
-        public void DamageBase(int damage)
+        public void UpdateBaseHp(int damage)
         {
             baseHp -= damage;
             UpdateBaseHpSlider();
@@ -61,13 +61,13 @@ namespace FightWorlds.Placement
 
         public void StartPlacement(int ID)
         {
-            //TODO add preview
             soundFeedback.PlaySound(SoundType.Click);
             id = ID;
         }
 
         public List<Collider> GetBuildingsColliders() =>
-        GetAllBuildings().Select(build => build.GetComponent<Collider>()).ToList();
+            GetAllBuildings().Select(build =>
+                build.GetComponent<Collider>()).ToList();
 
 
         public void TapOnHex(Vector3 pos)
@@ -75,29 +75,20 @@ namespace FightWorlds.Placement
             grid.GetXZ(pos, out int x, out int z);
             GridObject obj = grid.GetGridObject(x, z);
             if (id < 0)
-                if (pos.y == heightOffset.y)
-                {
-                    var building = obj.Hex.GetChild(1)
-                    .GetComponent<Building>();
-                    ui.ShowBuildingMenu(building);
-                    selectedBuilding = (building.State == BuildingState.Building) ?
-                    building : null;
-                }
-                else
-                {
-                    ui.CloseBuildingMenu();
-                    MoveStructure(obj);
-                }
+                SelectBuilding(pos, obj);
             else if (id == 0)
-                if (!obj.IsFilled && HaveFilledNeighbour(pos) &&
-                LessThanLimit(database.objectsData[id]) &&
-                player.UseResources(database.objectsData[id].Cost,
-                ResourceType.Metal, true, () => FillHex(obj)))
-                    FillHex(obj);
-                else
-                    WrongPlace();
+                PlacePlatform(obj, pos);
             else
                 PlaceStructure(obj, 0, true);
+        }
+
+        public bool DragOnHex(Vector3 pos)
+        {
+            grid.GetXZ(pos, out int x, out int z);
+            GridObject obj = grid.GetGridObject(x, z);
+            if (id < 0)
+                return MoveStructure(obj);
+            return false;
         }
 
         public FiringStats GetTurretsFiringStats()
@@ -127,6 +118,8 @@ namespace FightWorlds.Placement
             };
         }
 
+        public void ResetSelectedBuilding() => selectedBuilding = null;
+
         private void Awake()
         {
             // foreach (var obj in objects)
@@ -151,7 +144,8 @@ namespace FightWorlds.Placement
         }
 
         private List<Building> GetAllBuildings() =>
-            buildingsList.Values.SelectMany(x => x).ToList();
+            buildingsList.Values.SelectMany(x => x)
+            .Where(b => b.State != BuildingState.Building).ToList();
 
         private void UpdateBaseHpSlider()
         {
@@ -165,15 +159,11 @@ namespace FightWorlds.Placement
             }
         }
 
-        private void MoveStructure(GridObject newHex)
+        private bool MoveStructure(GridObject newHex)
         {
-            if (selectedBuilding == null) return;
+            if (selectedBuilding == null) return false;
             if (!newHex.IsFilled || newHex.HasBuilding)
-            {
-                selectedBuilding = null;
-                WrongPlace();
-                return;
-            }
+                return true;
             grid.GetXZ(selectedBuilding.transform.position,
                 out int x, out int z);
             GridObject prevHex = grid.GetGridObject(x, z);
@@ -182,8 +172,38 @@ namespace FightWorlds.Placement
             selectedBuilding.transform.position =
                 newHex.Hex.position + heightOffset;
             selectedBuilding.transform.SetParent(newHex.Hex);
-
+            ui.CloseBuildingMenu();
+            return true;
         }
+
+        private void SelectBuilding(Vector3 pos, GridObject obj)
+        {
+            if (selectedBuilding == null)
+            {
+                if (pos.y != heightOffset.y)
+                    return;
+                var building = obj.Hex.GetChild(1).GetComponent<Building>();
+                ui.ShowBuildingMenu(building);
+                selectedBuilding =
+                (building.State == BuildingState.Building) ?
+                building : null;
+
+            }
+            else
+                ResetSelectedBuilding();
+        }
+
+        private void PlacePlatform(GridObject obj, Vector3 pos)
+        {
+            if (!obj.IsFilled && HaveFilledNeighbour(pos) &&
+                LessThanLimit(database.objectsData[id]) &&
+                player.UseResources(database.objectsData[id].Cost,
+                ResourceType.Metal, true, () => FillHex(obj)))
+                FillHex(obj);
+            else
+                WrongPlace();
+        }
+
         private void PlaceStructure(GridObject gridObject,
         int rotation, bool playerPlace)
         {
@@ -198,8 +218,7 @@ namespace FightWorlds.Placement
             {
                 if (!player.UseResources(data.Cost,
                 ResourceType.Metal, true, () =>
-                Place(gridObject, rotation, playerPlace, data)) ||
-                ui.IsProcessesFulled())
+                Place(gridObject, rotation, playerPlace, data)))
                 {
                     WrongPlace();
                     return;
@@ -217,19 +236,20 @@ namespace FightWorlds.Placement
             GameObject obj = Instantiate(data.Prefab,
             gridObject.Hex.position + heightOffset,
             Quaternion.identity, gridObject.Hex);
-            obj.name = ui.CutClone(obj.name) + " " + buildingsCounter;
+            obj.name = data.Name + " " + buildingsCounter;
             Building building = obj.GetComponent<Building>();
             building.placement = this;
             building.BuildingData = data;
             building.Rotate(rotation);
             building.OnBuilded = OnPlaceFinish;
+            buildingsList[building.BuildingData.ID].Add(building);
             if (!playerPlace) building.PermanentBuild();
             StopPlacement();
         }
 
         private void OnPlaceFinish(Building building)
         {
-            buildingsList[building.BuildingData.ID].Add(building);
+
             int newHp = GetTurretsFiringStats().Strength;
             baseHp += newHp;
             baseMaxHp += newHp;

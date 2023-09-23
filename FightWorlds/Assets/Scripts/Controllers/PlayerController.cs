@@ -12,7 +12,8 @@ namespace FightWorlds.Controllers
         private const int defaultStorageSize = 2000;
         private const float vip = 1f;
         private LevelSystem levelSystem;
-        private ResourceSystem resourceSystem;
+        public ResourceSystem resourceSystem { get; private set; }
+        public int BotsAmount { get; private set; }
         public float VipMultiplier { get; private set; }
         public PlayerInfo Info { get; private set; }
         public event Action NewLevel;
@@ -20,9 +21,10 @@ namespace FightWorlds.Controllers
         public PlayerController(UIController ui)
         {
             Info = SaveManager.Load();
-            levelSystem = new LevelSystem(Info);
-            resourceSystem = new ResourceSystem(startResourcesAmount,
-            defaultStorageSize, Info);
+            levelSystem = new(Info);
+            resourceSystem =
+                new(startResourcesAmount, defaultStorageSize, Info);
+            BotsAmount = Info.Bots;
             VipMultiplier = vip;
             this.ui = ui;
             FillLevelUi();
@@ -76,7 +78,8 @@ namespace FightWorlds.Controllers
 
         public void TakeResources(int amount, ResourceType type)
         {
-            resourceSystem.CollectResources((int)(amount * VipMultiplier), type);
+            resourceSystem.CollectResources(
+                (int)(amount * VipMultiplier), type);
             FillResourcesUi();
         }
 
@@ -92,15 +95,21 @@ namespace FightWorlds.Controllers
         public void SavePlayerResult(int record)
         {
             int newRecord = record > Info.Record ? record : Info.Record;
-            SaveManager.Save(new(levelSystem.Level, levelSystem.Experience,
-                resourceSystem.Resources[ResourceType.Credits], newRecord));
+            SaveManager.Save(
+                new(levelSystem.Level, levelSystem.Experience,
+                resourceSystem.Resources[ResourceType.Credits],
+                newRecord, BotsAmount));
         }
 
         public void RegularSave()
         {
-            SaveManager.Save(new(levelSystem.Level, levelSystem.Experience,
-                resourceSystem.Resources[ResourceType.Credits], Info.Record));
+            SaveManager.Save(
+                new(levelSystem.Level, levelSystem.Experience,
+                resourceSystem.Resources[ResourceType.Credits],
+                Info.Record, BotsAmount));
         }
+
+        public void AddBots() => BotsAmount++;
 
         private void FillLevelUi()
         {
