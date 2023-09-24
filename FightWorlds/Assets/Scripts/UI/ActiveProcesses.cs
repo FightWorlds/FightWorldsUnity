@@ -4,6 +4,8 @@ using UnityEngine;
 using FightWorlds.Placement;
 using FightWorlds.Controllers;
 using System.Linq;
+using System;
+using System.Collections;
 
 namespace FightWorlds.UI
 {
@@ -27,14 +29,13 @@ namespace FightWorlds.UI
         private Dictionary<GameObject, Bot> botsProcesses;
         private Dictionary<Building, Bot> docks;
         private int docksAmount;
-        private int limit => docksAmount <= placement.player.BotsAmount ?
-            docksAmount : placement.player.BotsAmount;
 
         private void Awake()
         {
             activeProcesses = new();
             botsProcesses = new();
             docks = new();
+            StartCoroutine(StartUpdate());
         }
 
         public bool NewActiveProcess(GameObject gameObject, ProcessType type)
@@ -66,25 +67,26 @@ namespace FightWorlds.UI
             activeProcesses.Add(gameObject, newProcessUI);
             Bot freeBot =
             docks.First(pair =>
-            pair.Value.gameObject.active && !pair.Value.IsBusy).Value;
+            pair.Value.gameObject.activeSelf && !pair.Value.IsBusy).Value;
             freeBot.StartOperation(gameObject.transform.position);
             botsProcesses.Add(gameObject, freeBot);
             UpdateProcessCounter();
             return true;
         }
 
-        public void RemoveProcess(GameObject obj)
+        public void RemoveProcess(GameObject obj, bool defaultRemove)
         {
             if (!activeProcesses.Remove(obj, out GameObject uiObj))
                 return;
-            botsProcesses.Remove(obj);
+            botsProcesses.Remove(obj, out Bot bot);
+            if (!defaultRemove) bot.ReturnAtDock();
             Destroy(uiObj);
             UpdateProcessCounter();
         }
 
         public bool IsProcessesFulled()
         {
-            if (activeProcesses.Count < limit)
+            if (activeProcesses.Count < Limit())
                 return false;
             if (activeProcesses.Count >= placement.player.BotsAmount)
             {
@@ -94,10 +96,10 @@ namespace FightWorlds.UI
                     if (placement.player.resourceSystem.UseResources(
                     price, ResourceType.Credits))
                     {
-                        UpdateProcessCounter();
                         placement.player.AddBots();
-                        docks.First(e => !e.Value.gameObject.active)
+                        docks.First(e => !e.Value.gameObject.activeSelf)
                         .Value.gameObject.SetActive(true);
+                        UpdateProcessCounter();
                     }
                 });
             }
@@ -125,8 +127,17 @@ namespace FightWorlds.UI
             UpdateProcessCounter();
         }
 
+        private IEnumerator StartUpdate()
+        {
+            yield return null;
+            UpdateProcessCounter();
+        }
+
+        private int Limit() => docksAmount <= placement.player.BotsAmount ?
+            docksAmount : placement.player.BotsAmount;
+
         private void UpdateProcessCounter() =>
             activeProcessCounter.text =
-                $"{activeProcesses.Count}/{limit}";
+                $"{activeProcesses.Count}/{Limit()}";
     }
 }

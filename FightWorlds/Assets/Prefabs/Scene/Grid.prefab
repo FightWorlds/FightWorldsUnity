@@ -41441,6 +41441,9 @@ MonoBehaviour:
   - position: {x: -4, y: 0, z: 26}
     yRotationAngle: 0
     ID: 2
+  - position: {x: -17, y: 0, z: 7.5}
+    yRotationAngle: 0
+    ID: 9
   - position: {x: -13, y: 0, z: 27.5}
     yRotationAngle: 0
     ID: 3
@@ -41490,7 +41493,7 @@ MonoBehaviour:
     yRotationAngle: 60
     ID: 11
   - position: {x: 10, y: 0, z: -20.25}
-    yRotationAngle: 0
+    yRotationAngle: 60
     ID: 11
   - position: {x: 15, y: 0, z: -18.5}
     yRotationAngle: 0
@@ -41500,6 +41503,21 @@ MonoBehaviour:
     ID: 11
   - position: {x: 17, y: 0, z: -8.5}
     yRotationAngle: -60
+    ID: 11
+  - position: {x: -26, y: 0, z: 32.25}
+    yRotationAngle: -60
+    ID: 11
+  - position: {x: -30, y: 0, z: 35.5}
+    yRotationAngle: -120
+    ID: 11
+  - position: {x: -35, y: 0, z: 33.75}
+    yRotationAngle: -120
+    ID: 11
+  - position: {x: -40, y: 0, z: 32}
+    yRotationAngle: 180
+    ID: 11
+  - position: {x: -41, y: 0, z: 27}
+    yRotationAngle: 120
     ID: 11
   radius: 7
   heightOffset: {x: 0, y: 1.6, z: 0}

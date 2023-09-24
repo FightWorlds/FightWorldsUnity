@@ -20,13 +20,14 @@ namespace FightWorlds.Placement
         public BuildingData BuildingData;
         public BuildingState State;
         public int BuildingLvl { get; private set; }
+        public bool IsProducing { get; private set; }
+        public BuildingType BuildingType { get { return buildingType; } }
         public Action<Building> OnBuilded;
 
         private const int buildingMaxLvl = 3;
         private const int instBuildCost = 1;
 
         private List<Material> defaultMaterials;
-        private bool isProducing;
         private Collider modelCollider;
 
         protected override List<Collider> Detections() =>
@@ -41,9 +42,11 @@ namespace FightWorlds.Placement
             defaultMaterials = new();
             foreach (Transform child in transform.GetChild(0))
             {
-                var meshRender = child.GetComponent<MeshRenderer>();
-                defaultMaterials.Add(meshRender.material);
-                meshRender.material = unActive;
+                if (child.TryGetComponent(out Renderer renderer))
+                {
+                    defaultMaterials.Add(renderer.material);
+                    renderer.material = unActive;
+                }
             }
             modelCollider = GetComponent<Collider>();
             modelCollider.isTrigger = true;
@@ -51,7 +54,9 @@ namespace FightWorlds.Placement
 
         private IEnumerator Build()
         {
+            IsProducing = true;
             yield return new WaitForSeconds(buildingTime);
+            IsProducing = false;
             PermanentBuild();
         }
 
@@ -60,14 +65,16 @@ namespace FightWorlds.Placement
             int counter = 0;
             UpdateStats(placement.GetTurretsFiringStats());
             OnBuilded(this);
-            placement.ui.RemoveProcess(gameObject);
+            placement.ui.RemoveProcess(gameObject, true);
             placement.ResetSelectedBuilding();
             modelCollider.isTrigger = false;
             foreach (Transform child in transform.GetChild(0))
             {
-                child.GetComponent<MeshRenderer>().material =
-                defaultMaterials[counter];
-                counter++;
+                if (child.TryGetComponent(out Renderer renderer))
+                {
+                    renderer.material = defaultMaterials[counter];
+                    counter++;
+                }
             }
             State = BuildingState.Default;
             if (buildingType == BuildingType.Defense)
@@ -82,7 +89,7 @@ namespace FightWorlds.Placement
         {
             //  TODO: upgrade to FSM
             if (State == BuildingState.Building) return;
-            if (!isProducing &&
+            if (!IsProducing &&
                 (buildingType == BuildingType.Mine ||
                 buildingType == BuildingType.Recycle))
                 StartCoroutine(ProduceResources());
@@ -126,7 +133,7 @@ namespace FightWorlds.Placement
             boom.transform.position = currentPosition;
             placement.DestroyObj(currentPosition, this);
             placement.ui.RemoveFromUnderAttack(this);
-            placement.ui.RemoveProcess(gameObject);
+            placement.ui.RemoveProcess(gameObject, false);
             if (buildingType == BuildingType.Storage)
                 placement.player.DestroyStorage(resourceType);
             else if (buildingType == BuildingType.Dock)
@@ -155,10 +162,10 @@ namespace FightWorlds.Placement
 
         private IEnumerator ProduceResources()
         {
-            isProducing = true;
+            IsProducing = true;
             yield return new WaitForSeconds(produceTime);
             Process();
-            isProducing = false;
+            IsProducing = false;
         }
 
         public bool TryBuild(bool instant)
@@ -207,16 +214,16 @@ namespace FightWorlds.Placement
 
         private IEnumerator Repair()
         {
-            isProducing = true;
+            IsProducing = true;
             yield return new WaitForSeconds(buildingTime);
             //new WaitForSeconds((float)currentHp / startHp * buildingTime);
-            isProducing = false;
+            IsProducing = false;
             PermanentRepair();
         }
 
         private void PermanentRepair()
         {
-            placement.ui.RemoveProcess(gameObject);
+            placement.ui.RemoveProcess(gameObject, true);
             placement.ui.RemoveFromUnderAttack(this);
             State = BuildingState.Default;
             placement.UpdateBaseHp(currentHp - startHp);
@@ -254,15 +261,15 @@ namespace FightWorlds.Placement
         private IEnumerator Upgrade()
         {
             placement.ui.NewActiveProcess(gameObject, ProcessType.Upgrading);
-            isProducing = true;
+            IsProducing = true;
             yield return new WaitForSeconds(buildingTime);
-            isProducing = false;
+            IsProducing = false;
             PermanentUpgrade();
         }
 
         private void PermanentUpgrade()
         {
-            placement.ui.RemoveProcess(gameObject);
+            placement.ui.RemoveProcess(gameObject, true);
             State = BuildingState.Default;
             // TODO: add stats changing?
             BuildingLvl++;

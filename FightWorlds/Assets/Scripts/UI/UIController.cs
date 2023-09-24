@@ -32,8 +32,8 @@ namespace FightWorlds.UI
         public bool NewActiveProcess(GameObject obj, ProcessType type) =>
         activeProcesses.NewActiveProcess(obj, type);
 
-        public void RemoveProcess(GameObject obj) =>
-            activeProcesses.RemoveProcess(obj);
+        public void RemoveProcess(GameObject obj, bool defaultRemove) =>
+            activeProcesses.RemoveProcess(obj, defaultRemove);
 
         public void AddRepairBot(Building bot) =>
             activeProcesses.AddRepairBot(bot);

@@ -128,12 +128,16 @@ namespace FightWorlds.Placement
             initializer = GetComponent<GridInitializer>();
             grid = initializer.GenerateHex();
             buildingsList = new Dictionary<int, List<Building>>() {
-            { 0, new () }, { 1, new() }, { 2, new() }, { 3, new() },
+            { 1, new() }, { 2, new() }, { 3, new() },
             { 4, new() }, { 5, new() },{ 6, new() }, { 7, new() },
             { 8, new() }, { 9, new() }, { 10, new() }, {11, new()} };
             filledHexagons = new();
             foreach (Vector3 coords in startPlatforms)
-                FillHex(coords);
+            {
+                grid.GetXZ(coords, out int x, out int z);
+                GridObject obj = grid.GetGridObject(x, z);
+                FillHex(obj);
+            }
             foreach (StartBuilding building in startBuildings)
             {
                 id = building.ID;
@@ -185,8 +189,8 @@ namespace FightWorlds.Placement
                 var building = obj.Hex.GetChild(1).GetComponent<Building>();
                 ui.ShowBuildingMenu(building);
                 selectedBuilding =
-                (building.State == BuildingState.Building) ?
-                building : null;
+                (building.State == BuildingState.Building &&
+                !building.IsProducing) ? building : null;
 
             }
             else
@@ -267,16 +271,7 @@ namespace FightWorlds.Placement
         {
             obj.FillHex();
             filledHexagons.Add(obj);
-            if (id == 0)
-                buildingsList[id].Add(obj.Hex.GetComponent<Building>());
             StopPlacement();
-        }
-
-        private void FillHex(Vector3 pos)
-        {
-            grid.GetXZ(pos, out int x, out int z);
-            GridObject obj = grid.GetGridObject(x, z);
-            FillHex(obj);
         }
 
         private bool HaveFilledNeighbour(Vector3 pos)
@@ -290,11 +285,14 @@ namespace FightWorlds.Placement
         // NUMBERS TAKEN FROM <<GDD: Damage model>>
         public int GetTurretsLimit() =>
             6 + Mathf.FloorToInt(player.Level() / 6);
+
         private int GetWallsLimit() =>
             24 + GetTurretsLimit() * 5;
+
         private bool LessThanLimit(BuildingData data)
         {
-            int count = buildingsList[id].Count;
+            int count = id == 0 ?
+            filledHexagons.Count : buildingsList[id].Count;
             if (id == 8) // turret
                 return count < GetTurretsLimit();
             else if (id == 11) // wall

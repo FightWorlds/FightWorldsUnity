@@ -7,7 +7,7 @@ namespace FightWorlds.Controllers
 {
     public static class SaveManager
     {
-        private const string saveFile = "/info.dat";
+        private const string saveFile = "info.dat";
         private const int startCredits = 10;
         private const int startLvl = 1;
         private const int startXp = 0;
@@ -19,7 +19,7 @@ namespace FightWorlds.Controllers
             string savePath =
                 Path.Combine(Application.persistentDataPath, saveFile);
             BinaryFormatter formatter = new();
-            using (FileStream stream = new(savePath, FileMode.Create))
+            using (FileStream stream = new(savePath, FileMode.OpenOrCreate))
                 formatter.Serialize(stream, player);
         }
 
@@ -30,20 +30,20 @@ namespace FightWorlds.Controllers
             if (!File.Exists(savePath))
                 return Reset();
             BinaryFormatter formatter = new();
-            using (FileStream stream = new(savePath, FileMode.Open))
+            try
             {
-                try
+                using (FileStream stream = new(savePath, FileMode.Open))
                 {
                     PlayerInfo info =
                     formatter.Deserialize(stream) as PlayerInfo;
                     return info;
                 }
-                catch (Exception e)
-                {
-                    Debug.Log(e.Message);
-                    File.Delete(savePath);
-                    return Reset();
-                }
+            }
+            catch (Exception e)
+            {
+                Debug.Log(e.Message);
+                File.Delete(savePath);
+                return Reset();
             }
         }
 
