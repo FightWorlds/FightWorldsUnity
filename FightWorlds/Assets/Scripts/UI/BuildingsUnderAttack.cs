@@ -34,9 +34,10 @@ namespace FightWorlds.UI
             newDamagedObj.GetComponent<Button>().onClick.AddListener(() =>
             {
                 Vector3 buildingPos = building.transform.position;
-                Vector3 cameraPos = new Vector3(buildingPos.x,
+                Vector3 cameraPos =
+                    new Vector3(buildingPos.x + cameraController.XOffset,
                     cameraController.yOffset,
-                    buildingPos.z + cameraController.zOffset);
+                    buildingPos.z + cameraController.ZOffset);
                 cameraController.MoveToNewPosition(cameraPos, true);
                 buildingMenu.ShowBuildingMenu(building);
             });

@@ -20,6 +20,7 @@ namespace FightWorlds.Placement
         [SerializeField] private BuildingsDatabase database;
         [SerializeField] private SoundFeedback soundFeedback;
         [SerializeField] private GameObject shuttlePrefab;
+        [SerializeField] private GameObject underHexPrefab;
         [SerializeField] private float saveDelay;
         //public List<GameObject> objects;
         //public List<Vector3> pos;
@@ -186,8 +187,10 @@ namespace FightWorlds.Placement
             {
                 if (pos.y != heightOffset.y)
                     return;
-                var building = obj.Hex.GetChild(1).GetComponent<Building>();
-                ui.ShowBuildingMenu(building);
+                Building building = null;
+                foreach (Transform child in obj.Hex)
+                    if (child.TryGetComponent(out building))
+                        ui.ShowBuildingMenu(building);
                 selectedBuilding =
                 (building.State == BuildingState.Building &&
                 !building.IsProducing) ? building : null;
@@ -270,6 +273,7 @@ namespace FightWorlds.Placement
         private void FillHex(GridObject obj)
         {
             obj.FillHex();
+            Instantiate(underHexPrefab, obj.Hex.position, Quaternion.identity, obj.Hex);
             filledHexagons.Add(obj);
             StopPlacement();
         }

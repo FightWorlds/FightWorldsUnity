@@ -3890,6 +3890,37 @@ RectTransform:
     type: 3}
   m_PrefabInstance: {fileID: 474070348}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &497992093
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 497992094}
+  m_Layer: 2
+  m_Name: Middle Of Screen
+  m_TagString: Untagged
+  m_Icon: {fileID: 6519382022992737161, guid: 0000000000000000d000000000000000, type: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &497992094
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 497992093}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 32}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 963194228}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &505062919
 GameObject:
   m_ObjectHideFlags: 0
@@ -5789,6 +5820,79 @@ RectTransform:
     type: 3}
   m_PrefabInstance: {fileID: 857139120}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &861147134
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 861147136}
+  - component: {fileID: 861147135}
+  m_Layer: 0
+  m_Name: Fog Of War
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &861147135
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 861147134}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b5de54c084f472845b61ee9a97cb8a48, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  fogRevealers:
+  - revealerTransform: {fileID: 497992094}
+    sightRange: 15
+    updateOnlyOnMove: 1
+    lastSeenAt: {x: 0, y: 0}
+  levelMidPoint: {fileID: 1955108890}
+  FogRefreshRate: 10
+  fogPlaneHeight: 1
+  fogPlaneMaterial: {fileID: 2100000, guid: 36b93ac6fcf129c449491654e397fe4a, type: 2}
+  fogColor: {r: 0.09706301, g: 0.13815415, b: 0.1792453, a: 1}
+  fogPlaneAlpha: 1
+  fogLerpSpeed: 2.5
+  fogPlaneTextureLerpTarget: {fileID: 0}
+  fogPlaneTextureLerpBuffer: {fileID: 0}
+  LevelDataToLoad: {fileID: 0}
+  saveDataOnScan: 0
+  levelNameToSave: MainLevel
+  levelDimensionX: 50
+  levelDimensionY: 50
+  unitScale: 4
+  scanSpacingPerUnit: 0.25
+  rayStartHeight: 5
+  rayMaxDistance: 10
+  obstacleLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  ignoreTriggers: 1
+  drawGizmos: 0
+  LogOutOfRange: 0
+--- !u!4 &861147136
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 861147134}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &923767503
 GameObject:
   m_ObjectHideFlags: 0
@@ -6288,6 +6392,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 497992094}
   - {fileID: 1942145623}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 70, y: 30, z: 0}
@@ -7858,6 +7963,12 @@ PrefabInstance:
       propertyPath: soundFeedback
       value: 
       objectReference: {fileID: 963194231}
+    - target: {fileID: 2598988456244634621, guid: 9e492a5b254ae2c43ad0eaf970bb1851,
+        type: 3}
+      propertyPath: underHexPrefab
+      value: 
+      objectReference: {fileID: 4196736628084727594, guid: 3dd14643bac14dd479b5d96d17f6da86,
+        type: 3}
     - target: {fileID: 7959137160156981118, guid: 9e492a5b254ae2c43ad0eaf970bb1851,
         type: 3}
       propertyPath: m_Name
@@ -10878,7 +10989,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 4
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1942145623
 Transform:
   m_ObjectHideFlags: 0
@@ -15964,7 +16075,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 150, y: 1, z: 150}
+  m_Size: {x: 200, y: 1, z: 200}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1001 &1958349844
 PrefabInstance:
@@ -17902,7 +18013,7 @@ GameObject:
   - component: {fileID: 3891043012466077532}
   - component: {fileID: 166660211585671417}
   - component: {fileID: 2717060210896245811}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Landscape
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -19515,3 +19626,4 @@ SceneRoots:
   - {fileID: 178552066}
   - {fileID: 1531178785}
   - {fileID: 2010090997}
+  - {fileID: 861147136}

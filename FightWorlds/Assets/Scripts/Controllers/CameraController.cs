@@ -8,7 +8,11 @@ namespace FightWorlds.Controllers
         [SerializeField] private int boundary;
         [SerializeField] private float dragScaler;
 
-        public float zOffset { get; private set; }
+        private const int xOffset = -7;
+        private const int zOffset = -12;
+
+        public float XOffset { get; private set; }
+        public float ZOffset { get; private set; }
         public float yOffset { get; private set; }
 
         private Vector3 newPosition;
@@ -23,8 +27,9 @@ namespace FightWorlds.Controllers
         {
             camera = gameObject.GetComponent<Camera>();
             newPosition = transform.position;
-            zOffset = transform.position.z;
+            ZOffset = zOffset;
             yOffset = transform.position.y;
+            XOffset = xOffset;
         }
 
         public void HandlePress(Ray mouseRay)
@@ -43,12 +48,14 @@ namespace FightWorlds.Controllers
         public void MoveToNewPosition(Vector3 pos, bool instant)
         {
             newPosition = pos;
-            newPosition.x = Mathf.Clamp(newPosition.x, -boundary, boundary);
-            newPosition.z = Mathf.Clamp(newPosition.z, -boundary,
-                boundary + zOffset);
+            newPosition.x =
+                Mathf.Clamp(newPosition.x, -boundary, boundary + XOffset);
+            newPosition.z =
+                Mathf.Clamp(newPosition.z, -boundary, boundary + ZOffset);
             transform.position = instant ? newPosition :
             Vector3.Lerp(transform.position, newPosition, Time.deltaTime);
         }
+
         private Vector3 CastOnPlane(Vector3 defaultVector, Ray mouseRay)
         {
             Plane plane = new Plane(Vector3.up, Vector3.zero);
