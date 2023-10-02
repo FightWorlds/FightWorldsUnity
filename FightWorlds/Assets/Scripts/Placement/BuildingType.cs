@@ -1,8 +1,12 @@
-public enum BuildingType
+namespace FightWorlds.Placement
 {
-    Default,
-    Mine,
-    Recycle,
-    Storage,
-    Defense
+    public enum BuildingType
+    {
+        Default,
+        Mine,
+        Recycle,
+        Storage,
+        Defense,
+        Dock
+    }
 }

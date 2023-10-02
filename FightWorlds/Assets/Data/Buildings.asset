@@ -18,7 +18,7 @@ MonoBehaviour:
     <Cost>k__BackingField: 50
     <Prefab>k__BackingField: {fileID: 5567518194027125919, guid: 895c7538ac211924086755c1c1a34c79,
       type: 3}
-    <MaxBuildingsAdd>k__BackingField: 0
+    <MaxBuildingsAdd>k__BackingField: 130
     <MaxBuildingsPerLevel>k__BackingField: 10
   - <Name>k__BackingField: Control Center
     <ID>k__BackingField: 1
@@ -29,70 +29,70 @@ MonoBehaviour:
     <MaxBuildingsPerLevel>k__BackingField: 0
   - <Name>k__BackingField: Mine
     <ID>k__BackingField: 2
-    <Cost>k__BackingField: 200
+    <Cost>k__BackingField: 1200
     <Prefab>k__BackingField: {fileID: 1099537053829430302, guid: 2cd8a70efa6362b4c8c802ee4b2b427c,
       type: 3}
     <MaxBuildingsAdd>k__BackingField: 1
     <MaxBuildingsPerLevel>k__BackingField: 1
   - <Name>k__BackingField: Drill
     <ID>k__BackingField: 3
-    <Cost>k__BackingField: 200
+    <Cost>k__BackingField: 1200
     <Prefab>k__BackingField: {fileID: 7975108708184227411, guid: 8542f6efedb0d8e4492a6d6ddcb72172,
       type: 3}
     <MaxBuildingsAdd>k__BackingField: 1
     <MaxBuildingsPerLevel>k__BackingField: 1
-  - <Name>k__BackingField: Accumulator
+  - <Name>k__BackingField: Accum
     <ID>k__BackingField: 4
-    <Cost>k__BackingField: 200
+    <Cost>k__BackingField: 1200
     <Prefab>k__BackingField: {fileID: 6146262199646247111, guid: 579a19a224b39e346bd7016ab91147f9,
       type: 3}
     <MaxBuildingsAdd>k__BackingField: 1
     <MaxBuildingsPerLevel>k__BackingField: 1
-  - <Name>k__BackingField: Storage
+  - <Name>k__BackingField: Storage Depot
     <ID>k__BackingField: 5
-    <Cost>k__BackingField: 200
+    <Cost>k__BackingField: 1200
     <Prefab>k__BackingField: {fileID: 654559432848585271, guid: 6df1904e08cba394bb8a8223e96327b4,
       type: 3}
     <MaxBuildingsAdd>k__BackingField: 1
     <MaxBuildingsPerLevel>k__BackingField: 1
   - <Name>k__BackingField: Settler
     <ID>k__BackingField: 6
-    <Cost>k__BackingField: 200
+    <Cost>k__BackingField: 600
     <Prefab>k__BackingField: {fileID: 4949330618949312348, guid: e084a7e8045d4d442b7ab13dff2cbf12,
       type: 3}
     <MaxBuildingsAdd>k__BackingField: 1
     <MaxBuildingsPerLevel>k__BackingField: 1
   - <Name>k__BackingField: Generator
     <ID>k__BackingField: 7
-    <Cost>k__BackingField: 200
+    <Cost>k__BackingField: 600
     <Prefab>k__BackingField: {fileID: 5542799763865697529, guid: e33cd7bbc2449f2428025c4c85230850,
       type: 3}
     <MaxBuildingsAdd>k__BackingField: 1
     <MaxBuildingsPerLevel>k__BackingField: 1
   - <Name>k__BackingField: Turret
     <ID>k__BackingField: 8
-    <Cost>k__BackingField: 100
+    <Cost>k__BackingField: 600
     <Prefab>k__BackingField: {fileID: 2202505061728561081, guid: f9b15106e4731bd428ba14c861127864,
       type: 3}
-    <MaxBuildingsAdd>k__BackingField: 1
-    <MaxBuildingsPerLevel>k__BackingField: 5
-  - <Name>k__BackingField: Repairdock
+    <MaxBuildingsAdd>k__BackingField: 6
+    <MaxBuildingsPerLevel>k__BackingField: 1
+  - <Name>k__BackingField: Repair Dock
     <ID>k__BackingField: 9
-    <Cost>k__BackingField: 200
+    <Cost>k__BackingField: 1000
     <Prefab>k__BackingField: {fileID: 4216818199535243520, guid: a0576426a77de65488fdfbab44815296,
       type: 3}
-    <MaxBuildingsAdd>k__BackingField: 1
+    <MaxBuildingsAdd>k__BackingField: 4
     <MaxBuildingsPerLevel>k__BackingField: 0
   - <Name>k__BackingField: Dockyard
     <ID>k__BackingField: 10
-    <Cost>k__BackingField: 200
+    <Cost>k__BackingField: 1000
     <Prefab>k__BackingField: {fileID: 7630952530385479850, guid: a3f60f7b218a7b64486d3567615eb14a,
       type: 3}
     <MaxBuildingsAdd>k__BackingField: 1
     <MaxBuildingsPerLevel>k__BackingField: 0
   - <Name>k__BackingField: Wall
     <ID>k__BackingField: 11
-    <Cost>k__BackingField: 100
+    <Cost>k__BackingField: 600
     <Prefab>k__BackingField: {fileID: 8596161468681693823, guid: 97884c403c3f70441a81fdd060d8f3e9,
       type: 3}
     <MaxBuildingsAdd>k__BackingField: 50

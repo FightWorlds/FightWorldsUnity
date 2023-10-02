@@ -1,10 +1,12 @@
 using System;
 using UnityEngine;
-
-[Serializable]
-public class StartBuilding
+namespace FightWorlds.Placement
 {
-    public Vector3 position;
-    public int yRotationAngle;
-    public int ID;
+    [Serializable]
+    public class StartBuilding
+    {
+        public Vector3 position;
+        public int yRotationAngle;
+        public int ID;
+    }
 }

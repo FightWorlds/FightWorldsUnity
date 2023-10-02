@@ -1,6 +1,9 @@
-public enum BuildingState
+namespace FightWorlds.Placement
 {
-    Default,
-    Building,
-    Damaged
+    public enum BuildingState
+    {
+        Default,
+        Building,
+        Damaged
+    }
 }

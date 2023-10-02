@@ -1,10 +1,13 @@
-public enum ResourceType
+namespace FightWorlds.Controllers
 {
-    None,
-    Ore,
-    Gas,
-    Metal,
-    Energy,
-    Artifacts,
-    Credits
+    public enum ResourceType
+    {
+        None,
+        Ore,
+        Gas,
+        Metal,
+        Energy,
+        Artifacts,
+        Credits
+    }
 }
