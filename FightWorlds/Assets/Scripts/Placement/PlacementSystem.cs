@@ -30,7 +30,7 @@ namespace FightWorlds.Placement
         public EvacuationSystem evacuation;
         public Func<bool, GameObject> GetBoomExplosion;
 
-        private const int shuttleOffset = 16;
+        private const int shuttleOffset = 13;
         private const float evacuateMultiplier = 0.9f;
 
         private int baseHp, baseMaxHp = 0;
@@ -273,7 +273,9 @@ namespace FightWorlds.Placement
         private void FillHex(GridObject obj)
         {
             obj.FillHex();
-            Instantiate(underHexPrefab, obj.Hex.position, Quaternion.identity, obj.Hex);
+            Instantiate(underHexPrefab, obj.Hex.position +
+            Vector3.up * UnityEngine.Random.Range(-3, 3) / 10f,
+            Quaternion.identity, obj.Hex);
             filledHexagons.Add(obj);
             StopPlacement();
         }

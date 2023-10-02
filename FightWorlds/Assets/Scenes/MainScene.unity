@@ -7960,6 +7960,12 @@ PrefabInstance:
       objectReference: {fileID: 1531178786}
     - target: {fileID: 2598988456244634621, guid: 9e492a5b254ae2c43ad0eaf970bb1851,
         type: 3}
+      propertyPath: shuttlePrefab
+      value: 
+      objectReference: {fileID: 1941092931367252394, guid: 3f538d876c68c06478eda8460178ec63,
+        type: 3}
+    - target: {fileID: 2598988456244634621, guid: 9e492a5b254ae2c43ad0eaf970bb1851,
+        type: 3}
       propertyPath: soundFeedback
       value: 
       objectReference: {fileID: 963194231}
@@ -17242,7 +17248,7 @@ Transform:
   m_GameObject: {fileID: 1356473609046587387}
   serializedVersion: 2
   m_LocalRotation: {x: 0.013883986, y: 0.62568957, z: 0.012130451, w: 0.77985436}
-  m_LocalPosition: {x: -15.1, y: -1.22, z: 9.800003}
+  m_LocalPosition: {x: -15.1, y: -1.16, z: 9.800003}
   m_LocalScale: {x: 0.30812576, y: 0.3081257, z: 0.3081259}
   m_ConstrainProportionsScale: 0
   m_Children: []
