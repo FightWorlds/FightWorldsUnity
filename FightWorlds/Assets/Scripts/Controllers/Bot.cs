@@ -130,7 +130,7 @@ namespace FightWorlds.Controllers
         private void OnTriggerEnter(Collider other)
         {
             if (!other.TryGetComponent(out Building building) ||
-                building.BuildingType != BuildingType.Dock)
+                building.BuildingType != BuildingType.RepairDock)
                 for (int i = 0; i < parts.Count; i++)
                     parts.ElementAt(i).Key.GetComponent<Renderer>()
                     .material = unActive;

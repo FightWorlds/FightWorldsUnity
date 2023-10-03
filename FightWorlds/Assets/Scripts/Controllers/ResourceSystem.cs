@@ -27,6 +27,15 @@ namespace FightWorlds.Controllers
         };
         }
 
+        public bool CanUseResources(KeyValuePair<ResourceType, int>[] resources)
+        {
+            foreach (var resource in resources)
+                if (resource.Value > Resources[resource.Key])
+                    return false;
+
+            return true;
+        }
+
         public bool UseResources(int amount, ResourceType type)
         {
             if (amount > Resources[type])

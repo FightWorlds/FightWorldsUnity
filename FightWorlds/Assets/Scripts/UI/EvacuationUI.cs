@@ -12,7 +12,6 @@ namespace FightWorlds.UI
         [SerializeField] private Text timerText;
         [SerializeField] private Button restartButton;
 
-
         public void AddListenerOnRestart(UnityAction act) =>
             restartButton.onClick.AddListener(act);
 
@@ -41,6 +40,5 @@ namespace FightWorlds.UI
         }
 
         public void UpdateBaseHpBar(float value) => baseHpSlider.value = value;
-
     }
 }

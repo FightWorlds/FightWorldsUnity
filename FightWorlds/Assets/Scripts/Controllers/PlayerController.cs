@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using FightWorlds.UI;
+using System.Collections.Generic;
 
 namespace FightWorlds.Controllers
 {
@@ -12,6 +13,7 @@ namespace FightWorlds.Controllers
         private const int defaultStorageSize = 2000;
         private const float vip = 1f;
         private LevelSystem levelSystem;
+
         public ResourceSystem resourceSystem { get; private set; }
         public int BotsAmount { get; private set; }
         public float VipMultiplier { get; private set; }
@@ -51,6 +53,8 @@ namespace FightWorlds.Controllers
             ResourceType rawType, ResourceType type) =>
             resourceSystem.IsPossibleToConvert(amount, rawType, type);
 
+        public bool CanUseResources(KeyValuePair<ResourceType, int>[] resources)
+        => resourceSystem.CanUseResources(resources);
 
         public bool UseResources(int amount, ResourceType type,
         bool needPopUp, Action callback = null)

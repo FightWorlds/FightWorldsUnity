@@ -13,6 +13,7 @@ namespace FightWorlds.UI
         [SerializeField] private BuildingsUnderAttack buildingsUnderAttack;
         [SerializeField] private EvacuationUI evacuationUI;
         [SerializeField] private BuildingMenuUI buildingMenu;
+        [SerializeField] private UnitsMenu unitsMenu;
         [SerializeField] private PlayerManagementUI playerManagement;
 
         private const int cloneLen = 7;
@@ -106,6 +107,20 @@ namespace FightWorlds.UI
 
         public void FinishGamePopUp(int artifacts) =>
             playerManagement.FinishGamePopUp(artifacts);
+        #endregion
+
+        #region UnitsMenu
+        public void InitDockyard(Building building) =>
+            unitsMenu.InitDockyard(building);
+
+        public void RemoveDockyard() =>
+            unitsMenu.RemoveDockyard();
+
+        public void AddUnit() =>
+            unitsMenu.AddUnit();
+
+        public bool IsProducingUnits() =>
+            unitsMenu.IsProducing;
         #endregion
 
         public string CutClone(string name) =>

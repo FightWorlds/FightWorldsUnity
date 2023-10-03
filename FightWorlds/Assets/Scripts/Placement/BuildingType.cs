@@ -7,6 +7,7 @@ namespace FightWorlds.Placement
         Recycle,
         Storage,
         Defense,
-        Dock
+        RepairDock,
+        Dockyard
     }
 }

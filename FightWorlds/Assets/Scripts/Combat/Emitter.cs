@@ -26,7 +26,7 @@ namespace FightWorlds.Combat
         private const int maxChance = 100;
         private float timePassed;
         private float lastSpawnTime; // TODO: maybe switch to coroutine?
-        private bool isWaveStopped;
+        private int spawnedCounter;
         private Vector3 putAwayPosition = new Vector3(100, 100, 100);
         private System.Random random;
         private FiringStats firingStats;
@@ -69,6 +69,7 @@ namespace FightWorlds.Combat
 
         private void OnGetNpc(GameObject npc)
         {
+            spawnedCounter++;
             npc.transform.position = GetRandomSpawnPos();
             npc.SetActive(true);
             npc.GetComponent<CharacterController>().enabled = true;
@@ -150,23 +151,16 @@ namespace FightWorlds.Combat
 
         private void SpawnNpc()
         {
-            if (isWaveStopped)
+            if (spawnedCounter >= maxSpawnSize)
             {
                 if (poolOfNpc.CountActive < bottomSpawnRate)
-                    isWaveStopped = false;
-                else
-                    return;
+                    spawnedCounter = 0;
             }
             else
                 for (int i = 0; i < oneWaveNpcCount; i++)
                 {
                     if (poolOfNpc.CountActive < maxSpawnSize)
                         poolOfNpc.Get();
-                    else
-                    {
-                        isWaveStopped = true;
-                        return;
-                    }
                 }
             lastSpawnTime = timePassed;
         }

@@ -368,9 +368,9 @@ MonoBehaviour:
   fire: {fileID: 0}
   hitParticle: {fileID: 8877856678493017172}
   placement: {fileID: 0}
-  buildingType: 0
+  buildingType: 6
   resourceType: 0
-  produceTime: 0
+  produceTime: 20.05
   buildingTime: 10
   resourcesPerOperation: 0
   unActive: {fileID: 2100000, guid: b9bbabadfb1ce8a40bb0131aa48448b8, type: 2}
