@@ -41523,7 +41523,9 @@ MonoBehaviour:
   heightOffset: {x: 0, y: 1.6, z: 0}
   database: {fileID: 11400000, guid: d9d7e8764ee173041898c38618516eb2, type: 2}
   soundFeedback: {fileID: 0}
-  shuttlePrefab: {fileID: 3163649163991334373, guid: 3b671c2fb8cb04144b0fc7eb9a45fae4,
+  shuttlePrefab: {fileID: 1941092931367252394, guid: 3f538d876c68c06478eda8460178ec63,
+    type: 3}
+  underHexPrefab: {fileID: 4196736628084727594, guid: 3dd14643bac14dd479b5d96d17f6da86,
     type: 3}
   saveDelay: 10
   ui: {fileID: 0}

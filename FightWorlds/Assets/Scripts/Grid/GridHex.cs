@@ -18,7 +18,7 @@ namespace FightWorlds.Grid
         private int height;
         private float cellSize;
         private Vector3 originPosition;
-        private TGridObject[,] gridArray;
+        public TGridObject[,] gridArray { get; private set; }
 
         public GridHex(int width, int height,
             float cellSize, Vector3 originPosition,
@@ -48,24 +48,17 @@ namespace FightWorlds.Grid
         {
             return
                 new Vector3(x, 0, 0) * cellSize +
-                new Vector3(0, 0, x) * 1.75f + // flower
+                new Vector3(0, 0, x) * 1.7f + // flower
                 new Vector3(z, 0, 0) + // flower
                 new Vector3(0, 0, z) * cellSize +
                 originPosition;
-            //return
-            //new Vector3(x, 0, 0) * cellSize +
-            //new Vector3(0, 0, z) * cellSize * HEX_VERTICAL_OFFSET_MULTIPLIER +
-            //((Mathf.Abs(z) % 2) == 1 ? new Vector3(1, 0, 0) *
-            //cellSize * .5f : Vector3.zero) +
-            //originPosition;
-
         }
 
         public void GetXZ(Vector3 worldPosition, out int x, out int z)
         {
             Vector3 offset = worldPosition - originPosition;
-            x = Mathf.RoundToInt((offset.x * 20 - offset.z * 4) / 93); // formula
-            z = Mathf.RoundToInt((offset.z * 20 - offset.x * 7) / 93);
+            x = Mathf.RoundToInt((offset.x * 50 - offset.z * 10) / 233); // formula
+            z = Mathf.RoundToInt((offset.z * 50 - offset.x * 17) / 233);
         }
 
         public void SetGridObject(int x, int z, TGridObject value)

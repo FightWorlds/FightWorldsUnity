@@ -20,7 +20,7 @@ namespace FightWorlds.Placement
         [SerializeField] private BuildingsDatabase database;
         [SerializeField] private SoundFeedback soundFeedback;
         [SerializeField] private GameObject shuttlePrefab;
-        [SerializeField] private GameObject underHexPrefab;
+        [SerializeField] private Material hexMaterial;
         [SerializeField] private float saveDelay;
         //public List<GameObject> objects;
         //public List<Vector3> pos;
@@ -30,6 +30,8 @@ namespace FightWorlds.Placement
         public EvacuationSystem evacuation;
         public Func<bool, GameObject> GetBoomExplosion;
 
+        private const int randomDist = 10;
+        private const int rotationAngle = 60;
         private const int shuttleOffset = 13;
         private const float evacuateMultiplier = 0.9f;
 
@@ -273,9 +275,9 @@ namespace FightWorlds.Placement
         private void FillHex(GridObject obj)
         {
             obj.FillHex();
-            Instantiate(underHexPrefab, obj.Hex.position +
-            Vector3.up * UnityEngine.Random.Range(-3, 3) / 10f,
-            Quaternion.identity, obj.Hex);
+            obj.Hex.GetChild(0).GetComponent<MeshRenderer>()
+            .material = hexMaterial;
+            obj.Hex.GetChild(1).gameObject.SetActive(true);
             filledHexagons.Add(obj);
             StopPlacement();
         }

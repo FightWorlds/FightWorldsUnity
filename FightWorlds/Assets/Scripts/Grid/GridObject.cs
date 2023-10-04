@@ -9,11 +9,9 @@ namespace FightWorlds.Grid
         public bool IsFilled;
         public int X { get; private set; }
         public int Z { get; private set; }
-        private Material fillMaterial;
 
-        public GridObject(Material material, int x, int z)
+        public GridObject(int x, int z)
         {
-            this.fillMaterial = material;
             this.X = x;
             this.Z = z;
             this.IsFilled = false;
@@ -25,8 +23,6 @@ namespace FightWorlds.Grid
             if (IsFilled)
                 return;
             IsFilled = true;
-            Hex.GetChild(0).GetComponent<MeshRenderer>()
-            .material = fillMaterial;
         }
     }
 }
