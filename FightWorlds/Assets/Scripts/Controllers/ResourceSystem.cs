@@ -19,6 +19,9 @@ namespace FightWorlds.Controllers
             {ResourceType.Metal, startResourcesAmount},
             {ResourceType.Energy, startResourcesAmount},
             {ResourceType.Credits, info.Credits},
+            {ResourceType.TotalArtifacts, info.Artifacts},
+            {ResourceType.Units, info.Units},
+            {ResourceType.UnitsToHeal, info.UnitsToHeal},
         };
             StorageSpace = new Dictionary<ResourceType, int>()
         {

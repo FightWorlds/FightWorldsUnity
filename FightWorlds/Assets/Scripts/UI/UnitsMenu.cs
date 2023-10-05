@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using FightWorlds.Combat;
@@ -21,28 +22,30 @@ namespace FightWorlds.UI
         [SerializeField] private TextMeshProUGUI maxUnitsToProduce;
         [SerializeField] private TextMeshProUGUI timeLeftText;
         [SerializeField] private TextMeshProUGUI instantFinishPriceText;
+        [SerializeField] private TextMeshProUGUI totalArtifactsText;
         [SerializeField] private Slider selectUnitsAmountToProduce;
         [SerializeField] private Slider leftTimeSlider;
         [SerializeField] private List<GameObject> setupElements;
         [SerializeField] private List<GameObject> processElements;
+
         private const int defaultDamage = 2;
         private const int defaultRate = 1;
         private const int defaultStrength = 2;
-        private const int defaultLevel = 1;
         private const int maxUpgradeLevel = 3;
-        private const int MaxStoredUnits = 200;
-        private const int InstantUnitPrice = 1;
-        private const int UnitTimeInSecondsCost = 20;
-        private const int UnitEnergyCost = 200;
-        private const int UnitMetalCost = 100;
-        private const int UnitArtifactsCost = 10;
+        private const int maxStoredUnits = 200;
+        private const int instantUnitPrice = 1;
+        private const int unitUpgradeCost = 200;
+        private const int unitTimeInSecondsCost = 20;
+        private const int unitEnergyCost = 200;
+        private const int unitMetalCost = 100;
+        private const int unitArtifactsCost = 10;
+        private const int dockyardLevel = 1;
         private readonly FiringStats defaultFiringStats =
                 new(defaultDamage, defaultRate, defaultStrength);
 
         public bool IsProducing { get; private set; }
 
-        private int UnitsLevel;
-        private int StoredUnits;
+        private UnitTabs currentTab;
         private FiringStats UnitStats;
         private Building dockyard;
         private int timeCost;
@@ -51,48 +54,48 @@ namespace FightWorlds.UI
         private Color defaultColor;
         private KeyValuePair<ResourceType, int>[] usage;
 
-        private int maxUnits => MaxStoredUnits - StoredUnits;
+        private int storedUnits => (currentTab == UnitTabs.Produce) ?
+        placement.player.resourceSystem.Resources[ResourceType.Units] :
+        placement.player.resourceSystem.Resources[ResourceType.UnitsToHeal];
+        private int maxPossibleUnits => maxStoredUnits * dockyardLevel;
+        private int maxUnits => (currentTab == UnitTabs.Produce) ?
+        maxPossibleUnits - storedUnits -
+        placement.player.resourceSystem.Resources[ResourceType.UnitsToHeal] :
+        storedUnits;
+        private int upgradePrice =>
+            unitUpgradeCost * placement.player.UnitsLevel;
 
         public void InitDockyard(Building building)
         {
             UnitStats = defaultFiringStats;
-            UnitsLevel = defaultLevel;
-            StoredUnits = 0;
             dockyard = building;
             defaultColor = usageValues.color;
             UpdateMaxPossibleUnits();
             UpdateNumberOfUnits();
             UpdateStats();
+            UpdateTotalArtifacts();
             OnValueChanged(0);
-            selectUnitsAmountToProduce.onValueChanged.AddListener(OnValueChanged);
+            selectUnitsAmountToProduce
+                .onValueChanged.AddListener(OnValueChanged);
         }
 
         public void AddUnit()
         {
-            if (StoredUnits < MaxStoredUnits)
-            {
-                StoredUnits++;
-                unitsLeftToProduce--;
-                UpdateInstantPrice();
-                UpdateNumberOfUnits();
-            }
-        }
-
-        public void Upgrade()
-        {
-            if (UnitsLevel >= maxUpgradeLevel)
+            if (storedUnits > maxUnits)
                 return;
-            UnitsLevel++;
-            UnitStats += defaultFiringStats;
+            if (currentTab == UnitTabs.Heal)
+                placement.player
+                    .UseResources(1, ResourceType.UnitsToHeal, false);
+            placement.player.TakeResources(1, ResourceType.Units);
+            unitsLeftToProduce--;
+            UpdateInstantPrice();
+            UpdateNumberOfUnits();
         }
 
         public void StartProcess()
         {
-            if (!placement.player.resourceSystem.CanUseResources(usage))
-            {
-                selectUnitsAmountToProduce.value = lastPossibleValue;
-                return;
-            }
+            if (ResetPossibleProduce()) return;
+
             foreach (var resource in usage)
                 placement.player.UseResources(resource.Value, resource.Key, false);
             foreach (var ui in setupElements)
@@ -100,8 +103,9 @@ namespace FightWorlds.UI
             foreach (var ui in processElements)
                 ui.SetActive(true);
             usageValues.color = defaultColor;
-            unitsLeftToProduce = (lastPossibleValue > selectUnitsAmountToProduce.value) ? lastPossibleValue :
-            (int)selectUnitsAmountToProduce.value;
+            unitsLeftToProduce =
+                (lastPossibleValue > selectUnitsAmountToProduce.value) ?
+                lastPossibleValue : (int)selectUnitsAmountToProduce.value;
             UpdateInstantPrice();
             StartCoroutine(Process());
         }
@@ -115,13 +119,49 @@ namespace FightWorlds.UI
 
         public void InstantFinish()
         {
-            if (placement.player.UseResources(InstantUnitPrice * unitsLeftToProduce, ResourceType.Credits, false))
+            if (currentTab == UnitTabs.Upgrade)
+            {
+                if (placement.player.UnitsLevel < maxUpgradeLevel &&
+                placement.player.UseResources(upgradePrice,
+                ResourceType.Credits, false))
+                    Upgrade();
+                return;
+            }
+            if (placement.player.UseResources(instantUnitPrice *
+                unitsLeftToProduce, ResourceType.Credits, false))
             {
                 StopAllCoroutines();
-                StoredUnits += unitsLeftToProduce;
+                if (currentTab == UnitTabs.Produce)
+                    placement.player.
+                TakeResources(unitsLeftToProduce, ResourceType.Units);
+                else
+                {
+                    placement.player.TakeResources(unitsLeftToProduce,
+                        ResourceType.Units);
+                    placement.player.UseResources(unitsLeftToProduce,
+                        ResourceType.UnitsToHeal, false);
+                }
                 unitsLeftToProduce = 0;
                 FinishProcess();
             }
+        }
+
+        public void SwitchToProduceTab() => SwitchTab(UnitTabs.Produce);
+        public void SwitchToHealTab() => SwitchTab(UnitTabs.Heal);
+        public void SwitchToUpgradeTab() => SwitchTab(UnitTabs.Upgrade);
+
+        private void SwitchTab(UnitTabs tab)
+        {
+            if (IsProducing) return;
+            currentTab = tab;
+            if (tab == UnitTabs.Upgrade)
+            {
+                foreach (var ui in setupElements)
+                    ui.SetActive(false);
+                processElements[1].SetActive(true);
+                UpdateInstantPrice();
+            }
+            else FinishProcess();
         }
 
         private IEnumerator Process()
@@ -149,6 +189,8 @@ namespace FightWorlds.UI
             UpdateNumberOfUnits();
             UpdateMaxPossibleUnits();
             UpdateStats();
+            UpdateTotalArtifacts();
+            ResetPossibleProduce();
         }
 
         private void OnValueChanged(float value)
@@ -156,10 +198,16 @@ namespace FightWorlds.UI
             int val = (int)value;
             minUnitsToProduce.text = val.ToString();
             usage =
-            new KeyValuePair<ResourceType, int>[] {
-            new(ResourceType.Artifacts, UnitArtifactsCost * val),
-            new(ResourceType.Energy, UnitEnergyCost * val),
-            new(ResourceType.Metal, UnitMetalCost * val)
+                new KeyValuePair<ResourceType, int>[] {
+                new(ResourceType.TotalArtifacts,
+                (currentTab == UnitTabs.Produce) ? unitArtifactsCost * val :
+                unitArtifactsCost / 2 * val),
+                new(ResourceType.Energy,
+                (currentTab == UnitTabs.Produce) ? unitEnergyCost * val :
+                unitEnergyCost/2 * val ),
+                new(ResourceType.Metal,
+                (currentTab == UnitTabs.Produce) ? unitMetalCost * val :
+                unitMetalCost / 2 * val)
             };
             bool possible = placement.player.resourceSystem.CanUseResources(usage);
             if (possible)
@@ -170,10 +218,17 @@ namespace FightWorlds.UI
             else
                 usageValues.color = Color.red;
 
-            timeCost = UnitTimeInSecondsCost * val;
+            timeCost = unitTimeInSecondsCost * val;
             string timeCostString = FormatTime(timeCost);
             usageValues.text =
                 $"{usage[0].Value}\n{usage[1].Value}\n{usage[2].Value}\n{timeCostString}";
+        }
+
+        private void Upgrade()
+        {
+            placement.player.UnitsNewLevel();
+            UnitStats += defaultFiringStats;
+            UpdateStats();
         }
 
         private void UpdateMaxPossibleUnits()
@@ -183,7 +238,7 @@ namespace FightWorlds.UI
         }
 
         private void UpdateNumberOfUnits() =>
-            numberOfUnits.text = StoredUnits.ToString();
+            numberOfUnits.text = storedUnits.ToString();
 
         private void UpdateStats()
         {
@@ -192,7 +247,7 @@ namespace FightWorlds.UI
             nextUnitStats.text =
             $"+{defaultFiringStats.Damage}\n+{defaultFiringStats.Rate}\n+{defaultFiringStats.Strength}";
             string type = "TYPE ";
-            switch (UnitsLevel)
+            switch (placement.player.UnitsLevel)
             {
                 case 1:
                     type += "II";
@@ -207,9 +262,14 @@ namespace FightWorlds.UI
             nextUnitType.text = type;
         }
 
+        private void UpdateTotalArtifacts() =>
+            totalArtifactsText.text =
+            "ARTIFACTS: " + placement.player.resourceSystem.Resources[ResourceType.TotalArtifacts];
+
         private void UpdateInstantPrice() =>
-            instantFinishPriceText.text =
-            $"$LT: {InstantUnitPrice * unitsLeftToProduce}";
+            instantFinishPriceText.text = (currentTab == UnitTabs.Upgrade) ?
+            $"$LT: {upgradePrice}" :
+            $"$LT: {instantUnitPrice * unitsLeftToProduce}";
 
         private string FormatTime(int seconds)
         {
@@ -228,5 +288,22 @@ namespace FightWorlds.UI
             string result = hours == 0 ? "" : $"{hours}:";
             return result += $"{minString}:{secString}";
         }
+
+        private bool ResetPossibleProduce()
+        {
+            if (placement.player.resourceSystem.CanUseResources(usage))
+                return false;
+            selectUnitsAmountToProduce.value =
+            (selectUnitsAmountToProduce.value == lastPossibleValue) ?
+            0 : lastPossibleValue;
+            return true;
+        }
+    }
+
+    public enum UnitTabs
+    {
+        Produce,
+        Heal,
+        Upgrade
     }
 }

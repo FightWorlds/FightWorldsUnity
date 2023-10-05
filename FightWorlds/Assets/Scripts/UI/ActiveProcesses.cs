@@ -97,6 +97,8 @@ namespace FightWorlds.UI
                     price, ResourceType.Credits))
                     {
                         placement.player.AddBots();
+                        if (placement.player.BotsAmount > docks.Count)
+                            return;
                         docks.First(e => !e.Value.gameObject.activeSelf)
                         .Value.gameObject.SetActive(true);
                         UpdateProcessCounter();

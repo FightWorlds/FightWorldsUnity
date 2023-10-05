@@ -15,6 +15,7 @@ namespace FightWorlds.Controllers
         private LevelSystem levelSystem;
 
         public ResourceSystem resourceSystem { get; private set; }
+        public int UnitsLevel { get; private set; }
         public int BotsAmount { get; private set; }
         public float VipMultiplier { get; private set; }
         public PlayerInfo Info { get; private set; }
@@ -27,6 +28,7 @@ namespace FightWorlds.Controllers
             resourceSystem =
                 new(startResourcesAmount, defaultStorageSize, Info);
             BotsAmount = Info.Bots;
+            UnitsLevel = Info.UnitsLevel;
             VipMultiplier = vip;
             this.ui = ui;
             FillLevelUi();
@@ -96,13 +98,16 @@ namespace FightWorlds.Controllers
             resourceSystem.UseResources(defaultStorageSize, type);
         }
 
-        public void SavePlayerResult(int record)
+        public void SavePlayerResult(int artifacts)
         {
-            int newRecord = record > Info.Record ? record : Info.Record;
             SaveManager.Save(
                 new(levelSystem.Level, levelSystem.Experience,
                 resourceSystem.Resources[ResourceType.Credits],
-                newRecord, BotsAmount));
+                resourceSystem.Resources[ResourceType.TotalArtifacts] +
+                artifacts, Info.Record + artifacts, BotsAmount,
+                resourceSystem.Resources[ResourceType.Units],
+                resourceSystem.Resources[ResourceType.UnitsToHeal],
+                UnitsLevel));
         }
 
         public void RegularSave()
@@ -110,10 +115,14 @@ namespace FightWorlds.Controllers
             SaveManager.Save(
                 new(levelSystem.Level, levelSystem.Experience,
                 resourceSystem.Resources[ResourceType.Credits],
-                Info.Record, BotsAmount));
+                Info.Artifacts, Info.Record, BotsAmount,
+                resourceSystem.Resources[ResourceType.Units],
+                resourceSystem.Resources[ResourceType.UnitsToHeal],
+                UnitsLevel));
         }
 
         public void AddBots() => BotsAmount++;
+        public void UnitsNewLevel() => UnitsLevel++;
 
         private void FillLevelUi()
         {
