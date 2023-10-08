@@ -55,7 +55,7 @@ namespace FightWorlds.Controllers
         {
             PlayerInfo startInfo =
                 new(startLvl, startXp, startCredits, startRecord, startRecord,
-                startBots, startUnitsAmount, startUnitsAmount, startUnitsLevel);
+                startBots, startUnitsAmount, startUnitsAmount, startUnitsLevel, null);
             Save(startInfo);
             return startInfo;
         }

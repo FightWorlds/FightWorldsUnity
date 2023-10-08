@@ -31,6 +31,8 @@ namespace FightWorlds.Controllers
             UnitsLevel = Info.UnitsLevel;
             VipMultiplier = vip;
             this.ui = ui;
+            if (!ui.LoadBoosts(JsonUtility.FromJson<BoostsSave>(Info.Boosts)))
+                ui.SaveBoosts(true);
             FillLevelUi();
             FillResourcesUi();
             FillVipUi();
@@ -107,7 +109,7 @@ namespace FightWorlds.Controllers
                 artifacts, Info.Record + artifacts, BotsAmount,
                 resourceSystem.Resources[ResourceType.Units],
                 resourceSystem.Resources[ResourceType.UnitsToHeal],
-                UnitsLevel));
+                UnitsLevel, JsonUtility.ToJson(ui.SaveBoosts(false))));
         }
 
         public void RegularSave()
@@ -118,7 +120,7 @@ namespace FightWorlds.Controllers
                 Info.Artifacts, Info.Record, BotsAmount,
                 resourceSystem.Resources[ResourceType.Units],
                 resourceSystem.Resources[ResourceType.UnitsToHeal],
-                UnitsLevel));
+                UnitsLevel, JsonUtility.ToJson(ui.SaveBoosts(false))));
         }
 
         public void AddBots() => BotsAmount++;

@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using FightWorlds.Placement;
 using FightWorlds.Controllers;
+using System.Collections.Generic;
 
 namespace FightWorlds.UI
 {
@@ -15,9 +16,12 @@ namespace FightWorlds.UI
         [SerializeField] private BuildingMenuUI buildingMenu;
         [SerializeField] private UnitsMenu unitsMenu;
         [SerializeField] private PlayerManagementUI playerManagement;
+        [SerializeField] private TechnoMap boosts;
 
         private const int cloneLen = 7;
         // TODO single open panel (other should close)
+
+        private List<GameObject> uiToHide;
 
         public int CreditsDiv
         {
@@ -123,7 +127,38 @@ namespace FightWorlds.UI
             unitsMenu.IsProducing;
         #endregion
 
+        #region  Boosts
+        public bool LoadBoosts(BoostsSave save) => boosts.LoadBoosts(save);
+
+        public BoostsSave SaveBoosts(bool isDefault) =>
+            boosts.SaveBoosts(isDefault);
+
+        public Dictionary<BoostType, int> GetActiveBoosts() =>
+            boosts.ActiveBoosts;
+        #endregion
+
         public string CutClone(string name) =>
             name.Remove(name.Length - cloneLen);
+
+        public void SwitchMainCanvas(bool turnOn)
+        {
+            if (!turnOn)
+            {
+                uiToHide = new();
+                int counter = -1;
+                foreach (Transform child in transform)
+                {
+                    counter++;
+                    GameObject obj = child.gameObject;
+                    if (counter < 3 || !obj.activeSelf) continue;
+                    uiToHide.Add(obj);
+                    obj.SetActive(false);
+                }
+                return;
+            }
+            if (uiToHide != null)
+                foreach (var ui in uiToHide)
+                    ui.SetActive(true);
+        }
     }
 }

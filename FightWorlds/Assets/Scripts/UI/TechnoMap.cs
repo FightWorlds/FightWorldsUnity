@@ -22,10 +22,10 @@ namespace FightWorlds.UI
     {
         public Vector3Int GridCoords;
         public BoostType Type;
-        public float TimeLeft;
+        public double TimeLeft;
 
         public BoostCell(Vector3Int coordinates,
-        BoostType type, float time)
+        BoostType type, double time)
         {
             GridCoords = coordinates;
             Type = type;
@@ -36,14 +36,36 @@ namespace FightWorlds.UI
     [Serializable]
     public struct BoostTimeExpire
     {
-        public float Time;
+        public double Time;
         public Color Color;
+    }
+
+    [Serializable]
+    public class Boost
+    {
+        public Vector3Int Coords;
+        public double PassTime;
+        public Boost(Vector3Int coords, double time)
+        {
+            Coords = coords;
+            PassTime = time;
+        }
+    }
+
+    [Serializable]
+    public class BoostsSave
+    {
+        public List<Boost> Boosts;
+        public BoostsSave(List<Boost> list) =>
+            Boosts = list;
     }
 
     public class TechnoMap : MonoBehaviour
     {
         [SerializeField] private BoostTimeExpire[] ColorByTime;
         [SerializeField] private UnityEngine.Grid grid;
+        [SerializeField] private Transform activePanel;
+        [SerializeField] private TextMeshProUGUI textBoostsCounter;
         [SerializeField] private GameObject hexPrefab;
         [SerializeField] private Vector2Int size;
         [SerializeField] private int radius;
@@ -53,55 +75,81 @@ namespace FightWorlds.UI
 
         public List<BoostCell> BoostsList;
 
+        public Dictionary<BoostType, int> ActiveBoosts { get; private set; }
+
+        public bool LoadBoosts(BoostsSave save)
+        {
+            try
+            {
+                int counter = 0;
+                var currentSec = GetCurrentSec();
+                foreach (var boost in BoostsList)
+                {
+                    boost.TimeLeft =
+                        save.Boosts[counter].PassTime - currentSec;
+                    if (boost.TimeLeft < 0) boost.TimeLeft = 0;
+                    counter++;
+                }
+                return true;
+            }
+            catch (Exception e)
+            {
+                Debug.Log(e.Message);
+                return false;
+            }
+        }
+
+        public BoostsSave SaveBoosts(bool defaultBoosts)
+        {
+            List<Boost> list = new List<Boost>();
+            foreach (var boost in BoostsList)
+                list.Add(new(boost.GridCoords,
+                    defaultBoosts ?
+                    GetCurrentSec() :
+                    GetCurrentSec() + boost.TimeLeft));
+            BoostsSave save = new BoostsSave(list);
+            if (defaultBoosts) LoadBoosts(save);
+            return save;
+        }
+
         private void Start()
         {
-            grid.cellSize = hexPrefab.GetComponent<RectTransform>().rect.size;
-            //BoostsList = new();
-            //int width = size.x / 2 - 1; // offset due to 0,0 hex
-            //int height = size.y / 2 - 1;
-            //for (int y = -height; y <= height; y++)
-            //{
-            //    for (int x = -width; x <= width; x++)
-            //Vector3 zeroCell = grid.GetCellCenterWorld(Vector3Int.zero);
+            //grid.cellSize = hexPrefab.GetComponent<RectTransform>().rect.size;
             foreach (Transform child in grid.transform)
             {
                 string[] arr = child.name.Split(" ");
                 Vector3Int coords =
                     new(Int32.Parse(arr[2]), Int32.Parse(arr[3]));
-                //var type = Enum.Parse<BoostType>(arr[0]);
-                //var worldPos = grid.GetCellCenterWorld(coords);
-                //var timeLeft = (worldPos == zeroCell ||
-                //    Vector3.Distance(worldPos, zeroCell) > radius) ? 0 :
-                //    UnityEngine.Random.Range(0, maxTime);
-                //var cell = new BoostCell(coords, type, timeLeft);
-                //BoostsList.Add(cell);
-                //TimeSpan time = TimeSpan.FromSeconds(cell.TimeLeft);
-                //child.GetChild(0).GetComponent<TextMeshProUGUI>().
-                //    text = $"X:{coords.x} Y:{coords.y}\n{type}\n" +
-                //    time.ToString("hh':'mm':'ss");
-                //ColorCell(child, cell.TimeLeft);
-                if (coords == Vector3Int.zero)
-                    continue;
-                int index = BoostsList.FindIndex(b => b.GridCoords == coords);
-                child.AddComponent<Button>().onClick.AddListener(() =>
-                {
-                    BoostsList[index].TimeLeft += addTime;
-                    if (BoostsList[index].TimeLeft > maxTime)
-                        BoostsList[index].TimeLeft = maxTime;
-                });
+                AddCellListener(coords, child);
             }
-            //}
         }
 
         private void Update()
         {
+            UpdateEachCell();
+            FillBoostsPanel();
+        }
+
+        private void UpdateEachCell()
+        {
             int counter = -1;
+            ActiveBoosts = new() {
+                {BoostType.Damage, 0},
+                {BoostType.Range, 0},
+                {BoostType.Rate, 0},
+                {BoostType.Health, 0},
+            };
             foreach (var cell in BoostsList)
             {
                 counter++;
-                if (cell.TimeLeft <= 0 || cell.TimeLeft < Time.deltaTime)
+                if (cell.TimeLeft <= 0)
                     continue;
                 cell.TimeLeft -= Time.deltaTime;
+                if (cell.TimeLeft < 0)
+                    cell.TimeLeft = 0;
+                else
+                    ActiveBoosts[cell.Type]++;
+
                 if (!grid.gameObject.activeSelf) continue;
                 Transform canvasCell = grid.transform.GetChild(counter);
                 ColorCell(canvasCell, cell.TimeLeft);
@@ -112,7 +160,28 @@ namespace FightWorlds.UI
             }
         }
 
-        private void ColorCell(Transform cell, float time)
+        private void FillBoostsPanel()
+        {
+            int counter = 0;
+            int boostsCounter = 0;
+            foreach (var boost in ActiveBoosts) // change to events
+            {
+                counter++; // first==1 because in panel we have collapse button
+                Transform panelElement = activePanel.GetChild(counter);
+                if (boost.Value == 0)
+                    panelElement.gameObject.SetActive(false);
+                else
+                {
+                    panelElement.gameObject.SetActive(true);
+                    panelElement.GetChild(1).GetComponent<TextMeshProUGUI>()
+                    .text = $"+{boost.Value}%";
+                    boostsCounter++;
+                }
+            }
+            textBoostsCounter.text = boostsCounter.ToString();
+        }
+
+        private void ColorCell(Transform cell, double time)
         {
             Image image = cell.GetComponent<Image>();
             Color color = image.color;
@@ -124,5 +193,21 @@ namespace FightWorlds.UI
             }
             image.color = color;
         }
+
+        private void AddCellListener(Vector3Int coords, Transform cell)
+        {
+            if (coords == Vector3Int.zero)
+                return;
+            int index = BoostsList.FindIndex(b => b.GridCoords == coords);
+            cell.AddComponent<Button>().onClick.AddListener(() =>
+            {
+                BoostsList[index].TimeLeft += addTime;
+                if (BoostsList[index].TimeLeft > maxTime)
+                    BoostsList[index].TimeLeft = maxTime;
+            });
+        }
+
+        private double GetCurrentSec() =>
+            DateTime.Now.Subtract(DateTime.MinValue).TotalSeconds;
     }
 }

@@ -12,9 +12,10 @@ namespace FightWorlds.Controllers
         public int Units;
         public int UnitsToHeal;
         public int UnitsLevel;
+        public string Boosts;
         public PlayerInfo(int level, int experience,
         int credits, int artifacts, int record, int bots,
-        int units, int unitsToHeal, int unitsLevel)
+        int units, int unitsToHeal, int unitsLevel, string boosts)
         {
             Level = level;
             Experience = experience;
@@ -25,6 +26,7 @@ namespace FightWorlds.Controllers
             Units = units;
             UnitsToHeal = unitsToHeal;
             UnitsLevel = unitsLevel;
+            Boosts = boosts;
         }
     }
 }
