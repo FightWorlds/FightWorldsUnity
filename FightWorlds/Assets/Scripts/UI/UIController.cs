@@ -4,6 +4,7 @@ using UnityEngine.Events;
 using FightWorlds.Placement;
 using FightWorlds.Controllers;
 using System.Collections.Generic;
+using FightWorlds.Boost;
 
 namespace FightWorlds.UI
 {

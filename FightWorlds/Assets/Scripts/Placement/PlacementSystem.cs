@@ -8,13 +8,18 @@ using FightWorlds.Controllers;
 using FightWorlds.Combat;
 using FightWorlds.Grid;
 using FightWorlds.Audio;
+using FightWorlds.Boost;
 
 namespace FightWorlds.Placement
 {
     public class PlacementSystem : MonoBehaviour
     {
+        public static bool AttackMode;
+
         [SerializeField] private List<Vector3> startPlatforms;
+        [SerializeField] private List<Vector3> enemyStartPlatforms;
         [SerializeField] private List<StartBuilding> startBuildings;
+        [SerializeField] private List<StartBuilding> enemyStartBuildings;
         [SerializeField] private float radius;
         [SerializeField] private Vector3 heightOffset;
         [SerializeField] private BuildingsDatabase database;
@@ -22,6 +27,8 @@ namespace FightWorlds.Placement
         [SerializeField] private GameObject shuttlePrefab;
         [SerializeField] private Material hexMaterial;
         [SerializeField] private float saveDelay;
+        [SerializeField] protected int turretAttackRadius;
+        [SerializeField] protected int npcAttackRadius;
         //public List<GameObject> objects;
         //public List<Vector3> pos;
 
@@ -96,16 +103,26 @@ namespace FightWorlds.Placement
 
         public FiringStats GetTurretsFiringStats()
         {
+            Dictionary<BoostType, int> boosts = ui.GetActiveBoosts();
             int turrets = GetTurretsLimit();
-            int firingDamage = (int)((turrets - 5) * player.VipMultiplier);
+            int firingDamage = turrets - 5;
+            firingDamage +=
+                (int)(firingDamage * boosts[BoostType.Damage] * 0.25f);
             int firingRate = turrets - 4;
+            firingRate +=
+                (int)(firingRate * boosts[BoostType.Rate] * 0.25f);
             FiringStats npc = GetNPCFiringStats();
             int strength = (turrets * firingDamage * firingRate - npc.Damage * npc.Rate * npc.Strength) * (10 + Mathf.CeilToInt(turrets / 10f));
+            strength +=
+                (int)(strength * boosts[BoostType.Health] * 0.25f);
+            int range = turretAttackRadius +
+                (int)(turretAttackRadius * boosts[BoostType.Range] * 0.25f);
             return new FiringStats()
             {
                 Damage = firingDamage,
                 Rate = firingRate,
-                Strength = strength
+                Strength = strength,
+                Range = range
             };
         }
 
@@ -113,11 +130,13 @@ namespace FightWorlds.Placement
         {
             int turrets = GetTurretsLimit();
             int firingStat = turrets - 5;
+            int range = npcAttackRadius;
             return new FiringStats()
             {
                 Damage = firingStat,
                 Rate = firingStat,
-                Strength = firingStat
+                Strength = firingStat,
+                Range = range
             };
         }
 
@@ -125,8 +144,10 @@ namespace FightWorlds.Placement
 
         private void Awake()
         {
-            // foreach (var obj in objects)
-            //     pos.Add(obj.transform.position);
+            //AttackMode = true;
+
+            //foreach (var obj in objects)
+            //    pos.Add(obj.transform.position);
             player = new(ui);
             initializer = GetComponent<GridInitializer>();
             grid = initializer.GenerateHex();
@@ -135,19 +156,34 @@ namespace FightWorlds.Placement
             { 4, new() }, { 5, new() },{ 6, new() }, { 7, new() },
             { 8, new() }, { 9, new() }, { 10, new() }, {11, new()} };
             filledHexagons = new();
-            foreach (Vector3 coords in startPlatforms)
+            List<Vector3> platforms =
+                AttackMode ? enemyStartPlatforms : startPlatforms;
+            foreach (Vector3 coords in platforms)
             {
                 grid.GetXZ(coords, out int x, out int z);
                 GridObject obj = grid.GetGridObject(x, z);
                 FillHex(obj);
             }
-            foreach (StartBuilding building in startBuildings)
+            StartCoroutine(Saving());
+            StartCoroutine(SecondFrameTask());
+            if (AttackMode)
+            {
+                // TODO turn off extra features for that mode
+                // UI elements, etc
+            }
+        }
+
+        private IEnumerator SecondFrameTask()
+        {
+            yield return null;
+            List<StartBuilding> buildings =
+                AttackMode ? enemyStartBuildings : startBuildings;
+            foreach (StartBuilding building in buildings)
             {
                 id = building.ID;
                 PlaceStructure(grid.GetGridObject(building.position),
                 building.yRotationAngle, false);
             }
-            StartCoroutine(Saving());
         }
 
         private List<Building> GetAllBuildings() =>
@@ -260,6 +296,7 @@ namespace FightWorlds.Placement
         {
 
             int newHp = GetTurretsFiringStats().Strength;
+            // what if boost expired?
             baseHp += newHp;
             baseMaxHp += newHp;
             UpdateBaseHpSlider();

@@ -31,6 +31,7 @@ namespace FightWorlds.UI
         private const int defaultDamage = 2;
         private const int defaultRate = 1;
         private const int defaultStrength = 2;
+        private const int defaultRange = 10;
         private const int maxUpgradeLevel = 3;
         private const int maxStoredUnits = 200;
         private const int instantUnitPrice = 1;
@@ -41,7 +42,7 @@ namespace FightWorlds.UI
         private const int unitArtifactsCost = 10;
         private const int dockyardLevel = 1;
         private readonly FiringStats defaultFiringStats =
-                new(defaultDamage, defaultRate, defaultStrength);
+                new(defaultDamage, defaultRate, defaultStrength, defaultRange);
 
         public bool IsProducing { get; private set; }
 
@@ -67,7 +68,7 @@ namespace FightWorlds.UI
 
         public void InitDockyard(Building building)
         {
-            UnitStats = defaultFiringStats;
+            UnitStats = defaultFiringStats * placement.player.UnitsLevel;
             dockyard = building;
             defaultColor = usageValues.color;
             UpdateMaxPossibleUnits();

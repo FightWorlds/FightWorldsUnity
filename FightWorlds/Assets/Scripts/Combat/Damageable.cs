@@ -9,7 +9,6 @@ namespace FightWorlds.Combat
     public abstract class Damageable : MonoBehaviour
     {
         [SerializeField] protected LayerMask mask;
-        [SerializeField] protected float attackRadius;
         [SerializeField] protected int damage;
         [SerializeField] protected int startHp;
         [SerializeField] private float particleOffset;
@@ -26,11 +25,13 @@ namespace FightWorlds.Combat
         private const float hitPlayTime = 1f;
 
         protected int currentHp;
+        protected int attackRadius;
         protected bool isDestroyed;
         protected bool isAttacking;
         protected Vector3 destination;
         protected Collider target;
         protected Coroutine searchCoroutine;
+
         protected abstract List<Collider> Detections();
         protected bool inAttackRadius =>
             Vector3.Distance(destination, currentPosition) < attackRadius;
@@ -81,7 +82,6 @@ namespace FightWorlds.Combat
             target.TryGetComponent(out Damageable damageable);
             if (damageable)
                 damageable.TakeDamage(damage, currentPosition);
-            //Debug.Log($"BAM BAM {target.name} by {transform.name}");
         }
         public void TakeDamage(int damage, Vector3 fromPos) =>
                 DamageTaken?.Invoke(damage, fromPos);
@@ -163,6 +163,7 @@ namespace FightWorlds.Combat
             damage = stats.Damage;
             attackDelay = 1f / stats.Rate;
             startHp = currentHp = stats.Strength;
+            attackRadius = stats.Range;
         }
     }
 }

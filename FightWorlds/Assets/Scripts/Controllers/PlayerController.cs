@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using FightWorlds.UI;
 using System.Collections.Generic;
+using FightWorlds.Boost;
 
 namespace FightWorlds.Controllers
 {

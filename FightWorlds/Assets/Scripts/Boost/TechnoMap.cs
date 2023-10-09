@@ -1,65 +1,14 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
+using FightWorlds.Placement;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-namespace FightWorlds.UI
+namespace FightWorlds.Boost
 {
-    public enum BoostType
-    {
-        None = 0,
-        Damage = 1,
-        Rate = 2,
-        Range = 3,
-        Health = 4
-    }
-
-    [Serializable]
-    public class BoostCell
-    {
-        public Vector3Int GridCoords;
-        public BoostType Type;
-        public double TimeLeft;
-
-        public BoostCell(Vector3Int coordinates,
-        BoostType type, double time)
-        {
-            GridCoords = coordinates;
-            Type = type;
-            TimeLeft = time;
-        }
-    }
-
-    [Serializable]
-    public struct BoostTimeExpire
-    {
-        public double Time;
-        public Color Color;
-    }
-
-    [Serializable]
-    public class Boost
-    {
-        public Vector3Int Coords;
-        public double PassTime;
-        public Boost(Vector3Int coords, double time)
-        {
-            Coords = coords;
-            PassTime = time;
-        }
-    }
-
-    [Serializable]
-    public class BoostsSave
-    {
-        public List<Boost> Boosts;
-        public BoostsSave(List<Boost> list) =>
-            Boosts = list;
-    }
-
     public class TechnoMap : MonoBehaviour
     {
         [SerializeField] private BoostTimeExpire[] ColorByTime;
@@ -69,9 +18,11 @@ namespace FightWorlds.UI
         [SerializeField] private GameObject hexPrefab;
         [SerializeField] private Vector2Int size;
         [SerializeField] private int radius;
+        [SerializeField] private PlacementSystem placement;
 
         private const float maxTime = 86400; // day in sec
         private const float addTime = 10800; // 3 hours
+        private const int boostPercentMltpl = 25; // 3 hours
 
         public List<BoostCell> BoostsList;
 
@@ -112,7 +63,7 @@ namespace FightWorlds.UI
             return save;
         }
 
-        private void Start()
+        private void Awake()
         {
             //grid.cellSize = hexPrefab.GetComponent<RectTransform>().rect.size;
             foreach (Transform child in grid.transform)
@@ -121,6 +72,7 @@ namespace FightWorlds.UI
                 Vector3Int coords =
                     new(Int32.Parse(arr[2]), Int32.Parse(arr[3]));
                 AddCellListener(coords, child);
+                UpdateEachCell();
             }
         }
 
@@ -145,7 +97,7 @@ namespace FightWorlds.UI
                 if (cell.TimeLeft <= 0)
                     continue;
                 cell.TimeLeft -= Time.deltaTime;
-                if (cell.TimeLeft < 0)
+                if (cell.TimeLeft <= 0)
                     cell.TimeLeft = 0;
                 else
                     ActiveBoosts[cell.Type]++;
@@ -174,7 +126,7 @@ namespace FightWorlds.UI
                 {
                     panelElement.gameObject.SetActive(true);
                     panelElement.GetChild(1).GetComponent<TextMeshProUGUI>()
-                    .text = $"+{boost.Value}%";
+                    .text = $"+{boost.Value * boostPercentMltpl}%";
                     boostsCounter++;
                 }
             }
@@ -204,6 +156,9 @@ namespace FightWorlds.UI
                 BoostsList[index].TimeLeft += addTime;
                 if (BoostsList[index].TimeLeft > maxTime)
                     BoostsList[index].TimeLeft = maxTime;
+                placement.player.RegularSave();
+                PlacementSystem.AttackMode = true;
+                SceneManager.LoadScene(SceneManager.GetActiveScene().name);
             });
         }
 

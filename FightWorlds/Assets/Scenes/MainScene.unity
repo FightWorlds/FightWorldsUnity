@@ -50955,6 +50955,7 @@ MonoBehaviour:
     type: 3}
   size: {x: 10, y: 10}
   radius: 550
+  placement: {fileID: 2598988457257900228}
   BoostsList:
   - GridCoords: {x: -2, y: -4, z: 0}
     Type: 1
@@ -101186,6 +101187,57 @@ MonoBehaviour:
   - {x: -36, y: 0, z: 28.75}
   - {x: -35, y: 0, z: 33.75}
   - {x: -31, y: 0, z: -16}
+  enemyStartPlatforms:
+  - {x: -25, y: 0, z: -9.699997}
+  - {x: -24, y: 0, z: -4.699997}
+  - {x: -23, y: 0, z: 0.30000305}
+  - {x: -22, y: 0, z: 5.300003}
+  - {x: -21, y: 0, z: 10.300003}
+  - {x: -20, y: 0, z: 15.300003}
+  - {x: -21, y: 0, z: -13}
+  - {x: -20, y: 0, z: -8}
+  - {x: -19, y: 0, z: -3}
+  - {x: -18, y: 0, z: 2}
+  - {x: -17, y: 0, z: 7}
+  - {x: -16, y: 0, z: 12}
+  - {x: -15, y: 0, z: 17}
+  - {x: -16, y: 0, z: -11.299999}
+  - {x: -15, y: 0, z: -6.300003}
+  - {x: -14, y: 0, z: -1.300003}
+  - {x: -13, y: 0, z: 3.699997}
+  - {x: -12, y: 0, z: 8.699997}
+  - {x: -11, y: 0, z: 13.699997}
+  - {x: -12, y: 0, z: -14.599998}
+  - {x: -11, y: 0, z: -9.599998}
+  - {x: -10, y: 0, z: -4.5999985}
+  - {x: -9, y: 0, z: 0.40000153}
+  - {x: -8, y: 0, z: 5.4000015}
+  - {x: -7, y: 0, z: 10.400002}
+  - {x: -6, y: 0, z: 15.400002}
+  - {x: -7, y: 0, z: -12.900002}
+  - {x: -6, y: 0, z: -7.9000015}
+  - {x: -5, y: 0, z: -2.9000015}
+  - {x: -4, y: 0, z: 2.0999985}
+  - {x: -3, y: 0, z: 7.0999985}
+  - {x: -2, y: 0, z: 12.099998}
+  - {x: -3, y: 0, z: -16.199997}
+  - {x: -2, y: 0, z: -11.199997}
+  - {x: -1, y: 0, z: -6.199997}
+  - {x: 0, y: 0, z: -1.199997}
+  - {x: 1, y: 0, z: 3.800003}
+  - {x: 2, y: 0, z: 8.800003}
+  - {x: 3, y: 0, z: 13.800003}
+  - {x: 2, y: 0, z: -14.5}
+  - {x: 3, y: 0, z: -9.5}
+  - {x: 4, y: 0, z: -4.5}
+  - {x: 5, y: 0, z: 0.5}
+  - {x: 6, y: 0, z: 5.5}
+  - {x: 7, y: 0, z: 10.5}
+  - {x: 7, y: 0, z: -12.799999}
+  - {x: 8, y: 0, z: -7.800003}
+  - {x: 9, y: 0, z: -2.800003}
+  - {x: 10, y: 0, z: 2.199997}
+  - {x: 11, y: 0, z: 7.199997}
   startBuildings:
   - position: {x: -8, y: 0, z: 6}
     yRotationAngle: 0
@@ -101286,6 +101338,67 @@ MonoBehaviour:
   - position: {x: -41, y: 0, z: 27}
     yRotationAngle: 120
     ID: 11
+  enemyStartBuildings:
+  - position: {x: 0, y: 0, z: -1.2}
+    yRotationAngle: 0
+    ID: 2
+  - position: {x: -10, y: 0, z: -4.6}
+    yRotationAngle: 0
+    ID: 5
+  - position: {x: -8, y: 0, z: 5.4}
+    yRotationAngle: 0
+    ID: 6
+  - position: {x: -21, y: 0, z: 10.3}
+    yRotationAngle: 120
+    ID: 11
+  - position: {x: -20, y: 0, z: 15.300003}
+    yRotationAngle: 180
+    ID: 11
+  - position: {x: -15, y: 0, z: 17}
+    yRotationAngle: -120
+    ID: 11
+  - position: {x: -21, y: 0, z: -13}
+    yRotationAngle: 60
+    ID: 11
+  - position: {x: -24, y: 0, z: -4.699997}
+    yRotationAngle: 180
+    ID: 11
+  - position: {x: -25, y: 0, z: -9.699997}
+    yRotationAngle: 120
+    ID: 11
+  - position: {x: 8, y: 0, z: -7.800003}
+    yRotationAngle: 0
+    ID: 11
+  - position: {x: 7, y: 0, z: -12.799999}
+    yRotationAngle: 0
+    ID: 11
+  - position: {x: 2, y: 0, z: -14.5}
+    yRotationAngle: 60
+    ID: 11
+  - position: {x: -3, y: 0, z: -16.199997}
+    yRotationAngle: 60
+    ID: 11
+  - position: {x: 11, y: 0, z: 7.199997}
+    yRotationAngle: -60
+    ID: 11
+  - position: {x: 10, y: 0, z: 2.199997}
+    yRotationAngle: 0
+    ID: 11
+  - position: {x: 7, y: 0, z: 10.5}
+    yRotationAngle: -120
+    ID: 11
+  - position: {x: -16, y: 0, z: 12}
+    yRotationAngle: 120
+    ID: 8
+  - position: {x: -20, y: 0, z: -8}
+    yRotationAngle: -120
+    ID: 8
+  - position: {x: 3, y: 0, z: -9.5}
+    yRotationAngle: 60
+    ID: 8
+  - position: {x: 6, y: 0, z: 5.5}
+    yRotationAngle: 0
+    ID: 8
   radius: 7
   heightOffset: {x: 0, y: 1.6, z: 0}
   database: {fileID: 11400000, guid: d9d7e8764ee173041898c38618516eb2, type: 2}
@@ -101294,6 +101407,8 @@ MonoBehaviour:
     type: 3}
   hexMaterial: {fileID: 2100000, guid: 533cfb3fb425c5343a624a07a338172a, type: 2}
   saveDelay: 10
+  turretAttackRadius: 40
+  npcAttackRadius: 10
   ui: {fileID: 1531178786}
   evacuation: {fileID: 0}
 --- !u!224 &2650039591823473723
