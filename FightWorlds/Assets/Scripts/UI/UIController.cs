@@ -18,6 +18,7 @@ namespace FightWorlds.UI
         [SerializeField] private UnitsMenu unitsMenu;
         [SerializeField] private PlayerManagementUI playerManagement;
         [SerializeField] private TechnoMap boosts;
+        [SerializeField] private AttackManagementUI attackUI;
 
         private const int cloneLen = 7;
         // TODO single open panel (other should close)
@@ -128,7 +129,7 @@ namespace FightWorlds.UI
             unitsMenu.IsProducing;
         #endregion
 
-        #region  Boosts
+        #region Boosts
         public bool LoadBoosts(BoostsSave save) => boosts.LoadBoosts(save);
 
         public BoostsSave SaveBoosts(bool isDefault) =>
@@ -136,6 +137,18 @@ namespace FightWorlds.UI
 
         public Dictionary<BoostType, int> GetActiveBoosts() =>
             boosts.ActiveBoosts;
+        #endregion
+
+        #region Attack
+        public void ShowAttackCanvas()
+        {
+            gameObject.SetActive(false);
+            attackUI.gameObject.SetActive(true);
+        }
+
+        public void PlaceHolder(Vector3 pos, bool isOnLand) =>
+            attackUI.PlaceHolder(pos, isOnLand);
+
         #endregion
 
         public string CutClone(string name) =>

@@ -177,7 +177,7 @@ GameObject:
   - component: {fileID: 5198273384479518817}
   - component: {fileID: 8986801939370457394}
   - component: {fileID: 2753241405112313063}
-  m_Layer: 6
+  m_Layer: 0
   m_Name: ShuttleEvac
   m_TagString: Untagged
   m_Icon: {fileID: 0}

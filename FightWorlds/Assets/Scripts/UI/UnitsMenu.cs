@@ -33,7 +33,7 @@ namespace FightWorlds.UI
         private const int defaultStrength = 2;
         private const int defaultRange = 10;
         private const int maxUpgradeLevel = 3;
-        private const int maxStoredUnits = 200;
+        private const int maxStoredUnits = 300;
         private const int instantUnitPrice = 1;
         private const int unitUpgradeCost = 200;
         private const int unitTimeInSecondsCost = 20;
@@ -41,10 +41,11 @@ namespace FightWorlds.UI
         private const int unitMetalCost = 100;
         private const int unitArtifactsCost = 10;
         private const int dockyardLevel = 1;
-        private readonly FiringStats defaultFiringStats =
-                new(defaultDamage, defaultRate, defaultStrength, defaultRange);
 
         public bool IsProducing { get; private set; }
+        public static int MaxPossibleUnits => maxStoredUnits * dockyardLevel;
+        public static readonly FiringStats DefaultFiringStats =
+            new(defaultDamage, defaultRate, defaultStrength, defaultRange);
 
         private UnitTabs currentTab;
         private FiringStats UnitStats;
@@ -58,9 +59,8 @@ namespace FightWorlds.UI
         private int storedUnits => (currentTab == UnitTabs.Produce) ?
         placement.player.resourceSystem.Resources[ResourceType.Units] :
         placement.player.resourceSystem.Resources[ResourceType.UnitsToHeal];
-        private int maxPossibleUnits => maxStoredUnits * dockyardLevel;
         private int maxUnits => (currentTab == UnitTabs.Produce) ?
-        maxPossibleUnits - storedUnits -
+        MaxPossibleUnits - storedUnits -
         placement.player.resourceSystem.Resources[ResourceType.UnitsToHeal] :
         storedUnits;
         private int upgradePrice =>
@@ -68,7 +68,7 @@ namespace FightWorlds.UI
 
         public void InitDockyard(Building building)
         {
-            UnitStats = defaultFiringStats * placement.player.UnitsLevel;
+            UnitStats = DefaultFiringStats * placement.player.UnitsLevel;
             dockyard = building;
             defaultColor = usageValues.color;
             UpdateMaxPossibleUnits();
@@ -228,7 +228,7 @@ namespace FightWorlds.UI
         private void Upgrade()
         {
             placement.player.UnitsNewLevel();
-            UnitStats += defaultFiringStats;
+            UnitStats += DefaultFiringStats;
             UpdateStats();
         }
 
@@ -246,7 +246,7 @@ namespace FightWorlds.UI
             currentUnitStats.text =
             $"{UnitStats.Damage}\n{UnitStats.Rate}\n{UnitStats.Strength}";
             nextUnitStats.text =
-            $"+{defaultFiringStats.Damage}\n+{defaultFiringStats.Rate}\n+{defaultFiringStats.Strength}";
+            $"+{DefaultFiringStats.Damage}\n+{DefaultFiringStats.Rate}\n+{DefaultFiringStats.Strength}";
             string type = "TYPE ";
             switch (placement.player.UnitsLevel)
             {

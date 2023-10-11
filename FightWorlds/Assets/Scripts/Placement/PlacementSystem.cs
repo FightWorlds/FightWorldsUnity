@@ -40,6 +40,7 @@ namespace FightWorlds.Placement
         private const int randomDist = 10;
         private const int rotationAngle = 60;
         private const int shuttleOffset = 13;
+        private const int artifactsPerBuilding = 15;
         private const float evacuateMultiplier = 0.9f;
 
         private int baseHp, baseMaxHp = 0;
@@ -52,11 +53,13 @@ namespace FightWorlds.Placement
         private Building selectedBuilding;
 
         public float HpPercent => (float)baseHp / baseMaxHp;
+        public int CollectedArtifacts { get; private set; }
 
         public void UpdateBaseHp(int damage)
         {
             baseHp -= damage;
             UpdateBaseHpSlider();
+            if (baseHp <= 0) AttackManagementUI.GameShouldFinish = true;
         }
 
         public void DestroyObj(Vector3 pos, Building building)
@@ -67,6 +70,7 @@ namespace FightWorlds.Placement
             grid.GetGridObject(x, z).HasBuilding = false;
             var boom = GetBoomExplosion(false);
             boom.transform.position = pos;
+            if (AttackMode) CollectedArtifacts += artifactsPerBuilding;
         }
 
         public void StartPlacement(int ID)
@@ -79,6 +83,12 @@ namespace FightWorlds.Placement
             GetAllBuildings().Select(build =>
                 build.GetComponent<Collider>()).ToList();
 
+        public void TapOnLand(Vector3 pos, bool isOnLand)
+        {
+            Debug.Log(pos + " " + isOnLand);
+            ui.PlaceHolder(pos, isOnLand);
+            // TODO: place spawn point here
+        }
 
         public void TapOnHex(Vector3 pos)
         {
@@ -144,8 +154,6 @@ namespace FightWorlds.Placement
 
         private void Awake()
         {
-            //AttackMode = true;
-
             //foreach (var obj in objects)
             //    pos.Add(obj.transform.position);
             player = new(ui);
@@ -170,6 +178,8 @@ namespace FightWorlds.Placement
             {
                 // TODO turn off extra features for that mode
                 // UI elements, etc
+                ui.SwitchMainCanvas(false);
+                ui.ShowAttackCanvas();
             }
         }
 

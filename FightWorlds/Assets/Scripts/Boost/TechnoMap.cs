@@ -20,12 +20,13 @@ namespace FightWorlds.Boost
         [SerializeField] private int radius;
         [SerializeField] private PlacementSystem placement;
 
-        private const float maxTime = 86400; // day in sec
-        private const float addTime = 10800; // 3 hours
+        private const int maxTime = 86400; // day in sec
+        private const int defaultAddTime = 10800; // 3 hours
         private const int boostPercentMltpl = 25; // 3 hours
 
-        public List<BoostCell> BoostsList;
+        private static Vector3Int selectedCell;
 
+        public List<BoostCell> BoostsList;
         public Dictionary<BoostType, int> ActiveBoosts { get; private set; }
 
         public bool LoadBoosts(BoostsSave save)
@@ -50,6 +51,30 @@ namespace FightWorlds.Boost
             }
         }
 
+        public void UpdateTime(int result)
+        {
+            if (selectedCell == Vector3Int.zero)
+                return;
+            int index = BoostsList.FindIndex(b => b.GridCoords == selectedCell);
+            int addTime = 0;
+            switch (result)
+            {
+                case 1:
+                    addTime = defaultAddTime;
+                    break;
+                case 2:
+                    addTime = defaultAddTime * 4;
+                    break;
+                case 3:
+                    addTime = maxTime;
+                    break;
+            }
+            BoostsList[index].TimeLeft += addTime;
+            if (BoostsList[index].TimeLeft > maxTime)
+                BoostsList[index].TimeLeft = maxTime;
+            placement.player.RegularSave();
+        }
+
         public BoostsSave SaveBoosts(bool defaultBoosts)
         {
             List<Boost> list = new List<Boost>();
@@ -66,6 +91,7 @@ namespace FightWorlds.Boost
         private void Awake()
         {
             //grid.cellSize = hexPrefab.GetComponent<RectTransform>().rect.size;
+            if (!PlacementSystem.AttackMode) selectedCell = Vector3Int.zero;
             foreach (Transform child in grid.transform)
             {
                 string[] arr = child.name.Split(" ");
@@ -153,11 +179,9 @@ namespace FightWorlds.Boost
             int index = BoostsList.FindIndex(b => b.GridCoords == coords);
             cell.AddComponent<Button>().onClick.AddListener(() =>
             {
-                BoostsList[index].TimeLeft += addTime;
-                if (BoostsList[index].TimeLeft > maxTime)
-                    BoostsList[index].TimeLeft = maxTime;
                 placement.player.RegularSave();
                 PlacementSystem.AttackMode = true;
+                selectedCell = coords;
                 SceneManager.LoadScene(SceneManager.GetActiveScene().name);
             });
         }

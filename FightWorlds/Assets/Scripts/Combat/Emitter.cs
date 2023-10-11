@@ -3,12 +3,13 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.Pool;
 using FightWorlds.Placement;
+using FightWorlds.UI;
 
 namespace FightWorlds.Combat
 {
     public class Emitter : MonoBehaviour
     {
-        [SerializeField] private Transform[] emitters;
+        [SerializeField] private Vector3[] emitters;
         [Tooltip("Total sum of chances should be equal 100")]
         [SerializeField][Range(0, 100)] private int[] chances;
         [SerializeField] private float startSpawnDelay;
@@ -17,9 +18,13 @@ namespace FightWorlds.Combat
         [SerializeField] private int bottomSpawnRate;
         [SerializeField] private float spawnRadius;
         [SerializeField] private GameObject npcPrefab;
+        [SerializeField] private GameObject unitPrefab;
         [SerializeField] private GameObject buildingsExplosion;
         [SerializeField] private GameObject npcsExplosion;
         [SerializeField] private PlacementSystem placement;
+
+        public int DestroyedCount { get; private set; }
+
         private ObjectPool<GameObject> poolOfNpc;
         private ObjectPool<GameObject> poolOfBuildingsExplosion;
         private ObjectPool<GameObject> poolOfNPCsExplosion;
@@ -34,6 +39,24 @@ namespace FightWorlds.Combat
 
         public GameObject GetBoomExplosion(bool isNpc) =>
         isNpc ? poolOfNPCsExplosion.Get() : poolOfBuildingsExplosion.Get();
+
+        public void SetupForAttack(Vector3 pos)
+        {
+            maxSpawnSize = placement.player.resourceSystem
+                .Resources[Controllers.ResourceType.Units];
+            if (maxSpawnSize == 0)
+            {
+                AttackManagementUI.GameShouldFinish = true;
+                return;
+            }
+            bottomSpawnRate = 0;
+            chances = new int[1] { 100 };
+            float planeHeight = transform.GetChild(1).position.y;
+            if (pos.y < planeHeight)
+                pos = new Vector3(pos.x, planeHeight, pos.z);
+            emitters = new Vector3[1] { pos };
+            Awake();
+        }
 
         private void OnDestroy() => placement.player.NewLevel -= OnNewLevel;
 
@@ -62,7 +85,8 @@ namespace FightWorlds.Combat
 
         private GameObject CreateNpc()
         {
-            var obj = Instantiate(npcPrefab, transform);
+            var obj = Instantiate(PlacementSystem.AttackMode ?
+                unitPrefab : npcPrefab, transform);
             obj.GetComponent<NPC>().Init(KillNpc).placement = placement;
             return obj;
         }
@@ -75,6 +99,14 @@ namespace FightWorlds.Combat
             npc.GetComponent<CharacterController>().enabled = true;
             NPC logic = npc.GetComponent<NPC>();
             logic.ResetLogic();
+            if (PlacementSystem.AttackMode)
+            {
+                var stats =
+                    UnitsMenu.DefaultFiringStats * placement.player.UnitsLevel;
+                firingStats =
+                    new(stats.Damage, stats.Rate, stats.Strength, stats.Range);
+                Debug.Log($"dam{stats.Damage} rate{stats.Rate} hp{stats.Strength} range{stats.Range}");
+            }
             logic.UpdateStats(firingStats);
         }
 
@@ -83,6 +115,12 @@ namespace FightWorlds.Combat
             npc.SetActive(false);
             npc.GetComponent<CharacterController>().enabled = false;
             npc.transform.position = putAwayPosition;
+            DestroyedCount++;
+            if (PlacementSystem.AttackMode)
+            {
+                placement.player
+                .UseResources(1, Controllers.ResourceType.Units, false);
+            }
         }
 
         private void OnDestroyNpc(GameObject npc) => Destroy(npc);
@@ -140,7 +178,7 @@ namespace FightWorlds.Combat
                 else
                     prevChance = currentChance;
             }
-            Vector3 dotPos = emitters[dot].position;
+            Vector3 dotPos = emitters[dot];
             Vector3 spawnPos = dotPos +
             UnityEngine.Random.insideUnitSphere * spawnRadius;
             spawnPos.y = dotPos.y;
@@ -151,17 +189,24 @@ namespace FightWorlds.Combat
 
         private void SpawnNpc()
         {
+            if (PlacementSystem.AttackMode &&
+            !AttackManagementUI.IsAttackStarted)
+                return;
             if (spawnedCounter >= maxSpawnSize)
             {
-                if (poolOfNpc.CountActive < bottomSpawnRate)
-                    spawnedCounter = 0;
+                if (poolOfNpc.CountActive <= bottomSpawnRate)
+                {
+                    if (PlacementSystem.AttackMode)
+                        AttackManagementUI.GameShouldFinish = true;
+                    else
+                        spawnedCounter = 0;
+                }
+
             }
             else
                 for (int i = 0; i < oneWaveNpcCount; i++)
-                {
-                    if (poolOfNpc.CountActive < maxSpawnSize)
+                    if (spawnedCounter < maxSpawnSize)
                         poolOfNpc.Get();
-                }
             lastSpawnTime = timePassed;
         }
     }

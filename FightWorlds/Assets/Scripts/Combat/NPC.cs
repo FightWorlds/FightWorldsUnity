@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using FightWorlds.Controllers;
+using FightWorlds.Placement;
 
 namespace FightWorlds.Combat
 {
@@ -70,7 +71,7 @@ namespace FightWorlds.Combat
         protected override void Die()
         {
             base.Die();
-            Process();
+            if (!PlacementSystem.AttackMode) Process();
             var boom = placement.GetBoomExplosion(true);
             boom.transform.position = currentPosition;
             DeadAction(gameObject);
