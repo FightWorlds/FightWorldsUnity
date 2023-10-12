@@ -16,7 +16,7 @@ namespace FightWorlds.UI
         [SerializeField] private BuildingMenuUI buildingMenu;
         private Dictionary<Building, GameObject> buildingsUnderAttack;
 
-        private const int listSize = 5;
+        private const int listSize = 4;
 
         private void Awake() =>
             buildingsUnderAttack = new Dictionary<Building, GameObject>();

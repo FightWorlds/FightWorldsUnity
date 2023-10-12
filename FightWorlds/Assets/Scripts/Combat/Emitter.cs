@@ -33,6 +33,7 @@ namespace FightWorlds.Combat
         private float lastSpawnTime; // TODO: maybe switch to coroutine?
         private int spawnedCounter;
         private Vector3 putAwayPosition = new Vector3(100, 100, 100);
+        private Vector3 destinationOfNpc;
         private System.Random random;
         private FiringStats firingStats;
         private int len => emitters.Length;
@@ -40,7 +41,7 @@ namespace FightWorlds.Combat
         public GameObject GetBoomExplosion(bool isNpc) =>
         isNpc ? poolOfNPCsExplosion.Get() : poolOfBuildingsExplosion.Get();
 
-        public void SetupForAttack(Vector3 pos)
+        public void SetupForAttack(Vector3 pos, Vector3 destination)
         {
             maxSpawnSize = placement.player.resourceSystem
                 .Resources[Controllers.ResourceType.Units];
@@ -55,6 +56,7 @@ namespace FightWorlds.Combat
             if (pos.y < planeHeight)
                 pos = new Vector3(pos.x, planeHeight, pos.z);
             emitters = new Vector3[1] { pos };
+            destinationOfNpc = destination;
             Awake();
         }
 
@@ -101,11 +103,11 @@ namespace FightWorlds.Combat
             logic.ResetLogic();
             if (PlacementSystem.AttackMode)
             {
+                logic.SetMainDestination(destinationOfNpc);
                 var stats =
                     UnitsMenu.DefaultFiringStats * placement.player.UnitsLevel;
                 firingStats =
                     new(stats.Damage, stats.Rate, stats.Strength, stats.Range);
-                Debug.Log($"dam{stats.Damage} rate{stats.Rate} hp{stats.Strength} range{stats.Range}");
             }
             logic.UpdateStats(firingStats);
         }

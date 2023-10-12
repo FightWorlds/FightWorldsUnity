@@ -29,6 +29,7 @@ namespace FightWorlds.Combat
         protected bool isDestroyed;
         protected bool isAttacking;
         protected Vector3 destination;
+        protected Vector3 mainDestination;
         protected Collider target;
         protected Coroutine searchCoroutine;
 
@@ -45,7 +46,7 @@ namespace FightWorlds.Combat
 
         protected virtual void Awake()
         {
-            destination = Vector3.positiveInfinity;
+            destination = mainDestination = Vector3.positiveInfinity;
             currentHp = startHp;
             isAttacking = false;
             isDestroyed = false;
@@ -71,7 +72,7 @@ namespace FightWorlds.Combat
                 yield return new WaitForSeconds(attackDelay);
             }
             isAttacking = false;
-            destination = Vector3.positiveInfinity;
+            destination = mainDestination;
             target = null;
             searchCoroutine = StartCoroutine(SearchTarget());
         }
@@ -143,7 +144,7 @@ namespace FightWorlds.Combat
         {
             List<Collider> hitColliders = Detections();
             if (hitColliders == null || target == null)
-                destination = Vector3.positiveInfinity;
+                destination = mainDestination;
             foreach (var collider in hitColliders)
             {
                 if (collider == null || !collider.enabled) return;

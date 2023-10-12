@@ -156,6 +156,9 @@ namespace FightWorlds.UI
 
         public void SwitchMainCanvas(bool turnOn)
         {
+            if (!PlacementSystem.AttackMode)
+                foreach (Transform child in boosts.transform)
+                    child.gameObject.SetActive(!turnOn);
             if (!turnOn)
             {
                 uiToHide = new();

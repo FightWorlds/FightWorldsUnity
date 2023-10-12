@@ -131,7 +131,7 @@ public class AttackManagementUI : MonoBehaviour
     {
         holder.SetActive(false);
         destinationPosition = selectedWorldPosition;
-        emitter.SetupForAttack(spawnPosition);
+        emitter.SetupForAttack(spawnPosition, destinationPosition);
         IsAttackStarted = true;
     }
 }

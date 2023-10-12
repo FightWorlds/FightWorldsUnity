@@ -22,7 +22,7 @@ namespace FightWorlds.Boost
 
         private const int maxTime = 86400; // day in sec
         private const int defaultAddTime = 10800; // 3 hours
-        private const int boostPercentMltpl = 25; // 3 hours
+        private const float boostPercentMltpl = 12.5f; // 3 hours
 
         private static Vector3Int selectedCell;
 

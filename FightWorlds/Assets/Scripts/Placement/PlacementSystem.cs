@@ -42,6 +42,7 @@ namespace FightWorlds.Placement
         private const int shuttleOffset = 13;
         private const int artifactsPerBuilding = 15;
         private const float evacuateMultiplier = 0.9f;
+        private const float boostMltpl = 0.125f;
 
         private int baseHp, baseMaxHp = 0;
         private int id = -1;
@@ -70,6 +71,7 @@ namespace FightWorlds.Placement
             grid.GetGridObject(x, z).HasBuilding = false;
             var boom = GetBoomExplosion(false);
             boom.transform.position = pos;
+            soundFeedback.PlaySound(SoundType.Destroy);
             if (AttackMode) CollectedArtifacts += artifactsPerBuilding;
         }
 
@@ -117,16 +119,16 @@ namespace FightWorlds.Placement
             int turrets = GetTurretsLimit();
             int firingDamage = turrets - 5;
             firingDamage +=
-                (int)(firingDamage * boosts[BoostType.Damage] * 0.25f);
+                (int)(firingDamage * boosts[BoostType.Damage] * boostMltpl);
             int firingRate = turrets - 4;
             firingRate +=
-                (int)(firingRate * boosts[BoostType.Rate] * 0.25f);
+                (int)(firingRate * boosts[BoostType.Rate] * boostMltpl);
             FiringStats npc = GetNPCFiringStats();
             int strength = (turrets * firingDamage * firingRate - npc.Damage * npc.Rate * npc.Strength) * (10 + Mathf.CeilToInt(turrets / 10f));
             strength +=
-                (int)(strength * boosts[BoostType.Health] * 0.25f);
+                (int)(strength * boosts[BoostType.Health] * boostMltpl);
             int range = turretAttackRadius +
-                (int)(turretAttackRadius * boosts[BoostType.Range] * 0.25f);
+                (int)(turretAttackRadius * boosts[BoostType.Range] * boostMltpl);
             return new FiringStats()
             {
                 Damage = firingDamage,
@@ -186,6 +188,7 @@ namespace FightWorlds.Placement
         private IEnumerator SecondFrameTask()
         {
             yield return null;
+            player.resourceSystem.Resources[ResourceType.Units] = 30; // REMOVE
             List<StartBuilding> buildings =
                 AttackMode ? enemyStartBuildings : startBuildings;
             foreach (StartBuilding building in buildings)
