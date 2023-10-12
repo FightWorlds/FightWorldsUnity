@@ -13,7 +13,7 @@ namespace FightWorlds.Placement
     {
         [SerializeField] private BuildingType buildingType;
         [SerializeField] private ResourceType resourceType;
-        [SerializeField] private int produceTime;
+        [SerializeField] private float produceTime;
         [SerializeField] private int buildingTime;
         [SerializeField] private int resourcesPerOperation;
         [SerializeField] private Material unActive;
@@ -81,23 +81,43 @@ namespace FightWorlds.Placement
                 searchCoroutine = StartCoroutine(SearchTarget());
             else if (buildingType == BuildingType.Storage)
                 placement.player.NewStorage(resourceType);
-            else if (buildingType == BuildingType.Dock)
+            else if (buildingType == BuildingType.RepairDock)
                 placement.ui.AddRepairBot(this);
+            else if (buildingType == BuildingType.Dockyard)
+                placement.ui.InitDockyard(this);
+        }
+
+        public void StopProduce()
+        {
+            IsProducing = false;
+            StopAllCoroutines();
         }
 
         private void Update()
         {
             //  TODO: upgrade to FSM
             if (State == BuildingState.Building) return;
-            if (!IsProducing &&
-                (buildingType == BuildingType.Mine ||
-                buildingType == BuildingType.Recycle))
-                StartCoroutine(ProduceResources());
-            else if (buildingType == BuildingType.Defense)
+            if (buildingType == BuildingType.Default) return;
+            if (buildingType == BuildingType.Defense)
+            {
                 if (target != null)
                     if (target.enabled)
                         RotateIntoTarget();
                     else target = null;
+                return;
+            }
+            if (!IsProducing)
+            {
+                if (buildingType == BuildingType.Mine ||
+                buildingType == BuildingType.Recycle)
+                {
+                    StartCoroutine(ProduceResources());
+                    return;
+                }
+                if (buildingType == BuildingType.Dockyard &&
+                placement.ui.IsProducingUnits())
+                    StartCoroutine(ProduceResources());
+            }
         }
 
         protected override IEnumerator SearchTarget()
@@ -136,17 +156,22 @@ namespace FightWorlds.Placement
             placement.ui.RemoveProcess(gameObject, false);
             if (buildingType == BuildingType.Storage)
                 placement.player.DestroyStorage(resourceType);
-            else if (buildingType == BuildingType.Dock)
+            else if (buildingType == BuildingType.RepairDock)
                 placement.ui.RemoveRepairBot(this);
+            else if (buildingType == BuildingType.Dockyard)
+                placement.ui.RemoveDockyard();
             Destroy(gameObject);
         }
 
         protected override void Process()
         {
             if (buildingType == BuildingType.Mine)
+            {
                 placement.player
                 .TakeResources(resourcesPerOperation, resourceType);
-            else
+                return;
+            }
+            if (buildingType == BuildingType.Recycle)
             {
                 ResourceType type = resourceType == ResourceType.Ore ?
                 ResourceType.Metal : ResourceType.Energy;
@@ -157,7 +182,10 @@ namespace FightWorlds.Placement
                 placement.player.UseResources(resourcesPerOperation,
                 resourceType, false);
                 placement.player.TakeResources(resourcesPerOperation, type);
+                return;
             }
+            if (buildingType == BuildingType.Dockyard)
+                placement.ui.AddUnit();
         }
 
         private IEnumerator ProduceResources()

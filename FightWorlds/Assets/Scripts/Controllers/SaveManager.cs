@@ -13,6 +13,8 @@ namespace FightWorlds.Controllers
         private const int startXp = 0;
         private const int startRecord = 0;
         private const int startBots = 1;
+        private const int startUnitsAmount = 0;
+        private const int startUnitsLevel = 1;
 
         public static void Save(PlayerInfo player)
         {
@@ -36,6 +38,8 @@ namespace FightWorlds.Controllers
                 {
                     PlayerInfo info =
                     formatter.Deserialize(stream) as PlayerInfo;
+                    if (info.UnitsLevel == 0) // check for wrong load
+                        return Reset();
                     return info;
                 }
             }
@@ -50,7 +54,8 @@ namespace FightWorlds.Controllers
         public static PlayerInfo Reset()
         {
             PlayerInfo startInfo =
-                new(startLvl, startXp, startCredits, startRecord, startBots);
+                new(startLvl, startXp, startCredits, startRecord, startRecord,
+                startBots, startUnitsAmount, startUnitsAmount, startUnitsLevel, null);
             Save(startInfo);
             return startInfo;
         }

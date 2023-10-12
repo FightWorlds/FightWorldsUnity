@@ -3,6 +3,8 @@ using UnityEngine;
 using UnityEngine.Events;
 using FightWorlds.Placement;
 using FightWorlds.Controllers;
+using System.Collections.Generic;
+using FightWorlds.Boost;
 
 namespace FightWorlds.UI
 {
@@ -13,10 +15,15 @@ namespace FightWorlds.UI
         [SerializeField] private BuildingsUnderAttack buildingsUnderAttack;
         [SerializeField] private EvacuationUI evacuationUI;
         [SerializeField] private BuildingMenuUI buildingMenu;
+        [SerializeField] private UnitsMenu unitsMenu;
         [SerializeField] private PlayerManagementUI playerManagement;
+        [SerializeField] private TechnoMap boosts;
+        [SerializeField] private AttackManagementUI attackUI;
 
         private const int cloneLen = 7;
         // TODO single open panel (other should close)
+
+        private List<GameObject> uiToHide;
 
         public int CreditsDiv
         {
@@ -108,7 +115,67 @@ namespace FightWorlds.UI
             playerManagement.FinishGamePopUp(artifacts);
         #endregion
 
+        #region UnitsMenu
+        public void InitDockyard(Building building) =>
+            unitsMenu.InitDockyard(building);
+
+        public void RemoveDockyard() =>
+            unitsMenu.RemoveDockyard();
+
+        public void AddUnit() =>
+            unitsMenu.AddUnit();
+
+        public bool IsProducingUnits() =>
+            unitsMenu.IsProducing;
+        #endregion
+
+        #region Boosts
+        public bool LoadBoosts(BoostsSave save) => boosts.LoadBoosts(save);
+
+        public BoostsSave SaveBoosts(bool isDefault) =>
+            boosts.SaveBoosts(isDefault);
+
+        public Dictionary<BoostType, int> GetActiveBoosts() =>
+            boosts.ActiveBoosts;
+        #endregion
+
+        #region Attack
+        public void ShowAttackCanvas()
+        {
+            gameObject.SetActive(false);
+            attackUI.gameObject.SetActive(true);
+        }
+
+        public void PlaceHolder(Vector3 pos, bool isOnLand) =>
+            attackUI.PlaceHolder(pos, isOnLand);
+
+        #endregion
+
         public string CutClone(string name) =>
             name.Remove(name.Length - cloneLen);
+
+        public void SwitchMainCanvas(bool turnOn)
+        {
+            if (!PlacementSystem.AttackMode)
+                foreach (Transform child in boosts.transform)
+                    child.gameObject.SetActive(!turnOn);
+            if (!turnOn)
+            {
+                uiToHide = new();
+                int counter = -1;
+                foreach (Transform child in transform)
+                {
+                    counter++;
+                    GameObject obj = child.gameObject;
+                    if (counter < 3 || !obj.activeSelf) continue;
+                    uiToHide.Add(obj);
+                    obj.SetActive(false);
+                }
+                return;
+            }
+            if (uiToHide != null)
+                foreach (var ui in uiToHide)
+                    ui.SetActive(true);
+        }
     }
 }

@@ -1,6 +1,8 @@
 using System;
 using UnityEngine;
 using FightWorlds.UI;
+using System.Collections.Generic;
+using FightWorlds.Boost;
 
 namespace FightWorlds.Controllers
 {
@@ -12,7 +14,9 @@ namespace FightWorlds.Controllers
         private const int defaultStorageSize = 2000;
         private const float vip = 1f;
         private LevelSystem levelSystem;
+
         public ResourceSystem resourceSystem { get; private set; }
+        public int UnitsLevel { get; private set; }
         public int BotsAmount { get; private set; }
         public float VipMultiplier { get; private set; }
         public PlayerInfo Info { get; private set; }
@@ -25,8 +29,11 @@ namespace FightWorlds.Controllers
             resourceSystem =
                 new(startResourcesAmount, defaultStorageSize, Info);
             BotsAmount = Info.Bots;
+            UnitsLevel = Info.UnitsLevel;
             VipMultiplier = vip;
             this.ui = ui;
+            if (!ui.LoadBoosts(JsonUtility.FromJson<BoostsSave>(Info.Boosts)))
+                ui.SaveBoosts(true);
             FillLevelUi();
             FillResourcesUi();
             FillVipUi();
@@ -51,6 +58,8 @@ namespace FightWorlds.Controllers
             ResourceType rawType, ResourceType type) =>
             resourceSystem.IsPossibleToConvert(amount, rawType, type);
 
+        public bool CanUseResources(KeyValuePair<ResourceType, int>[] resources)
+        => resourceSystem.CanUseResources(resources);
 
         public bool UseResources(int amount, ResourceType type,
         bool needPopUp, Action callback = null)
@@ -92,13 +101,16 @@ namespace FightWorlds.Controllers
             resourceSystem.UseResources(defaultStorageSize, type);
         }
 
-        public void SavePlayerResult(int record)
+        public void SavePlayerResult(int artifacts)
         {
-            int newRecord = record > Info.Record ? record : Info.Record;
             SaveManager.Save(
                 new(levelSystem.Level, levelSystem.Experience,
                 resourceSystem.Resources[ResourceType.Credits],
-                newRecord, BotsAmount));
+                resourceSystem.Resources[ResourceType.TotalArtifacts] +
+                artifacts, Info.Record + artifacts, BotsAmount,
+                resourceSystem.Resources[ResourceType.Units],
+                resourceSystem.Resources[ResourceType.UnitsToHeal],
+                UnitsLevel, JsonUtility.ToJson(ui.SaveBoosts(false))));
         }
 
         public void RegularSave()
@@ -106,10 +118,14 @@ namespace FightWorlds.Controllers
             SaveManager.Save(
                 new(levelSystem.Level, levelSystem.Experience,
                 resourceSystem.Resources[ResourceType.Credits],
-                Info.Record, BotsAmount));
+                Info.Artifacts, Info.Record, BotsAmount,
+                resourceSystem.Resources[ResourceType.Units],
+                resourceSystem.Resources[ResourceType.UnitsToHeal],
+                UnitsLevel, JsonUtility.ToJson(ui.SaveBoosts(false))));
         }
 
         public void AddBots() => BotsAmount++;
+        public void UnitsNewLevel() => UnitsLevel++;
 
         private void FillLevelUi()
         {

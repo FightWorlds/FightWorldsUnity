@@ -23,7 +23,12 @@ namespace FightWorlds.Controllers
         {
             if (IsGameFinished) return;
             IsGameFinished = true;
-            if (isShuttleCalled) return;
+            StopAllCoroutines();
+            if (isShuttleCalled && !isFlying)
+            {
+                StartCoroutine(ShuttleEvacuating());
+                return;
+            };
             StopGame();
         }
 
@@ -42,8 +47,8 @@ namespace FightWorlds.Controllers
         {
             if (isFlying)
             {
-                leftTime -= Time.deltaTime;
                 placement.ui.ChangeTimeText(leftTime);
+                leftTime -= Time.deltaTime;
             }
         }
 
@@ -52,7 +57,6 @@ namespace FightWorlds.Controllers
             yield return ShuttleLanding();
             yield return CollectArtifacts();
             yield return ShuttleEvacuating();
-            StopGame();
         }
 
         private IEnumerator CollectArtifacts()
@@ -85,6 +89,7 @@ namespace FightWorlds.Controllers
             animator.SetBool("Evacuating", true);
             placement.ui.SwitchEvacuationButtonState(false);
             yield return FlyShuttle();
+            StopGame();
         }
 
         private IEnumerator FlyShuttle()
