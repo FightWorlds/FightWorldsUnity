@@ -112,7 +112,8 @@ namespace FightWorlds.Controllers
 
         private void RestartGame()
         {
-            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+            placement.soundFeedback.PlaySound(Audio.SoundType.SceneRestart);
+            SceneManager.LoadSceneAsync(SceneManager.GetActiveScene().name);
             Time.timeScale = 1f;
         }
     }

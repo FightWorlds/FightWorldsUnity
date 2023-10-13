@@ -682,8 +682,8 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 2141902119222356734}
   - {fileID: 4602339771316860525}
+  - {fileID: 2141902119222356734}
   - {fileID: 8621072069805712022}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -723,7 +723,6 @@ MonoBehaviour:
   mask:
     serializedVersion: 2
     m_Bits: 256
-  attackRadius: 0
   damage: 0
   startHp: 600
   particleOffset: 2.5

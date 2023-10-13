@@ -23,7 +23,6 @@ namespace FightWorlds.Placement
         [SerializeField] private float radius;
         [SerializeField] private Vector3 heightOffset;
         [SerializeField] private BuildingsDatabase database;
-        [SerializeField] private SoundFeedback soundFeedback;
         [SerializeField] private GameObject shuttlePrefab;
         [SerializeField] private Material hexMaterial;
         [SerializeField] private float saveDelay;
@@ -32,6 +31,7 @@ namespace FightWorlds.Placement
         //public List<GameObject> objects;
         //public List<Vector3> pos;
 
+        public SoundFeedback soundFeedback;
         public PlayerController player;
         public UIController ui;
         public EvacuationSystem evacuation;

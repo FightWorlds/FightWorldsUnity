@@ -1,4 +1,5 @@
 using System;
+using FightWorlds.Audio;
 using FightWorlds.Boost;
 using FightWorlds.Combat;
 using FightWorlds.Controllers;
@@ -58,7 +59,8 @@ public class AttackManagementUI : MonoBehaviour
         Time.timeScale = 1f;
         GameShouldFinish = false;
         IsAttackStarted = false;
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        placement.soundFeedback.PlaySound(SoundType.SceneRestart);
+        SceneManager.LoadSceneAsync(SceneManager.GetActiveScene().name);
     }
 
     public void FinishGame()
@@ -76,18 +78,7 @@ public class AttackManagementUI : MonoBehaviour
             - placement.player.resourceSystem.Resources[ResourceType.Units];
         if (toHeal > maxToHeal) toHeal = maxToHeal;
         placement.player.TakeResources(toHeal, ResourceType.UnitsToHeal);
-        var description = FinishPopUp.transform.GetChild(4);
-        description.GetChild(0).GetComponent<Text>().text =
-        $"Artifacts: {placement.CollectedArtifacts}\n\nUnits lost: {unitsLost - toHeal}";
-        int stars = 0;
-        if (percentage >= 100)
-            stars = 3;
-        else if (percentage >= 80)
-            stars = 2;
-        else if (percentage >= minSuccess)
-            stars = 1;
-        for (int i = 0; i < stars; i++)
-            description.GetChild(1).GetChild(i).gameObject.SetActive(true);
+        int stars = FillResultPopUp(unitsLost - toHeal);
         map.UpdateTime(stars);
         placement.player.SavePlayerResult(placement.CollectedArtifacts);
         Time.timeScale = 0f;
@@ -133,5 +124,22 @@ public class AttackManagementUI : MonoBehaviour
         destinationPosition = selectedWorldPosition;
         emitter.SetupForAttack(spawnPosition, destinationPosition);
         IsAttackStarted = true;
+    }
+
+    private int FillResultPopUp(int lost)
+    {
+        var description = FinishPopUp.transform.GetChild(4);
+        description.GetChild(0).GetComponent<Text>().text =
+        $"Artifacts: {placement.CollectedArtifacts}\n\nUnits lost: {lost}";
+        int stars = 0;
+        if (percentage >= 100)
+            stars = 3;
+        else if (percentage >= 80)
+            stars = 2;
+        else if (percentage >= minSuccess)
+            stars = 1;
+        for (int i = 0; i < stars; i++)
+            description.GetChild(1).GetChild(i).gameObject.SetActive(true);
+        return stars;
     }
 }

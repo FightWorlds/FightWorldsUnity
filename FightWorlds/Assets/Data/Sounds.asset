@@ -25,3 +25,9 @@ MonoBehaviour:
   - <Type>k__BackingField: 4
     <Clip>k__BackingField: {fileID: 8300000, guid: 169a53ee68c43b1418cc6113fa5eb730,
       type: 3}
+  - <Type>k__BackingField: 5
+    <Clip>k__BackingField: {fileID: 8300000, guid: f44b8f175c5c66d40a836404082faf3e,
+      type: 3}
+  - <Type>k__BackingField: 6
+    <Clip>k__BackingField: {fileID: 8300000, guid: da91090cf440c1e46b92bfbb3ae949be,
+      type: 3}

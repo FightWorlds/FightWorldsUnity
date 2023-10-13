@@ -33,7 +33,10 @@ namespace FightWorlds.Combat
         protected Collider target;
         protected Coroutine searchCoroutine;
 
+        protected abstract void Process();
         protected abstract List<Collider> Detections();
+
+        protected abstract IEnumerator SearchTarget();
         protected bool inAttackRadius =>
             Vector3.Distance(destination, currentPosition) < attackRadius;
 
@@ -53,7 +56,31 @@ namespace FightWorlds.Combat
             target = null;
         }
 
-        protected abstract IEnumerator SearchTarget();
+        public virtual void UpdateStats(FiringStats stats)
+        {
+            damage = stats.Damage;
+            attackDelay = 1f / stats.Rate;
+            startHp = currentHp = stats.Strength;
+            attackRadius = stats.Range;
+        }
+
+        public void TakeDamage(int damage, Vector3 fromPos) =>
+            DamageTaken?.Invoke(damage, fromPos);
+
+        public void Rotate(float angle = rotationAngle) =>
+            transform.GetChild(0).Rotate(Vector3.up, angle);
+
+        protected virtual void OnDamageTaken(int damage, Vector3 fromPos)
+        {
+            if (damage < 0)
+                return;
+
+            StartCoroutine(PlayHit(fromPos));
+            currentHp = (int)Mathf.Clamp(currentHp - damage, 0, currentHp);
+            //Debug.Log($"{gameObject.name} hp: {currentHp}");
+            if (currentHp <= 0 && !isDestroyed)
+                Die();
+        }
 
         protected virtual IEnumerator AttackTarget(Func<bool> Usage = null)
         {
@@ -77,52 +104,11 @@ namespace FightWorlds.Combat
             searchCoroutine = StartCoroutine(SearchTarget());
         }
 
-        private void Attack()
-        {
-            fire.Play();
-            target.TryGetComponent(out Damageable damageable);
-            if (damageable)
-                damageable.TakeDamage(damage, currentPosition);
-        }
-        public void TakeDamage(int damage, Vector3 fromPos) =>
-                DamageTaken?.Invoke(damage, fromPos);
-        private void SubscribeOnEvents() => DamageTaken += OnDamageTaken;
-        private void UnsubscribeFromEvents() => DamageTaken -= OnDamageTaken;
-        protected virtual void OnDamageTaken(int damage, Vector3 fromPos)
-        {
-            if (damage < 0)
-                return;
-
-            StartCoroutine(PlayHit(fromPos));
-            currentHp = (int)Mathf.Clamp(currentHp - damage, 0, currentHp);
-            //Debug.Log($"{gameObject.name} hp: {currentHp}");
-            if (currentHp <= 0 && !isDestroyed)
-                Die();
-        }
-
-        private IEnumerator PlayHit(Vector3 hitFromPos)
-        {
-            Vector3 direction = (hitFromPos - transform.position).normalized;
-            direction *= particleOffset;
-            direction.y = 1f; //vertical offset
-            hitParticle.transform.localPosition = direction;
-            Quaternion newRotation = Quaternion.LookRotation(direction);
-            hitParticle.transform.Rotate(Vector3.up, newRotation.eulerAngles.y);
-            hitParticle.gameObject.SetActive(true);
-            hitParticle.Play();
-            yield return new WaitForSeconds(hitPlayTime);
-            hitParticle.gameObject.SetActive(false);
-        }
         protected virtual void Die()
         {
             isDestroyed = true;
             isAttacking = false;
             target = null;
-        }
-
-        public void Rotate(float angle = rotationAngle)
-        {
-            transform.GetChild(0).Rotate(Vector3.up, angle);
         }
 
         protected Vector3 RotateIntoTarget()
@@ -157,14 +143,30 @@ namespace FightWorlds.Combat
             }
         }
 
-        protected abstract void Process();
-
-        public virtual void UpdateStats(FiringStats stats)
+        private void Attack()
         {
-            damage = stats.Damage;
-            attackDelay = 1f / stats.Rate;
-            startHp = currentHp = stats.Strength;
-            attackRadius = stats.Range;
+            fire.Play();
+            //placement.soundFeedback.PlaySound(Audio.SoundType.Shot);
+            target.TryGetComponent(out Damageable damageable);
+            if (damageable)
+                damageable.TakeDamage(damage, currentPosition);
+        }
+
+        private void SubscribeOnEvents() => DamageTaken += OnDamageTaken;
+        private void UnsubscribeFromEvents() => DamageTaken -= OnDamageTaken;
+
+        private IEnumerator PlayHit(Vector3 hitFromPos)
+        {
+            Vector3 direction = (hitFromPos - transform.position).normalized;
+            direction *= particleOffset;
+            direction.y = 1f; //vertical offset
+            hitParticle.transform.localPosition = direction;
+            Quaternion newRotation = Quaternion.LookRotation(direction);
+            hitParticle.transform.Rotate(Vector3.up, newRotation.eulerAngles.y);
+            hitParticle.gameObject.SetActive(true);
+            hitParticle.Play();
+            yield return new WaitForSeconds(hitPlayTime);
+            hitParticle.gameObject.SetActive(false);
         }
     }
 }

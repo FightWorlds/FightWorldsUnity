@@ -182,7 +182,8 @@ namespace FightWorlds.Boost
                 placement.player.RegularSave();
                 PlacementSystem.AttackMode = true;
                 selectedCell = coords;
-                SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+                placement.soundFeedback.PlaySound(Audio.SoundType.SceneRestart);
+                SceneManager.LoadSceneAsync(SceneManager.GetActiveScene().name);
             });
         }
 

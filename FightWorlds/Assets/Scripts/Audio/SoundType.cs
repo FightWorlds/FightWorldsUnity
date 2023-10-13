@@ -7,6 +7,8 @@ namespace FightWorlds.Audio
         Click,
         Place,
         WrongPlacement,
-        Destroy
+        Destroy,
+        Shot,
+        SceneRestart
     }
 }
