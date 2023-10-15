@@ -37,7 +37,6 @@ public class AttackManagementUI : MonoBehaviour
     private bool isDestinationSelection;
     private bool isGameFinished;
     private int percentage => (int)((1 - placement.HpPercent) * 100);
-    private int collectedArtifacts;
 
     public void PlaceHolder(Vector3 worldPos, bool isOnLand)
     {

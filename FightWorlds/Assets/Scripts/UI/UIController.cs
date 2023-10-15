@@ -156,12 +156,15 @@ namespace FightWorlds.UI
 
         public void SwitchMainCanvas(bool turnOn)
         {
+            int childStart = 3;
+            transform.GetChild(childStart + 1).gameObject.SetActive(false);//bp
             if (!PlacementSystem.AttackMode)
                 foreach (Transform child in boosts.transform)
                     child.gameObject.SetActive(!turnOn);
             if (!turnOn)
             {
-                uiToHide = new();
+                if (transform.GetChild(childStart).gameObject.activeSelf)
+                    uiToHide = new();
                 int counter = -1;
                 foreach (Transform child in transform)
                 {
@@ -174,8 +177,12 @@ namespace FightWorlds.UI
                 return;
             }
             if (uiToHide != null)
+            {
                 foreach (var ui in uiToHide)
                     ui.SetActive(true);
+                uiToHide = null;
+            }
+
         }
     }
 }

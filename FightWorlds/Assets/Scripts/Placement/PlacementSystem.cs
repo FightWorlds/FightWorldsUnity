@@ -85,12 +85,8 @@ namespace FightWorlds.Placement
             GetAllBuildings().Select(build =>
                 build.GetComponent<Collider>()).ToList();
 
-        public void TapOnLand(Vector3 pos, bool isOnLand)
-        {
-            Debug.Log(pos + " " + isOnLand);
+        public void TapOnLand(Vector3 pos, bool isOnLand) =>
             ui.PlaceHolder(pos, isOnLand);
-            // TODO: place spawn point here
-        }
 
         public void TapOnHex(Vector3 pos)
         {
@@ -188,7 +184,6 @@ namespace FightWorlds.Placement
         private IEnumerator SecondFrameTask()
         {
             yield return null;
-            player.resourceSystem.Resources[ResourceType.Units] = 30; // REMOVE
             List<StartBuilding> buildings =
                 AttackMode ? enemyStartBuildings : startBuildings;
             foreach (StartBuilding building in buildings)

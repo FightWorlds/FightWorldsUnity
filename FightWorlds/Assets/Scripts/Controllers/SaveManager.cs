@@ -45,7 +45,7 @@ namespace FightWorlds.Controllers
             }
             catch (Exception e)
             {
-                Debug.Log(e.Message);
+                Debug.Log(e);
                 File.Delete(savePath);
                 return Reset();
             }
