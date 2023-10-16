@@ -171,8 +171,8 @@ namespace FightWorlds.Combat
             int rand = random.Next(0, maxChance);
             for (int i = 0; i < len; i++)
             {
-                int currentChance = chances[i];
-                if (rand < currentChance + prevChance)
+                int currentChance = chances[i] + prevChance;
+                if (rand < currentChance)
                 {
                     dot = i;
                     break;
