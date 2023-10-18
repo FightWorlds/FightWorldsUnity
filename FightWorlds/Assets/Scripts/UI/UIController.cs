@@ -19,6 +19,7 @@ namespace FightWorlds.UI
         [SerializeField] private PlayerManagementUI playerManagement;
         [SerializeField] private TechnoMap boosts;
         [SerializeField] private AttackManagementUI attackUI;
+        [SerializeField] private GameObject buildingPanel;
 
         private const int cloneLen = 7;
         // TODO single open panel (other should close)
@@ -91,6 +92,11 @@ namespace FightWorlds.UI
         public void CloseBuildingMenu() => buildingMenu.CloseBuildingMenu();
 
         public void RotateBuilding() => buildingMenu.RotateBuilding();
+
+        public void SwitchBuildingPanel(bool state) =>
+            buildingPanel.SetActive(state);
+        public void SwitchBuildingPanel() =>
+            buildingPanel.SetActive(!buildingPanel.activeSelf);
         #endregion
 
         #region PlayerManagementUI

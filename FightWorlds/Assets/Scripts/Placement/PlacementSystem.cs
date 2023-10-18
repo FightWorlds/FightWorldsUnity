@@ -26,8 +26,9 @@ namespace FightWorlds.Placement
         [SerializeField] private GameObject shuttlePrefab;
         [SerializeField] private Material hexMaterial;
         [SerializeField] private float saveDelay;
-        [SerializeField] protected int turretAttackRadius;
-        [SerializeField] protected int npcAttackRadius;
+        [SerializeField] private int turretAttackRadius;
+        [SerializeField] private int npcAttackRadius;
+        [SerializeField] private GameObject selectPoint;
         //public List<GameObject> objects;
         //public List<Vector3> pos;
 
@@ -43,6 +44,8 @@ namespace FightWorlds.Placement
         private const int artifactsPerBuilding = 15;
         private const float evacuateMultiplier = 0.9f;
         private const float boostMltpl = 0.125f;
+        private const float selectorOffset = 2.5f;
+        private const float selectorUnder = 10f;
 
         private int baseHp, baseMaxHp = 0;
         private int id = -1;
@@ -52,6 +55,7 @@ namespace FightWorlds.Placement
         private GridInitializer initializer;
         private GridHex<GridObject> grid;
         private Building selectedBuilding;
+        private GridObject selectedHex;
 
         public float HpPercent => (float)baseHp / baseMaxHp;
         public int CollectedArtifacts { get; private set; }
@@ -79,6 +83,8 @@ namespace FightWorlds.Placement
         {
             soundFeedback.PlaySound(SoundType.Click);
             id = ID;
+            if (selectedHex != null && id > 0)
+                PlaceStructure(selectedHex, 0, true);
         }
 
         public List<Collider> GetBuildingsColliders() =>
@@ -92,6 +98,7 @@ namespace FightWorlds.Placement
         {
             grid.GetXZ(pos, out int x, out int z);
             GridObject obj = grid.GetGridObject(x, z);
+            selectedHex = null;
             if (id < 0)
                 SelectBuilding(pos, obj);
             else if (id == 0)
@@ -149,6 +156,11 @@ namespace FightWorlds.Placement
         }
 
         public void ResetSelectedBuilding() => selectedBuilding = null;
+        public void ResetSelectedHex()
+        {
+            selectPoint.transform.position += Vector3.down * selectorUnder;
+            selectedHex = null;
+        }
 
         private void Awake()
         {
@@ -232,7 +244,13 @@ namespace FightWorlds.Placement
             if (selectedBuilding == null)
             {
                 if (pos.y != heightOffset.y)
+                {
+                    ui.SwitchBuildingPanel(true);
+                    selectedHex = obj;
+                    selectPoint.transform.position =
+                        selectedHex.Hex.position + Vector3.up * selectorOffset;
                     return;
+                }
                 Building building = null;
                 foreach (Transform child in obj.Hex)
                     if (child.TryGetComponent(out building))
@@ -240,7 +258,6 @@ namespace FightWorlds.Placement
                 selectedBuilding =
                 (building.State == BuildingState.Building &&
                 !building.IsProducing) ? building : null;
-
             }
             else
                 ResetSelectedBuilding();
@@ -296,7 +313,12 @@ namespace FightWorlds.Placement
             building.Rotate(rotation);
             building.OnBuilded = OnPlaceFinish;
             buildingsList[building.BuildingData.ID].Add(building);
-            if (!playerPlace) building.PermanentBuild();
+            if (playerPlace)
+                ui.ShowBuildingMenu(building);
+            else
+                building.PermanentBuild();
+            ui.SwitchBuildingPanel(false);
+            selectedHex = null;
             StopPlacement();
         }
 
