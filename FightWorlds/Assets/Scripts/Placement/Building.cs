@@ -11,10 +11,10 @@ namespace FightWorlds.Placement
 {
     public class Building : Damageable
     {
+        [field: SerializeField] public int BuildingTime { get; private set; }
         [SerializeField] private BuildingType buildingType;
         [SerializeField] private ResourceType resourceType;
         [SerializeField] private float produceTime;
-        [SerializeField] private int buildingTime;
         [SerializeField] private int resourcesPerOperation;
         [SerializeField] private Material unActive;
         public BuildingData BuildingData;
@@ -55,7 +55,7 @@ namespace FightWorlds.Placement
         private IEnumerator Build()
         {
             IsProducing = true;
-            yield return new WaitForSeconds(buildingTime);
+            yield return new WaitForSeconds(BuildingTime);
             IsProducing = false;
             PermanentBuild();
         }
@@ -243,8 +243,8 @@ namespace FightWorlds.Placement
         private IEnumerator Repair()
         {
             IsProducing = true;
-            yield return new WaitForSeconds(buildingTime);
-            //new WaitForSeconds((float)currentHp / startHp * buildingTime);
+            yield return new WaitForSeconds(BuildingTime);
+            //new WaitForSeconds((float)currentHp / startHp * BuildingTime);
             IsProducing = false;
             PermanentRepair();
         }
@@ -290,7 +290,7 @@ namespace FightWorlds.Placement
         {
             placement.ui.NewActiveProcess(gameObject, ProcessType.Upgrading);
             IsProducing = true;
-            yield return new WaitForSeconds(buildingTime);
+            yield return new WaitForSeconds(BuildingTime);
             IsProducing = false;
             PermanentUpgrade();
         }

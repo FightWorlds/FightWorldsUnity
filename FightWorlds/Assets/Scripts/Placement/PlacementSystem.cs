@@ -42,7 +42,8 @@ namespace FightWorlds.Placement
         private const int rotationAngle = 60;
         private const int shuttleOffset = 13;
         private const int artifactsPerBuilding = 15;
-        private const float evacuateMultiplier = 0.9f;
+        private const float evacuateHp = 0.9f;
+        private const float criticalHp = 0.3f;
         private const float boostMltpl = 0.125f;
         private const float selectorOffset = 2.5f;
         private const float selectorUnder = 10f;
@@ -188,7 +189,7 @@ namespace FightWorlds.Placement
             {
                 // TODO turn off extra features for that mode
                 // UI elements, etc
-                ui.SwitchMainCanvas(false);
+                ui.HideMainCanvas();
                 ui.ShowAttackCanvas();
             }
         }
@@ -212,8 +213,23 @@ namespace FightWorlds.Placement
 
         private void UpdateBaseHpSlider()
         {
-            ui.UpdateBaseHpBar(HpPercent);
-            if (HpPercent < evacuateMultiplier && evacuation == null)
+            int spriteIndex;
+            if (HpPercent > evacuateHp)
+                spriteIndex = 0;
+            else if (HpPercent > criticalHp)
+            {
+                InstantiateEvacuation();
+                spriteIndex = 1;
+            }
+            else
+                spriteIndex = 2;
+
+            ui.UpdateBaseHpBar(HpPercent, spriteIndex);
+        }
+
+        private void InstantiateEvacuation()
+        {
+            if (evacuation == null)
             {
                 evacuation = Instantiate(shuttlePrefab, startBuildings[0].position +
                     Vector3.up * shuttleOffset, Quaternion.identity)
@@ -324,7 +340,6 @@ namespace FightWorlds.Placement
 
         private void OnPlaceFinish(Building building)
         {
-
             int newHp = GetTurretsFiringStats().Strength;
             // what if boost expired?
             baseHp += newHp;

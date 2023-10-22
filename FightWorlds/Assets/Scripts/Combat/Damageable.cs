@@ -43,6 +43,7 @@ namespace FightWorlds.Combat
         protected float distance => Vector3.Distance(destination, currentPosition);
         protected Vector3 currentPosition => transform.position;
         public int Hp => currentHp;
+        public int MaxHp => startHp;
 
         protected void OnEnable() => SubscribeOnEvents();
         protected void OnDisable() => UnsubscribeFromEvents();

@@ -281,10 +281,10 @@ MonoBehaviour:
   fire: {fileID: 1043674945656650867}
   hitParticle: {fileID: 7323556982105220717}
   placement: {fileID: 0}
+  <BuildingTime>k__BackingField: 10
   buildingType: 4
   resourceType: 0
   produceTime: 1
-  buildingTime: 10
   resourcesPerOperation: 1
   unActive: {fileID: 2100000, guid: b9bbabadfb1ce8a40bb0131aa48448b8, type: 2}
   BuildingData:

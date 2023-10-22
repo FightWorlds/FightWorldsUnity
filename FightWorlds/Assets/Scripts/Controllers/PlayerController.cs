@@ -48,6 +48,7 @@ namespace FightWorlds.Controllers
             {
                 NewLevel?.Invoke();
                 int credits = Level() * creditsMultiplier;
+                ui.SetDefaultLayout();
                 ui.ShowLevelUp(Level(), credits);
                 resourceSystem.CollectResources(credits, ResourceType.Credits);
             }

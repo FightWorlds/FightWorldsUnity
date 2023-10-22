@@ -52,7 +52,7 @@ namespace FightWorlds.Controllers
                     if (Vector3.Distance(lastPosition, Input.mousePosition) >
                     mouseMinMove)
                     {
-                        placement.ui.SwitchBuildingPanel(false);
+                        placement.ui.SetDefaultLayout();
                         placement.ResetSelectedHex();
                     }
 

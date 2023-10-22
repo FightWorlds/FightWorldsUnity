@@ -1021,7 +1021,6 @@ MonoBehaviour:
   mask:
     serializedVersion: 2
     m_Bits: 256
-  attackRadius: 0
   damage: 0
   startHp: 1200
   particleOffset: 3.5
@@ -1030,10 +1029,10 @@ MonoBehaviour:
   fire: {fileID: 0}
   hitParticle: {fileID: 3658883078531638106}
   placement: {fileID: 0}
+  <BuildingTime>k__BackingField: 10
   buildingType: 0
   resourceType: 0
   produceTime: 0
-  buildingTime: 10
   resourcesPerOperation: 0
   unActive: {fileID: 2100000, guid: b9bbabadfb1ce8a40bb0131aa48448b8, type: 2}
   BuildingData:
