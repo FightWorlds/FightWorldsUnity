@@ -14,14 +14,16 @@ namespace FightWorlds.Boost
         [SerializeField] private BoostTimeExpire[] ColorByTime;
         [SerializeField] private UnityEngine.Grid grid;
         [SerializeField] private Transform activePanel;
+        [SerializeField] private Transform sight;
         [SerializeField] private GameObject hexPrefab;
         [SerializeField] private Vector2Int size;
         [SerializeField] private int radius;
+        [SerializeField] private float sightOffset;
         [SerializeField] private PlacementSystem placement;
 
         private const int maxTime = 86400; // day in sec
         private const int defaultAddTime = 10800; // 3 hours
-        private const float boostPercentMltpl = 12.5f; // 3 hours
+        private const float boostPercentMltpl = 12.5f;
 
         private static Vector3Int selectedCell;
 
@@ -172,15 +174,22 @@ namespace FightWorlds.Boost
         {
             if (coords == Vector3Int.zero)
                 return;
-            int index = BoostsList.FindIndex(b => b.GridCoords == coords);
+            var boost = BoostsList.Find(b => b.GridCoords == coords);
             cell.AddComponent<Button>().onClick.AddListener(() =>
             {
-                placement.player.RegularSave();
-                PlacementSystem.AttackMode = true;
                 selectedCell = coords;
-                placement.soundFeedback.PlaySound(Audio.SoundType.SceneRestart);
-                SceneManager.LoadSceneAsync(SceneManager.GetActiveScene().name);
+                sight.position = cell.position + Vector3.down * sightOffset;
+                sight.GetChild(1).GetComponent<TextMeshProUGUI>().text =
+                    $"{boost.Type} +{boostPercentMltpl}%";
             });
+        }
+
+        public void SceneRestart()
+        {
+            placement.player.RegularSave();
+            PlacementSystem.AttackMode = true;
+            placement.soundFeedback.PlaySound(Audio.SoundType.SceneRestart);
+            SceneManager.LoadSceneAsync(SceneManager.GetActiveScene().name);
         }
 
         private double GetCurrentSec() =>

@@ -13,7 +13,7 @@ namespace FightWorlds.UI
         [SerializeField] private CameraController cameraController;
         [SerializeField] private GameObject prefab;
         [SerializeField] private Transform container;
-        [SerializeField] private GameObject firstNotification;
+        [SerializeField] private TextMeshProUGUI counter;
         [SerializeField] private BuildingMenuUI buildingMenu;
         private Dictionary<Building, GameObject> buildingsUnderAttack;
 
@@ -43,29 +43,21 @@ namespace FightWorlds.UI
             if (buildingsUnderAttack.Count >= listSize ||
                 buildingsUnderAttack.ContainsKey(building))
                 return;
-            GameObject newDamagedObj = (GetFirstText().text == "") ?
-                firstNotification : Instantiate(prefab, container);
+            GameObject newDamagedObj = Instantiate(prefab, container);
             newDamagedObj.transform.GetChild(0).GetComponent<TextMeshProUGUI>()
                 .text = building.name;
             newDamagedObj.GetComponent<Button>()
                 .onClick.AddListener(() => MoveToBuilding(building));
             buildingsUnderAttack.Add(building, newDamagedObj);
+            UpdateAttackCounter();
         }
 
         public void RemoveFromUnderAttack(Building building)
         {
             if (!buildingsUnderAttack.Remove(building, out GameObject uiObj))
                 return;
-            if (uiObj == firstNotification)
-            {
-                var button = uiObj.GetComponent<Button>();
-                button.onClick.RemoveAllListeners();
-                button.onClick.AddListener(OpenList);
-                GetFirstText().text = "";
-                FillProgressBar(uiObj, fillLength);
-            }
-            else
-                Destroy(uiObj);
+            Destroy(uiObj);
+            UpdateAttackCounter();
         }
 
         public void CollapseList() => container.gameObject.SetActive(false);
@@ -82,12 +74,8 @@ namespace FightWorlds.UI
 
         }
 
-        private void OpenList() =>
-            container.gameObject.SetActive(true);
-
-        private TextMeshProUGUI GetFirstText() =>
-            firstNotification.transform.GetChild(0)
-            .GetComponent<TextMeshProUGUI>();
+        private void UpdateAttackCounter() =>
+          counter.text = buildingsUnderAttack.Count.ToString();
 
         private void FillProgressBar(GameObject ui, int count) =>
             ui.transform.GetChild(1).GetChild(0)

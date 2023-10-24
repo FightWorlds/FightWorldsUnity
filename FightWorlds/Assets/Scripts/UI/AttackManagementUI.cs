@@ -25,6 +25,7 @@ public class AttackManagementUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI timer;
     [SerializeField] private Text successPercent;
     [SerializeField] private float timeLeft;
+    [SerializeField] private GameObject shuttlePrefab;
 
     private const float widthKoef = 7f;
     private const float heightKoef = 10f;
@@ -32,6 +33,7 @@ public class AttackManagementUI : MonoBehaviour
     private const int minSuccess = 60;
     private const int restoreLost = 5;
     private const int restoreSuccess = 2;
+    private const int spawnOffset = 50;
 
     private Vector2 hMinBorders;
     private Vector2 hMaxBorders;
@@ -118,6 +120,8 @@ public class AttackManagementUI : MonoBehaviour
         holder.SetActive(false);
         spawnPosition = selectedWorldPosition;
         isDestinationSelection = true;
+        Instantiate(shuttlePrefab,
+            spawnPosition + Vector3.up * spawnOffset, Quaternion.identity);
     }
 
     private void OnAttackClick()
