@@ -70,7 +70,7 @@ namespace FightWorlds.UI
             };
             statesButton = new(){
                 {EvacuationState.None, "EVACUATING"},
-                {EvacuationState.Warn, "CALL\nEVACUATING"},
+                {EvacuationState.Warn, "CALL\nEVACUATION"},
                 {EvacuationState.Land, ""},
                 {EvacuationState.Load, "TAKE OFF\nTO SAVE"},
                 {EvacuationState.Evacuate, ""},

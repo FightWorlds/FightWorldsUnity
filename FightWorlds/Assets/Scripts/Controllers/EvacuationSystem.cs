@@ -11,6 +11,7 @@ namespace FightWorlds.Controllers
         [SerializeField] private int loadAmount;
         [SerializeField] private float evacuateOperationTime;
         [SerializeField] private float landingTime;
+        [SerializeField] private GameObject particles;
         public PlacementSystem placement;
         public bool IsGameFinished;
 
@@ -60,6 +61,7 @@ namespace FightWorlds.Controllers
         private IEnumerator CollectArtifacts()
         {
             int artifactsPerOperation;
+            particles.SetActive(true);
             while (!IsGameFinished)
             {
                 artifactsPerOperation =
@@ -84,6 +86,7 @@ namespace FightWorlds.Controllers
 
         private IEnumerator ShuttleEvacuating()
         {
+            particles.SetActive(false);
             animator.SetBool("Evacuating", true);
             placement.ui.SwitchButtonState(UI.EvacuationState.Evacuate, null);
             yield return FlyShuttle();
