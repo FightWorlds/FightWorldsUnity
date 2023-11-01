@@ -28,7 +28,7 @@ namespace FightWorlds.UI
         [SerializeField] private List<GameObject> setupElements;
         [SerializeField] private List<GameObject> processElements;
 
-        private const int defaultDamage = 2;
+        private const int defaultDamage = 4;
         private const int defaultRate = 1;
         private const int defaultStrength = 2;
         private const int defaultRange = 10;
@@ -36,8 +36,8 @@ namespace FightWorlds.UI
         private const int maxStoredUnits = 300;
         private const int instantUnitPrice = 1;
         private const int unitUpgradeCost = 200;
-        private const int unitTimeInSecondsCost = 20;
-        private const int unitEnergyCost = 200;
+        private const int unitTimeInSecondsCost = 10;
+        private const int unitEnergyCost = 100;
         private const int unitMetalCost = 100;
         private const int unitArtifactsCost = 10;
         private const int dockyardLevel = 1;
