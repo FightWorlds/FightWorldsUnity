@@ -50,7 +50,7 @@ namespace FightWorlds.UI
             simpleText.text = text;
             instantText.text = text;
             string[] coords = building.transform.parent.name.Split(" ");
-            infoText.text = $"{building.name}\nX: {coords[1]}   Y: {coords[2]}";
+            infoText.text = $"{building.name}\nX: {coords[1]} Y: {coords[2]} | Lvl: {building.BuildingLvl}";
             infoText.gameObject.SetActive(false);
             Vector3 screenPos =
                 Camera.main.WorldToScreenPoint(building.transform.position);
@@ -67,8 +67,11 @@ namespace FightWorlds.UI
 
         public void RotateBuilding()
         {
-            if (selectedBuilding != null)
-                selectedBuilding.Rotate();
+            if (selectedBuilding == null)
+                return;
+            float y = selectedBuilding.Rotate() - 180f;
+            if (selectedBuilding.IsCustom(out StartBuilding building))
+                building.YRotationAngle = (int)y;
         }
 
         public void Action(bool instant)

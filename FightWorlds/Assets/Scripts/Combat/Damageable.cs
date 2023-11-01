@@ -68,8 +68,12 @@ namespace FightWorlds.Combat
         public void TakeDamage(int damage, Vector3 fromPos) =>
             DamageTaken?.Invoke(damage, fromPos);
 
-        public void Rotate(float angle = rotationAngle) =>
-            transform.GetChild(0).Rotate(Vector3.up, angle);
+        public float Rotate(float angle = rotationAngle)
+        {
+            var model = transform.GetChild(0);
+            model.Rotate(Vector3.up, angle);
+            return model.rotation.eulerAngles.y;
+        }
 
         protected virtual void OnDamageTaken(int damage, Vector3 fromPos)
         {

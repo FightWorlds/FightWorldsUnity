@@ -6,6 +6,7 @@ using UnityEngine;
 using FightWorlds.UI;
 using FightWorlds.Controllers;
 using FightWorlds.Combat;
+using FightWorlds.Boost;
 
 namespace FightWorlds.Placement
 {
@@ -37,8 +38,13 @@ namespace FightWorlds.Placement
         protected override void Awake()
         {
             base.Awake();
-            BuildingLvl = 1;
             State = BuildingState.Building;
+            StartCoroutine(SecondFrame());
+        }
+        private IEnumerator SecondFrame()
+        {
+            yield return null;
+            BuildingLvl = placement.BuildingSaveLevel(BuildingData.ID);
             defaultMaterials = new();
             foreach (Transform child in transform.GetChild(0))
             {
@@ -60,10 +66,18 @@ namespace FightWorlds.Placement
             PermanentBuild();
         }
 
+        public IEnumerator PermanentBuildCoroutine()
+        {
+            yield return null;
+            PermanentBuild();
+        }
+
         public void PermanentBuild()
         {
             int counter = 0;
             UpdateStats(placement.GetTurretsFiringStats());
+            if (!PlacementSystem.AttackMode)
+                currentHp = startHp = placement.GetBuildingHp(this);
             OnBuilded(this);
             placement.ui.RemoveProcess(gameObject, true);
             placement.ResetSelectedBuilding();
@@ -91,6 +105,13 @@ namespace FightWorlds.Placement
         {
             IsProducing = false;
             StopAllCoroutines();
+        }
+
+        public bool IsCustom(out StartBuilding startBuilding)
+        {
+            startBuilding = placement.player.Base.Buildings
+                .Find(sb => sb.Position == transform.position);
+            return startBuilding != null;
         }
 
         private void Update()
@@ -299,9 +320,10 @@ namespace FightWorlds.Placement
         {
             placement.ui.RemoveProcess(gameObject, true);
             State = BuildingState.Default;
-            // TODO: add stats changing?
+            int hpBefore = currentHp;
             BuildingLvl++;
-            placement.UpdateBaseHp(startHp);//rename method
+            placement.Upgrade(this);
+            placement.UpdateBaseHp(hpBefore - currentHp);//rename method
         }
     }
 }

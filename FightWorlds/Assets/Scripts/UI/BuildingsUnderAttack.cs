@@ -66,9 +66,9 @@ namespace FightWorlds.UI
         {
             Vector3 buildingPos = building.transform.position;
             Vector3 cameraPos =
-                new(buildingPos.x + cameraController.XOffset,
+                new(buildingPos.x - cameraController.XOffset,
                 cameraController.yOffset,
-                buildingPos.z + cameraController.ZOffset);
+                buildingPos.z - cameraController.ZOffset);
             cameraController.MoveToNewPosition(cameraPos, true);
             buildingMenu.ShowBuildingMenu(building);
 
