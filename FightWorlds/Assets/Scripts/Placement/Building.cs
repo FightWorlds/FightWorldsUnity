@@ -320,10 +320,13 @@ namespace FightWorlds.Placement
         {
             placement.ui.RemoveProcess(gameObject, true);
             State = BuildingState.Default;
-            int hpBefore = currentHp;
-            BuildingLvl++;
             placement.Upgrade(this);
-            placement.UpdateBaseHp(hpBefore - currentHp);//rename method
+        }
+
+        public void LocalUpgrade()
+        {
+            BuildingLvl++;
+            currentHp = startHp = placement.GetBuildingHp(this);
         }
     }
 }

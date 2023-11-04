@@ -40,7 +40,7 @@ namespace FightWorlds.Placement
 
         private const int shuttleOffset = 13;
         private const int artifactsPerBuilding = 15;
-        private const float evacuateHp = 0.9f;
+        private const float evacuateHp = 0.8f;
         private const float criticalHp = 0.3f;
         private const float boostMltpl = 0.125f;
         private const float selectorOffset = 2.5f;
@@ -65,6 +65,12 @@ namespace FightWorlds.Placement
             baseHp -= damage;
             UpdateBaseHpSlider();
             if (baseHp <= 0) AttackManagementUI.GameShouldFinish = true;
+        }
+
+        public void UpdateBaseMaxHp(int damage)
+        {
+            baseMaxHp -= damage;
+            UpdateBaseHpSlider();
         }
 
         public void DestroyObj(Vector3 pos, Building building)
@@ -167,7 +173,15 @@ namespace FightWorlds.Placement
 
         public void Upgrade(Building building)
         {
+            int newHp = 0;
             player.Upgrades.Saves[building.BuildingData.ID]++;
+            foreach (var element in buildingsList[building.BuildingData.ID])
+            {
+                int hpBefore = element.Hp;
+                element.LocalUpgrade();
+                newHp += hpBefore - element.Hp;
+            }
+            UpdateBaseMaxHp(newHp);
             player.RegularSave();
         }
 

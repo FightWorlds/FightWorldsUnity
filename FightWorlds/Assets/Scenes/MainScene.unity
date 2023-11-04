@@ -7741,8 +7741,8 @@ MonoBehaviour:
   - {x: 68.02, y: 3, z: 29.81}
   chances: 1e000000280000001e000000
   startSpawnDelay: 3
-  oneWaveNpcCount: 10
-  maxSpawnSize: 250
+  oneWaveNpcCount: 9
+  maxSpawnSize: 200
   bottomSpawnRate: 10
   spawnRadius: 6
   npcPrefab: {fileID: 4747648060949981398, guid: 8a5a2a116208e604ea776c79eaeb22d7,
@@ -103734,18 +103734,6 @@ MonoBehaviour:
   - Position: {x: -18, y: 0, z: -20.75}
     YRotationAngle: 60
     ID: 11
-  - Position: {x: -13, y: 0, z: -19}
-    YRotationAngle: 60
-    ID: 11
-  - Position: {x: -8, y: 0, z: -17.25}
-    YRotationAngle: 60
-    ID: 11
-  - Position: {x: -3, y: 0, z: -15.5}
-    YRotationAngle: 60
-    ID: 11
-  - Position: {x: 1, y: 0, z: -18.75}
-    YRotationAngle: 60
-    ID: 11
   - Position: {x: 5, y: 0, z: -22}
     YRotationAngle: 60
     ID: 11
@@ -103844,7 +103832,7 @@ MonoBehaviour:
     type: 3}
   hexMaterial: {fileID: 2100000, guid: 533cfb3fb425c5343a624a07a338172a, type: 2}
   saveDelay: 10
-  turretAttackRadius: 40
+  turretAttackRadius: 30
   npcAttackRadius: 10
   selectPoint: {fileID: 841366693}
   soundFeedback: {fileID: 963194231}
