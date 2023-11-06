@@ -19,12 +19,24 @@ namespace FightWorlds.Controllers
             {ResourceType.Metal, startResourcesAmount},
             {ResourceType.Energy, startResourcesAmount},
             {ResourceType.Credits, info.Credits},
+            {ResourceType.TotalArtifacts, info.Artifacts},
+            {ResourceType.Units, info.Units},
+            {ResourceType.UnitsToHeal, info.UnitsToHeal},
         };
             StorageSpace = new Dictionary<ResourceType, int>()
         {
             {ResourceType.Metal, defaultSpace},
             {ResourceType.Energy, defaultSpace},
         };
+        }
+
+        public bool CanUseResources(KeyValuePair<ResourceType, int>[] resources)
+        {
+            foreach (var resource in resources)
+                if (resource.Value > Resources[resource.Key])
+                    return false;
+
+            return true;
         }
 
         public bool UseResources(int amount, ResourceType type)

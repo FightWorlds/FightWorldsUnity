@@ -11,6 +11,7 @@ namespace FightWorlds.Controllers
         [SerializeField] private int loadAmount;
         [SerializeField] private float evacuateOperationTime;
         [SerializeField] private float landingTime;
+        [SerializeField] private GameObject particles;
         public PlacementSystem placement;
         public bool IsGameFinished;
 
@@ -23,27 +24,30 @@ namespace FightWorlds.Controllers
         {
             if (IsGameFinished) return;
             IsGameFinished = true;
-            if (isShuttleCalled) return;
+            StopAllCoroutines();
+            if (isShuttleCalled && !isFlying)
+            {
+                StartCoroutine(ShuttleEvacuating());
+                return;
+            };
             StopGame();
         }
 
         private void Start()
         {
-            placement.ui.SwitchCallButtonState(true);
-            placement.ui.AddListenerOnCall(() =>
+            placement.ui.SwitchButtonState(UI.EvacuationState.Warn, () =>
             {
                 if (!isShuttleCalled)
                     StartCoroutine(EvacuatingPipeline());
             });
-            placement.ui.AddListenerOnUp(FinishGame);
         }
 
         private void Update()
         {
             if (isFlying)
             {
-                leftTime -= Time.deltaTime;
                 placement.ui.ChangeTimeText(leftTime);
+                leftTime -= Time.deltaTime;
             }
         }
 
@@ -52,12 +56,12 @@ namespace FightWorlds.Controllers
             yield return ShuttleLanding();
             yield return CollectArtifacts();
             yield return ShuttleEvacuating();
-            StopGame();
         }
 
         private IEnumerator CollectArtifacts()
         {
             int artifactsPerOperation;
+            particles.SetActive(true);
             while (!IsGameFinished)
             {
                 artifactsPerOperation =
@@ -73,41 +77,43 @@ namespace FightWorlds.Controllers
         private IEnumerator ShuttleLanding()
         {
             isShuttleCalled = true;
-            placement.ui.SwitchCallButtonState(false);
+            placement.ui.SwitchButtonState(UI.EvacuationState.Land, null);
             animator.SetBool("Landing", true);
             yield return FlyShuttle();
             animator.SetBool("Landing", false);
-            placement.ui.SwitchEvacuationButtonState(true);
+            placement.ui.SwitchButtonState(UI.EvacuationState.Load, FinishGame);
         }
 
         private IEnumerator ShuttleEvacuating()
         {
+            particles.SetActive(false);
             animator.SetBool("Evacuating", true);
-            placement.ui.SwitchEvacuationButtonState(false);
+            placement.ui.SwitchButtonState(UI.EvacuationState.Evacuate, null);
             yield return FlyShuttle();
+            StopGame();
         }
 
         private IEnumerator FlyShuttle()
         {
             leftTime = landingTime;
             isFlying = true;
-            placement.ui.SwitchEvacuationTimerState(isFlying);
             yield return new WaitForSeconds(landingTime);
             isFlying = false;
-            placement.ui.SwitchEvacuationTimerState(isFlying);
         }
 
         private void StopGame()
         {
-            placement.ui.FinishGamePopUp(collectedArtifacts);
+            placement.ui.SwitchButtonState(UI.EvacuationState.None, () => { });
+            placement.ui.SetDefaultLayout();
+            placement.ui.FinishGamePopUp(collectedArtifacts, RestartGame);
             placement.player.SavePlayerResult(collectedArtifacts);
             Time.timeScale = 0f;
-            placement.ui.AddListenerOnRestart(RestartGame);
         }
 
         private void RestartGame()
         {
-            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+            placement.soundFeedback.PlaySound(Audio.SoundType.SceneRestart);
+            SceneManager.LoadSceneAsync(SceneManager.GetActiveScene().name);
             Time.timeScale = 1f;
         }
     }

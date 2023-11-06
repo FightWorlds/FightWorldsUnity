@@ -6,7 +6,6 @@ namespace FightWorlds.Grid
     {
         [SerializeField] private Vector3 offset;
         [SerializeField] private Vector3 halfExtents;
-        [SerializeField] private Material hexMaterial;
         [SerializeField] private LayerMask hexMask;
         [SerializeField] private int width;
         [SerializeField] private int height;
@@ -18,7 +17,7 @@ namespace FightWorlds.Grid
             GridHex<GridObject> gridHex =
                 new GridHex<GridObject>(width, height, cellSize, offset,
                 (GridHex<GridObject> g, int x, int y) =>
-                new GridObject(hexMaterial, x, y));
+                new GridObject(x, y));
             // TODO: redo gridhex array as list?
             for (int x = 0; x < width; x++)
             {
@@ -35,7 +34,6 @@ namespace FightWorlds.Grid
                     Transform visualTransform = colliders[0].transform.parent;
                     gridHex.GetGridObject(x, z).Hex =
                     visualTransform;
-                    visualTransform.name = $"Hex {x} {z}";
                 }
             }
             return gridHex;

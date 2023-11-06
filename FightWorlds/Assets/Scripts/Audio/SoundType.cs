@@ -1,10 +1,14 @@
 namespace FightWorlds.Audio
 {
+    [System.Serializable]
     public enum SoundType
     {
+        Select,
         Click,
         Place,
         WrongPlacement,
-        Break
+        Destroy,
+        Shot,
+        SceneRestart
     }
 }

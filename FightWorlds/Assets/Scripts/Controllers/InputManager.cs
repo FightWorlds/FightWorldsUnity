@@ -18,6 +18,7 @@ namespace FightWorlds.Controllers
         private Ray mouseRay;
         private Vector3 lastPosition;
         private Func<bool> PointerOverUi;
+        private LayerMask terrainLayer;
 
         private void Awake()
         {
@@ -26,35 +27,75 @@ namespace FightWorlds.Controllers
             PointerOverUi = SystemInfo.deviceType == DeviceType.Desktop ?
             () => EventSystem.current.IsPointerOverGameObject() :
             () => EventSystem.current.IsPointerOverGameObject(0);
+            terrainLayer = LayerMask.NameToLayer("Terrain");
         }
 
         private void Update()
         {
             mouseRay = cameraController.MouseRay();
             bool isOverUi = PointerOverUi();
+            Action OnDown;
+            Action OnToggle;
+            Action OnUp;
+            if (PlacementSystem.AttackMode)
+            {
+                OnDown = () => LocateAtLand();
+                OnToggle = () => cameraController.HandleDrag(mouseRay);
+                OnUp = () => { };
+            }
+            else
+            {
+                OnDown = () => FindTarget();
+                OnToggle = () =>
+                {
+                    placement.ui.CloseBuildingMenu();
+                    if (Vector3.Distance(lastPosition, Input.mousePosition) >
+                    mouseMinMove)
+                    {
+                        placement.ui.SetDefaultLayout();
+                        placement.ResetSelectedHex();
+                    }
+
+                    if (!DragTarget())
+                        cameraController.HandleDrag(mouseRay);
+                };
+                OnUp = () => placement.ResetSelectedBuilding();
+            }
             if (Input.GetMouseButtonDown(0) && !isOverUi)
             {
                 lastPosition = Input.mousePosition;
                 cameraController.HandlePress(mouseRay);
-                if (Vector3.Distance(lastPosition, Input.mousePosition)
-                    < mouseMinMove)
-                    FindTarget();
+                if (Vector3.Distance(lastPosition, Input.mousePosition) <
+                mouseMinMove)
+                    OnDown();
             }
             else if (Input.GetMouseButtonUp(0))
             {
                 lastPosition = Vector3.positiveInfinity;
-                placement.ResetSelectedBuilding();
+                OnUp();
             }
             else if (Input.GetMouseButton(0) && !isOverUi)
             {
-                placement.ui.CloseBuildingMenu();
-                if (!DragTarget())
-                    cameraController.HandleDrag(mouseRay);
+                OnToggle();
             }
         }
 
         public bool IsPointerOverUI()
             => EventSystem.current.IsPointerOverGameObject();
+
+        private bool LocateAtLand()
+        {
+            var hits = Physics.RaycastAll(mouseRay, 100f);
+            if (hits.Length > 0)
+            {
+                var hit = hits[0];
+                bool isLand = (hits.Length == 1) &&
+                    (hit.transform.gameObject.layer == terrainLayer);
+                placement.TapOnLand(hit.point, isLand);
+                return true;
+            }
+            return false;
+        }
 
         private bool FindTarget()
         {

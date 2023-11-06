@@ -12,6 +12,7 @@ namespace FightWorlds.Controllers
         [SerializeField] private int buildingTime;
         [SerializeField] private int heightOffset;
         [SerializeField] private Material unActive;
+        [SerializeField] private GameObject particles;
         private const float extraSpeed = 1f;
         private const float dockHeight = 1.4f;
         private const float width = 4f;
@@ -65,9 +66,9 @@ namespace FightWorlds.Controllers
 
         private IEnumerator Process()
         {
-            //start processing animation
+            particles.SetActive(true);
             yield return new WaitForSeconds(timeProcess);
-            //finish anim
+            particles.SetActive(false);
         }
 
         private IEnumerator MoveBackwards(bool extra)
@@ -130,7 +131,7 @@ namespace FightWorlds.Controllers
         private void OnTriggerEnter(Collider other)
         {
             if (!other.TryGetComponent(out Building building) ||
-                building.BuildingType != BuildingType.Dock)
+                building.BuildingType != BuildingType.RepairDock)
                 for (int i = 0; i < parts.Count; i++)
                     parts.ElementAt(i).Key.GetComponent<Renderer>()
                     .material = unActive;

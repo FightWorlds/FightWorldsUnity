@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using FightWorlds.Controllers;
+using FightWorlds.Placement;
+using System.Linq;
 
 namespace FightWorlds.Combat
 {
@@ -12,15 +14,19 @@ namespace FightWorlds.Combat
         [SerializeField] private float speed;
         [SerializeField] private int experienceForKill;
 
-        private const float searchDelay = 1f;
+        private const float searchDelay = 0.5f;
 
         private Action<GameObject> DeadAction;
         private CharacterController character;
+        protected bool isMainDestinationReached;
+
         public NPC Init(Action<GameObject> action)
         {
             DeadAction = action;
             return this;
         }
+
+        public void SetMainDestination(Vector3 pos) => mainDestination = pos;
 
         protected override void Awake()
         {
@@ -33,6 +39,10 @@ namespace FightWorlds.Combat
         {
             if (placement == null)
                 return null;
+            if (PlacementSystem.AttackMode && !isMainDestinationReached)
+                return Physics.OverlapCapsule(currentPosition - Vector3.up,
+                currentPosition + Vector3.up, attackRadius, mask).ToList();
+
             return placement.GetBuildingsColliders();
         }
 
@@ -43,6 +53,19 @@ namespace FightWorlds.Combat
                     MoveToTarget();
                 else
                     target = null;
+            if (PlacementSystem.AttackMode)
+            {
+                FindTargetInDetections();
+                if (isMainDestinationReached)
+                    return;
+                MoveToTarget();
+                if (Vector3.Distance(mainDestination, currentPosition) < attackRadius + 1f)
+                {
+                    isMainDestinationReached = true;
+                    mainDestination = Vector3.positiveInfinity;
+                }
+
+            }
         }
 
         private void MoveToTarget()
@@ -70,7 +93,7 @@ namespace FightWorlds.Combat
         protected override void Die()
         {
             base.Die();
-            Process();
+            if (!PlacementSystem.AttackMode) Process();
             var boom = placement.GetBoomExplosion(true);
             boom.transform.position = currentPosition;
             DeadAction(gameObject);
@@ -86,6 +109,7 @@ namespace FightWorlds.Combat
         public void ResetLogic()
         {
             base.Awake();
+            isMainDestinationReached = false;
             searchCoroutine = StartCoroutine(SearchTarget());
         }
     }

@@ -3,12 +3,13 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.Pool;
 using FightWorlds.Placement;
+using FightWorlds.UI;
 
 namespace FightWorlds.Combat
 {
     public class Emitter : MonoBehaviour
     {
-        [SerializeField] private Transform[] emitters;
+        [SerializeField] private Vector3[] emitters;
         [Tooltip("Total sum of chances should be equal 100")]
         [SerializeField][Range(0, 100)] private int[] chances;
         [SerializeField] private float startSpawnDelay;
@@ -17,23 +18,47 @@ namespace FightWorlds.Combat
         [SerializeField] private int bottomSpawnRate;
         [SerializeField] private float spawnRadius;
         [SerializeField] private GameObject npcPrefab;
+        [SerializeField] private GameObject unitPrefab;
         [SerializeField] private GameObject buildingsExplosion;
         [SerializeField] private GameObject npcsExplosion;
         [SerializeField] private PlacementSystem placement;
+
+        public int DestroyedCount { get; private set; }
+
         private ObjectPool<GameObject> poolOfNpc;
         private ObjectPool<GameObject> poolOfBuildingsExplosion;
         private ObjectPool<GameObject> poolOfNPCsExplosion;
         private const int maxChance = 100;
         private float timePassed;
         private float lastSpawnTime; // TODO: maybe switch to coroutine?
-        private bool isWaveStopped;
+        private int spawnedCounter;
         private Vector3 putAwayPosition = new Vector3(100, 100, 100);
+        private Vector3 destinationOfNpc;
         private System.Random random;
         private FiringStats firingStats;
         private int len => emitters.Length;
 
         public GameObject GetBoomExplosion(bool isNpc) =>
         isNpc ? poolOfNPCsExplosion.Get() : poolOfBuildingsExplosion.Get();
+
+        public void SetupForAttack(Vector3 pos, Vector3 destination)
+        {
+            maxSpawnSize = placement.player.resourceSystem
+                .Resources[Controllers.ResourceType.Units];
+            if (maxSpawnSize == 0)
+            {
+                AttackManagementUI.GameShouldFinish = true;
+                return;
+            }
+            bottomSpawnRate = 0;
+            chances = new int[1] { 100 };
+            float planeHeight = transform.GetChild(1).position.y;
+            if (pos.y < planeHeight)
+                pos = new Vector3(pos.x, planeHeight, pos.z);
+            emitters = new Vector3[1] { pos };
+            destinationOfNpc = destination;
+            Awake();
+        }
 
         private void OnDestroy() => placement.player.NewLevel -= OnNewLevel;
 
@@ -62,18 +87,28 @@ namespace FightWorlds.Combat
 
         private GameObject CreateNpc()
         {
-            var obj = Instantiate(npcPrefab, transform);
+            var obj = Instantiate(PlacementSystem.AttackMode ?
+                unitPrefab : npcPrefab, transform);
             obj.GetComponent<NPC>().Init(KillNpc).placement = placement;
             return obj;
         }
 
         private void OnGetNpc(GameObject npc)
         {
+            spawnedCounter++;
             npc.transform.position = GetRandomSpawnPos();
             npc.SetActive(true);
             npc.GetComponent<CharacterController>().enabled = true;
             NPC logic = npc.GetComponent<NPC>();
             logic.ResetLogic();
+            if (PlacementSystem.AttackMode)
+            {
+                logic.SetMainDestination(destinationOfNpc);
+                var stats =
+                    UnitsMenu.DefaultFiringStats * placement.player.UnitsLevel;
+                firingStats =
+                    new(stats.Damage, stats.Rate, stats.Strength, stats.Range);
+            }
             logic.UpdateStats(firingStats);
         }
 
@@ -82,6 +117,12 @@ namespace FightWorlds.Combat
             npc.SetActive(false);
             npc.GetComponent<CharacterController>().enabled = false;
             npc.transform.position = putAwayPosition;
+            DestroyedCount++;
+            if (PlacementSystem.AttackMode)
+            {
+                placement.player
+                .UseResources(1, Controllers.ResourceType.Units, false);
+            }
         }
 
         private void OnDestroyNpc(GameObject npc) => Destroy(npc);
@@ -130,8 +171,8 @@ namespace FightWorlds.Combat
             int rand = random.Next(0, maxChance);
             for (int i = 0; i < len; i++)
             {
-                int currentChance = chances[i];
-                if (rand < currentChance + prevChance)
+                int currentChance = chances[i] + prevChance;
+                if (rand < currentChance)
                 {
                     dot = i;
                     break;
@@ -139,7 +180,7 @@ namespace FightWorlds.Combat
                 else
                     prevChance = currentChance;
             }
-            Vector3 dotPos = emitters[dot].position;
+            Vector3 dotPos = emitters[dot];
             Vector3 spawnPos = dotPos +
             UnityEngine.Random.insideUnitSphere * spawnRadius;
             spawnPos.y = dotPos.y;
@@ -150,24 +191,24 @@ namespace FightWorlds.Combat
 
         private void SpawnNpc()
         {
-            if (isWaveStopped)
+            if (PlacementSystem.AttackMode &&
+            !AttackManagementUI.IsAttackStarted)
+                return;
+            if (spawnedCounter >= maxSpawnSize)
             {
-                if (poolOfNpc.CountActive < bottomSpawnRate)
-                    isWaveStopped = false;
-                else
-                    return;
+                if (poolOfNpc.CountActive <= bottomSpawnRate)
+                {
+                    if (PlacementSystem.AttackMode)
+                        AttackManagementUI.GameShouldFinish = true;
+                    else
+                        spawnedCounter = 0;
+                }
+
             }
             else
                 for (int i = 0; i < oneWaveNpcCount; i++)
-                {
-                    if (poolOfNpc.CountActive < maxSpawnSize)
+                    if (spawnedCounter < maxSpawnSize)
                         poolOfNpc.Get();
-                    else
-                    {
-                        isWaveStopped = true;
-                        return;
-                    }
-                }
             lastSpawnTime = timePassed;
         }
     }

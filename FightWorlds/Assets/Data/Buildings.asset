@@ -48,7 +48,7 @@ MonoBehaviour:
       type: 3}
     <MaxBuildingsAdd>k__BackingField: 1
     <MaxBuildingsPerLevel>k__BackingField: 1
-  - <Name>k__BackingField: Storage Depot
+  - <Name>k__BackingField: Storage
     <ID>k__BackingField: 5
     <Cost>k__BackingField: 1200
     <Prefab>k__BackingField: {fileID: 654559432848585271, guid: 6df1904e08cba394bb8a8223e96327b4,

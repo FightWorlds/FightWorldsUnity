@@ -8,6 +8,9 @@ namespace FightWorlds.Controllers
         Metal,
         Energy,
         Artifacts,
-        Credits
+        TotalArtifacts,
+        Credits,
+        Units,
+        UnitsToHeal
     }
 }

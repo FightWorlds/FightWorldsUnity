@@ -14,10 +14,10 @@ namespace FightWorlds.UI
         private Vector2 bmMinBorders;
         private Vector2 bmMaxBorders;
         private Building selectedBuilding;
-        private const float widthMinKoef = 5.76f;
-        private const float widthMaxKoef = 2.93f;
-        private const float heightMinKoef = 6.4f;
-        private const float heightMaxKoef = 3.87f;
+        private const float widthMinKoef = 4.11f;
+        private const float widthMaxKoef = 2.77f;
+        private const float heightMinKoef = 4.5f;
+        private const float heightMaxKoef = 4.75f;
 
         private void Awake()
         {
@@ -48,14 +48,9 @@ namespace FightWorlds.UI
                     break;
             }
             simpleText.text = text;
-            instantText.text = "INSTANT " + text;
-            string[] parts = building.name.Split(" ");
-            string namePart =
-                parts.Length == 2 ? parts[0] : parts[0] + parts[1];
+            instantText.text = text;
             string[] coords = building.transform.parent.name.Split(" ");
-            infoText.text =
-                namePart + "\nX:" + coords[1] + "\n\nY:" + coords[2] +
-                "\n#" + parts[parts.Length - 1];
+            infoText.text = $"{building.name}\nX: {coords[1]} Y: {coords[2]} | Lvl: {building.BuildingLvl}";
             infoText.gameObject.SetActive(false);
             Vector3 screenPos =
                 Camera.main.WorldToScreenPoint(building.transform.position);
@@ -72,8 +67,11 @@ namespace FightWorlds.UI
 
         public void RotateBuilding()
         {
-            if (selectedBuilding != null)
-                selectedBuilding.Rotate();
+            if (selectedBuilding == null)
+                return;
+            float y = selectedBuilding.Rotate() - 180f;
+            if (selectedBuilding.IsCustom(out StartBuilding building))
+                building.YRotationAngle = (int)y;
         }
 
         public void Action(bool instant)

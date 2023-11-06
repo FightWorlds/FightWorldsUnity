@@ -4,8 +4,8 @@ using UnityEngine;
 using FightWorlds.Placement;
 using FightWorlds.Controllers;
 using System.Linq;
-using System;
 using System.Collections;
+using UnityEngine.UI;
 
 namespace FightWorlds.UI
 {
@@ -20,22 +20,41 @@ namespace FightWorlds.UI
 
         private const int maxUnitsAmount = 4;
         private const int newBotPrice = 60;
-        private const string buildingText = "BUILDING";
-        private const string repairingText = "REPAIRING";
+        private const string buildingText = "BUILD";
+        private const string repairingText = "REPAIR";
         private const string productionText = "PRODUCTION";
-        private const string upgradingText = "UPGRADING";
+        private const string upgradingText = "UPGRADE";
 
         private Dictionary<GameObject, GameObject> activeProcesses;
+        private Dictionary<GameObject, float> activeProcessesTime;
+        private Dictionary<GameObject, float> timeForProcesses;
         private Dictionary<GameObject, Bot> botsProcesses;
         private Dictionary<Building, Bot> docks;
         private int docksAmount;
 
         private void Awake()
         {
+            activeProcessesTime = new();
             activeProcesses = new();
+            timeForProcesses = new();
             botsProcesses = new();
             docks = new();
             StartCoroutine(StartUpdate());
+        }
+
+        private void Update()
+        {
+            Building building;
+            GameObject ui;
+            foreach (var process in activeProcesses)
+            {
+                building = process.Key.GetComponent<Building>();
+                ui = process.Value;
+                ui.transform.GetChild(1).GetComponent<Image>().fillAmount =
+                    activeProcessesTime[process.Key] /
+                        timeForProcesses[process.Key];
+                activeProcessesTime[process.Key] -= Time.deltaTime;
+            }
         }
 
         public bool NewActiveProcess(GameObject gameObject, ProcessType type)
@@ -63,8 +82,11 @@ namespace FightWorlds.UI
             }
             newProcessUI.transform.GetChild(0)
                 .GetComponent<TextMeshProUGUI>().text =
-                text + ":\n" + gameObject.name;
+                $"{text} {gameObject.name}";
             activeProcesses.Add(gameObject, newProcessUI);
+            Building building = gameObject.GetComponent<Building>();
+            activeProcessesTime.Add(gameObject, building.BuildingTime);
+            timeForProcesses.Add(gameObject, building.BuildingTime);
             Bot freeBot =
             docks.First(pair =>
             pair.Value.gameObject.activeSelf && !pair.Value.IsBusy).Value;
@@ -79,6 +101,8 @@ namespace FightWorlds.UI
             if (!activeProcesses.Remove(obj, out GameObject uiObj))
                 return;
             botsProcesses.Remove(obj, out Bot bot);
+            activeProcessesTime.Remove(obj);
+            timeForProcesses.Remove(obj);
             if (!defaultRemove) bot.ReturnAtDock();
             Destroy(uiObj);
             UpdateProcessCounter();
@@ -97,6 +121,8 @@ namespace FightWorlds.UI
                     price, ResourceType.Credits))
                     {
                         placement.player.AddBots();
+                        if (placement.player.BotsAmount > docks.Count)
+                            return;
                         docks.First(e => !e.Value.gameObject.activeSelf)
                         .Value.gameObject.SetActive(true);
                         UpdateProcessCounter();
