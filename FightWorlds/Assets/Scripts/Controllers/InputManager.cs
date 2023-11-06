@@ -49,6 +49,13 @@ namespace FightWorlds.Controllers
                 OnToggle = () =>
                 {
                     placement.ui.CloseBuildingMenu();
+                    if (Vector3.Distance(lastPosition, Input.mousePosition) >
+                    mouseMinMove)
+                    {
+                        placement.ui.SetDefaultLayout();
+                        placement.ResetSelectedHex();
+                    }
+
                     if (!DragTarget())
                         cameraController.HandleDrag(mouseRay);
                 };

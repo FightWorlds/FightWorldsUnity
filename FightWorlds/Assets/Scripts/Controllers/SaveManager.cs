@@ -37,7 +37,7 @@ namespace FightWorlds.Controllers
                 using (FileStream stream = new(savePath, FileMode.Open))
                 {
                     PlayerInfo info =
-                    formatter.Deserialize(stream) as PlayerInfo;
+                        formatter.Deserialize(stream) as PlayerInfo;
                     if (info.UnitsLevel == 0) // check for wrong load
                         return Reset();
                     return info;
@@ -55,7 +55,7 @@ namespace FightWorlds.Controllers
         {
             PlayerInfo startInfo =
                 new(startLvl, startXp, startCredits, startRecord, startRecord,
-                startBots, startUnitsAmount, startUnitsAmount, startUnitsLevel, null);
+                startBots, startUnitsAmount, startUnitsAmount, startUnitsLevel, null, null, null);
             Save(startInfo);
             return startInfo;
         }

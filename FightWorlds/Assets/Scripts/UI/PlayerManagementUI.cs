@@ -2,22 +2,21 @@ using System;
 using FightWorlds.Controllers;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 namespace FightWorlds.UI
 {
     public class PlayerManagementUI : MonoBehaviour
     {
-        [Header("Level")]
+        [Header("Player")]
         [SerializeField] private TextMeshProUGUI textLevel;
         [SerializeField] private TextMeshProUGUI textExperience;
-        [SerializeField] private Slider sliderLevel;
-        [SerializeField] private GameObject levelUpPopUp;
-        [SerializeField] private Text textLevelPopUp;
-        [SerializeField] private Text headerLevelPopUp;
-        [SerializeField] private Text descriptionLevelPopUp;
+        [SerializeField] private TextMeshProUGUI textVip;
         [Header("Resources")]
-        [SerializeField] private TextMeshProUGUI textResources;
+        [SerializeField] private TextMeshProUGUI textOre;
+        [SerializeField] private TextMeshProUGUI textGas;
+        [SerializeField] private TextMeshProUGUI textMetal;
         [SerializeField] private TextMeshProUGUI textEnergy;
         [SerializeField] private TextMeshProUGUI textArtifacts;
         [SerializeField] private TextMeshProUGUI textCredits;
@@ -25,49 +24,42 @@ namespace FightWorlds.UI
         [SerializeField] private TextMeshProUGUI textPopUp;
         [SerializeField] private GameObject popUp;
         [SerializeField] private Button agreeButton;
-        [Header("VIP")]
-        //[SerializeField] private TextMeshProUGUI textPreferences;
-        [SerializeField] private GameObject vip;
+        [Header("LevelUp")]
+        [SerializeField] private GameObject levelUpPopUp;
+        [SerializeField] private Text textLevelPopUp;
+        [SerializeField] private Text headerLevelPopUp;
+        [SerializeField] private TextMeshProUGUI descriptionLevelPopUp;
+        [SerializeField] private Button claimAgreeButton;
 
         public readonly int CreditsDiv = 1000;
 
         public void FillLevelUi(int level, int experience,
         int experienceNextLevel, bool isMaxLvl)
         {
-            textLevel.text = level.ToString();
-            textExperience.text = isMaxLvl ?
-            $"{experienceNextLevel} / {experienceNextLevel}" :
-            $"{experience} / {experienceNextLevel}";
-            sliderLevel.value = isMaxLvl ? 1 :
-                (float)experience / experienceNextLevel;
-            // TODO switch slidervalue on image (filled)-horizontal-amount
+            textLevel.text = $"LVL {level}";
+            textExperience.text = isMaxLvl ? "100 / 100%" :
+                $"{GetCurrentPercent(experience, experienceNextLevel)} / 100%";
         }
 
         public void FillResourcesUi(int ore, int gas,
         int metal, int energy, int credits, int artifacts)
         {
-            textResources.text = $"Metal: {metal}\n Ore: {ore}";
-            textEnergy.text = $"Energy: {energy}\n Gas: {gas}";
-            textCredits.text = $"Credits:\n{credits}";
-            textArtifacts.text = $"Artifacts:\n{artifacts}";
+            textOre.text = ore.ToString();
+            textGas.text = gas.ToString();
+            textMetal.text = metal.ToString();
+            textEnergy.text = energy.ToString();
+            textCredits.text = credits.ToString();
+            textArtifacts.text = artifacts.ToString();
         }
 
-        public void FillVipUi(float mltpl)
-        {
-            if (mltpl <= 1)
-                vip.SetActive(false);
-            else
-            {
-                vip.SetActive(true);
-                //textPreferences.text = $"VIP\n{(mltpl - 1) * 10}";
-            }
-        }
+        public void FillVipUi(float mltpl) =>
+            textVip.text = $"VIP {(mltpl - 1) * 10}";
 
         public void ShowLevelUp(int level, int credits)
         {
             textLevelPopUp.text = level.ToString();
             descriptionLevelPopUp.text =
-            $"You reached LVL {level}\n\nCredits: {credits}";
+            $"You reached LVL {level}\nCredits: {credits}";
             levelUpPopUp.SetActive(true);
         }
 
@@ -108,13 +100,17 @@ namespace FightWorlds.UI
         }
 
 
-        public void FinishGamePopUp(int artifacts)
+        public void FinishGamePopUp(int artifacts, UnityAction action)
         {
             levelUpPopUp.SetActive(true);
             textLevelPopUp.text = "";
             headerLevelPopUp.text = "FINISH";
             descriptionLevelPopUp.text =
-                $"Session result:\n\n{artifacts} artifacts";
+                $"Session result:\n{artifacts} artifacts";
+            claimAgreeButton.onClick.AddListener(action);
         }
+
+        private int GetCurrentPercent(int xp, int nextXp) =>
+            Mathf.CeilToInt(xp / (float)nextXp * 100);
     }
 }

@@ -26,8 +26,9 @@ namespace FightWorlds.Placement
         [SerializeField] private GameObject shuttlePrefab;
         [SerializeField] private Material hexMaterial;
         [SerializeField] private float saveDelay;
-        [SerializeField] protected int turretAttackRadius;
-        [SerializeField] protected int npcAttackRadius;
+        [SerializeField] private int turretAttackRadius;
+        [SerializeField] private int npcAttackRadius;
+        [SerializeField] private GameObject selectPoint;
         //public List<GameObject> objects;
         //public List<Vector3> pos;
 
@@ -37,12 +38,14 @@ namespace FightWorlds.Placement
         public EvacuationSystem evacuation;
         public Func<bool, GameObject> GetBoomExplosion;
 
-        private const int randomDist = 10;
-        private const int rotationAngle = 60;
         private const int shuttleOffset = 13;
         private const int artifactsPerBuilding = 15;
-        private const float evacuateMultiplier = 0.9f;
+        private const float evacuateHp = 0.8f;
+        private const float criticalHp = 0.3f;
         private const float boostMltpl = 0.125f;
+        private const float selectorOffset = 2.5f;
+        private const float selectorUnder = 10f;
+        private const int lvlHp = 10;
 
         private int baseHp, baseMaxHp = 0;
         private int id = -1;
@@ -52,6 +55,7 @@ namespace FightWorlds.Placement
         private GridInitializer initializer;
         private GridHex<GridObject> grid;
         private Building selectedBuilding;
+        private GridObject selectedHex;
 
         public float HpPercent => (float)baseHp / baseMaxHp;
         public int CollectedArtifacts { get; private set; }
@@ -61,6 +65,12 @@ namespace FightWorlds.Placement
             baseHp -= damage;
             UpdateBaseHpSlider();
             if (baseHp <= 0) AttackManagementUI.GameShouldFinish = true;
+        }
+
+        public void UpdateBaseMaxHp(int damage)
+        {
+            baseMaxHp -= damage;
+            UpdateBaseHpSlider();
         }
 
         public void DestroyObj(Vector3 pos, Building building)
@@ -79,6 +89,8 @@ namespace FightWorlds.Placement
         {
             soundFeedback.PlaySound(SoundType.Click);
             id = ID;
+            if (selectedHex != null && id > 0)
+                PlaceStructure(selectedHex, 0, true);
         }
 
         public List<Collider> GetBuildingsColliders() =>
@@ -92,6 +104,7 @@ namespace FightWorlds.Placement
         {
             grid.GetXZ(pos, out int x, out int z);
             GridObject obj = grid.GetGridObject(x, z);
+            selectedHex = null;
             if (id < 0)
                 SelectBuilding(pos, obj);
             else if (id == 0)
@@ -112,6 +125,9 @@ namespace FightWorlds.Placement
         public FiringStats GetTurretsFiringStats()
         {
             Dictionary<BoostType, int> boosts = ui.GetActiveBoosts();
+            if (AttackMode)
+                foreach (var key in boosts.Keys)
+                    boosts[key] = 0;
             int turrets = GetTurretsLimit();
             int firingDamage = turrets - 5;
             firingDamage +=
@@ -149,6 +165,25 @@ namespace FightWorlds.Placement
         }
 
         public void ResetSelectedBuilding() => selectedBuilding = null;
+        public void ResetSelectedHex()
+        {
+            selectPoint.transform.position += Vector3.down * selectorUnder;
+            selectedHex = null;
+        }
+
+        public void Upgrade(Building building)
+        {
+            int newHp = 0;
+            player.Upgrades.Saves[building.BuildingData.ID]++;
+            foreach (var element in buildingsList[building.BuildingData.ID])
+            {
+                int hpBefore = element.Hp;
+                element.LocalUpgrade();
+                newHp += hpBefore - element.Hp;
+            }
+            UpdateBaseMaxHp(newHp);
+            player.RegularSave();
+        }
 
         private void Awake()
         {
@@ -162,6 +197,8 @@ namespace FightWorlds.Placement
             { 4, new() }, { 5, new() },{ 6, new() }, { 7, new() },
             { 8, new() }, { 9, new() }, { 10, new() }, {11, new()} };
             filledHexagons = new();
+            startBuildings.AddRange(player.Base.Buildings);
+            startPlatforms.AddRange(player.Base.Platforms);
             List<Vector3> platforms =
                 AttackMode ? enemyStartPlatforms : startPlatforms;
             foreach (Vector3 coords in platforms)
@@ -174,12 +211,13 @@ namespace FightWorlds.Placement
             StartCoroutine(SecondFrameTask());
             if (AttackMode)
             {
-                // TODO turn off extra features for that mode
-                // UI elements, etc
-                ui.SwitchMainCanvas(false);
+                ui.HideMainCanvas();
                 ui.ShowAttackCanvas();
             }
         }
+
+        public int BuildingSaveLevel(int id) =>
+            player.Upgrades.Saves[id];
 
         private IEnumerator SecondFrameTask()
         {
@@ -189,8 +227,8 @@ namespace FightWorlds.Placement
             foreach (StartBuilding building in buildings)
             {
                 id = building.ID;
-                PlaceStructure(grid.GetGridObject(building.position),
-                building.yRotationAngle, false);
+                PlaceStructure(grid.GetGridObject(building.Position),
+                building.YRotationAngle, false);
             }
         }
 
@@ -200,10 +238,25 @@ namespace FightWorlds.Placement
 
         private void UpdateBaseHpSlider()
         {
-            ui.UpdateBaseHpBar(HpPercent);
-            if (HpPercent < evacuateMultiplier && evacuation == null)
+            int spriteIndex;
+            if (HpPercent > evacuateHp)
+                spriteIndex = 0;
+            else if (HpPercent > criticalHp)
             {
-                evacuation = Instantiate(shuttlePrefab, startBuildings[0].position +
+                InstantiateEvacuation();
+                spriteIndex = 1;
+            }
+            else
+                spriteIndex = 2;
+
+            ui.UpdateBaseHpBar(HpPercent, spriteIndex);
+        }
+
+        private void InstantiateEvacuation()
+        {
+            if (evacuation == null)
+            {
+                evacuation = Instantiate(shuttlePrefab, startBuildings[0].Position +
                     Vector3.up * shuttleOffset, Quaternion.identity)
                     .GetComponent<EvacuationSystem>();
                 evacuation.placement = this;
@@ -232,7 +285,13 @@ namespace FightWorlds.Placement
             if (selectedBuilding == null)
             {
                 if (pos.y != heightOffset.y)
+                {
+                    ui.SwitchBuildingPanel(true);
+                    selectedHex = obj;
+                    selectPoint.transform.position =
+                        selectedHex.Hex.position + Vector3.up * selectorOffset;
                     return;
+                }
                 Building building = null;
                 foreach (Transform child in obj.Hex)
                     if (child.TryGetComponent(out building))
@@ -240,7 +299,6 @@ namespace FightWorlds.Placement
                 selectedBuilding =
                 (building.State == BuildingState.Building &&
                 !building.IsProducing) ? building : null;
-
             }
             else
                 ResetSelectedBuilding();
@@ -251,8 +309,8 @@ namespace FightWorlds.Placement
             if (!obj.IsFilled && HaveFilledNeighbour(pos) &&
                 LessThanLimit(database.objectsData[id]) &&
                 player.UseResources(database.objectsData[id].Cost,
-                ResourceType.Metal, true, () => FillHex(obj)))
-                FillHex(obj);
+                ResourceType.Metal, true, () => Place(obj, pos)))
+                Place(obj, pos);
             else
                 WrongPlace();
         }
@@ -281,6 +339,12 @@ namespace FightWorlds.Placement
             Place(gridObject, rotation, playerPlace, data);
         }
 
+        private void Place(GridObject obj, Vector3 pos)
+        {
+            FillHex(obj);
+            player.Base.Platforms.Add(pos);
+        }
+
         private void Place(GridObject gridObject, int rotation,
         bool playerPlace, BuildingData data)
         {
@@ -296,19 +360,30 @@ namespace FightWorlds.Placement
             building.Rotate(rotation);
             building.OnBuilded = OnPlaceFinish;
             buildingsList[building.BuildingData.ID].Add(building);
-            if (!playerPlace) building.PermanentBuild();
+            if (playerPlace)
+            {
+                ui.ShowBuildingMenu(building);
+                player.Base.Buildings.Add(new(building));
+            }
+            else
+                StartCoroutine(building.PermanentBuildCoroutine());
+            ui.SwitchBuildingPanel(false);
+            selectedHex = null;
             StopPlacement();
         }
 
         private void OnPlaceFinish(Building building)
         {
-
-            int newHp = GetTurretsFiringStats().Strength;
+            int newHp = AttackMode ? GetTurretsFiringStats().Strength :
+                GetBuildingHp(building);
             // what if boost expired?
             baseHp += newHp;
             baseMaxHp += newHp;
             UpdateBaseHpSlider();
         }
+
+        public int GetBuildingHp(Building building) =>
+            GetTurretsFiringStats().Strength + lvlHp * building.BuildingLvl;
 
         public void StopPlacement() => id = -1;
 

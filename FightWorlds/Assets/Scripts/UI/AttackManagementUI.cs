@@ -17,17 +17,23 @@ public class AttackManagementUI : MonoBehaviour
 
     [SerializeField] private PlacementSystem placement;
     [SerializeField] private GameObject holder;
-    [SerializeField] private GameObject FinishPopUp;
+    [SerializeField] private GameObject finishPopUp;
+    [SerializeField] private Transform description;
+    [SerializeField] private Transform header;
     [SerializeField] private Emitter emitter;
-    [SerializeField] private TechnoMap map;
-    [SerializeField] private Text timer;
+    [SerializeField] private BoostsMap map;
+    [SerializeField] private TextMeshProUGUI timer;
+    [SerializeField] private Text successPercent;
     [SerializeField] private float timeLeft;
+    [SerializeField] private GameObject shuttlePrefab;
 
     private const float widthKoef = 7f;
     private const float heightKoef = 10f;
+    private const int maxSuccess = 100;
     private const int minSuccess = 60;
     private const int restoreLost = 5;
     private const int restoreSuccess = 2;
+    private const int spawnOffset = 50;
 
     private Vector2 hMinBorders;
     private Vector2 hMaxBorders;
@@ -66,9 +72,8 @@ public class AttackManagementUI : MonoBehaviour
     {
         isGameFinished = true;
         GameShouldFinish = false;
-        FinishPopUp.SetActive(true);
-        FinishPopUp.transform.GetChild(2)
-        .GetComponentInChildren<Text>().text = percentage.ToString();
+        finishPopUp.SetActive(true);
+        successPercent.text = percentage.ToString();
         int diviner = (percentage < minSuccess) ? restoreLost : restoreSuccess;
         int unitsLost = emitter.DestroyedCount;
         int toHeal = unitsLost / diviner;
@@ -115,6 +120,8 @@ public class AttackManagementUI : MonoBehaviour
         holder.SetActive(false);
         spawnPosition = selectedWorldPosition;
         isDestinationSelection = true;
+        Instantiate(shuttlePrefab,
+            spawnPosition + Vector3.up * spawnOffset, Quaternion.identity);
     }
 
     private void OnAttackClick()
@@ -127,18 +134,22 @@ public class AttackManagementUI : MonoBehaviour
 
     private int FillResultPopUp(int lost)
     {
-        var description = FinishPopUp.transform.GetChild(4);
-        description.GetChild(0).GetComponent<Text>().text =
-        $"Artifacts: {placement.CollectedArtifacts}\n\nUnits lost: {lost}";
+        description.GetChild(0).GetComponent<TextMeshProUGUI>().text =
+        $"Artifacts: {placement.CollectedArtifacts}\nUnits lost: {lost}";
         int stars = 0;
-        if (percentage >= 100)
+        if (percentage >= maxSuccess)
             stars = 3;
-        else if (percentage >= 80)
+        else if (percentage >= (maxSuccess + minSuccess) / 2)
             stars = 2;
         else if (percentage >= minSuccess)
             stars = 1;
+        else
+        {
+            header.GetChild(0).gameObject.SetActive(true);
+            header.GetChild(1).GetComponent<Text>().text = "FAILED";
+        }
         for (int i = 0; i < stars; i++)
-            description.GetChild(1).GetChild(i).gameObject.SetActive(true);
+            description.GetChild(1 + i).GetChild(0).gameObject.SetActive(true);
         return stars;
     }
 }

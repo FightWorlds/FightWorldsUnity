@@ -11,6 +11,7 @@ namespace FightWorlds.Controllers
         [SerializeField] private int loadAmount;
         [SerializeField] private float evacuateOperationTime;
         [SerializeField] private float landingTime;
+        [SerializeField] private GameObject particles;
         public PlacementSystem placement;
         public bool IsGameFinished;
 
@@ -34,13 +35,11 @@ namespace FightWorlds.Controllers
 
         private void Start()
         {
-            placement.ui.SwitchCallButtonState(true);
-            placement.ui.AddListenerOnCall(() =>
+            placement.ui.SwitchButtonState(UI.EvacuationState.Warn, () =>
             {
                 if (!isShuttleCalled)
                     StartCoroutine(EvacuatingPipeline());
             });
-            placement.ui.AddListenerOnUp(FinishGame);
         }
 
         private void Update()
@@ -62,6 +61,7 @@ namespace FightWorlds.Controllers
         private IEnumerator CollectArtifacts()
         {
             int artifactsPerOperation;
+            particles.SetActive(true);
             while (!IsGameFinished)
             {
                 artifactsPerOperation =
@@ -77,17 +77,18 @@ namespace FightWorlds.Controllers
         private IEnumerator ShuttleLanding()
         {
             isShuttleCalled = true;
-            placement.ui.SwitchCallButtonState(false);
+            placement.ui.SwitchButtonState(UI.EvacuationState.Land, null);
             animator.SetBool("Landing", true);
             yield return FlyShuttle();
             animator.SetBool("Landing", false);
-            placement.ui.SwitchEvacuationButtonState(true);
+            placement.ui.SwitchButtonState(UI.EvacuationState.Load, FinishGame);
         }
 
         private IEnumerator ShuttleEvacuating()
         {
+            particles.SetActive(false);
             animator.SetBool("Evacuating", true);
-            placement.ui.SwitchEvacuationButtonState(false);
+            placement.ui.SwitchButtonState(UI.EvacuationState.Evacuate, null);
             yield return FlyShuttle();
             StopGame();
         }
@@ -96,18 +97,17 @@ namespace FightWorlds.Controllers
         {
             leftTime = landingTime;
             isFlying = true;
-            placement.ui.SwitchEvacuationTimerState(isFlying);
             yield return new WaitForSeconds(landingTime);
             isFlying = false;
-            placement.ui.SwitchEvacuationTimerState(isFlying);
         }
 
         private void StopGame()
         {
-            placement.ui.FinishGamePopUp(collectedArtifacts);
+            placement.ui.SwitchButtonState(UI.EvacuationState.None, () => { });
+            placement.ui.SetDefaultLayout();
+            placement.ui.FinishGamePopUp(collectedArtifacts, RestartGame);
             placement.player.SavePlayerResult(collectedArtifacts);
             Time.timeScale = 0f;
-            placement.ui.AddListenerOnRestart(RestartGame);
         }
 
         private void RestartGame()

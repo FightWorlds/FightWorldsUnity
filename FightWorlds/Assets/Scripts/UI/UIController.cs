@@ -17,13 +17,12 @@ namespace FightWorlds.UI
         [SerializeField] private BuildingMenuUI buildingMenu;
         [SerializeField] private UnitsMenu unitsMenu;
         [SerializeField] private PlayerManagementUI playerManagement;
-        [SerializeField] private TechnoMap boosts;
+        [SerializeField] private BoostsMap boosts;
         [SerializeField] private AttackManagementUI attackUI;
+        [SerializeField] private GameObject buildingPanel;
+        [SerializeField] private GameObject[] hideElements;
 
         private const int cloneLen = 7;
-        // TODO single open panel (other should close)
-
-        private List<GameObject> uiToHide;
 
         public int CreditsDiv
         {
@@ -59,29 +58,14 @@ namespace FightWorlds.UI
 
         #region EvacuationUI
 
-        public void AddListenerOnRestart(UnityAction act) =>
-            evacuationUI.AddListenerOnRestart(act);
-
-        public void AddListenerOnCall(UnityAction act) =>
-            evacuationUI.AddListenerOnCall(act);
-
-        public void AddListenerOnUp(UnityAction act) =>
-            evacuationUI.AddListenerOnUp(act);
-
-        public void SwitchCallButtonState(bool value) =>
-            evacuationUI.SwitchCallButtonState(value);
-
-        public void SwitchEvacuationButtonState(bool value) =>
-            evacuationUI.SwitchEvacuationButtonState(value);
-
-        public void SwitchEvacuationTimerState(bool value) =>
-            evacuationUI.SwitchEvacuationTimerState(value);
+        public void SwitchButtonState(EvacuationState state, UnityAction act) =>
+            evacuationUI.SwitchButtonState(state, act);
 
         public void ChangeTimeText(float time) =>
             evacuationUI.ChangeTimeText(time);
 
-        public void UpdateBaseHpBar(float value) =>
-            evacuationUI.UpdateBaseHpBar(value);
+        public void UpdateBaseHpBar(float value, int spriteIndex) =>
+            evacuationUI.UpdateBaseHpBar(value, spriteIndex);
         #endregion
 
         #region BuildingMenu
@@ -91,6 +75,14 @@ namespace FightWorlds.UI
         public void CloseBuildingMenu() => buildingMenu.CloseBuildingMenu();
 
         public void RotateBuilding() => buildingMenu.RotateBuilding();
+
+        public void SwitchBuildingPanel(bool state)
+        {
+            buildingsUnderAttack.CollapseList();
+            buildingPanel.SetActive(state);
+        }
+        public void SwitchBuildingPanel() =>
+            buildingPanel.SetActive(!buildingPanel.activeSelf);
         #endregion
 
         #region PlayerManagementUI
@@ -111,8 +103,8 @@ namespace FightWorlds.UI
 
         public void ShowResourcePopUp(ResourceType type, int amount, Action action) => playerManagement.ShowResourcePopUp(type, amount, action);
 
-        public void FinishGamePopUp(int artifacts) =>
-            playerManagement.FinishGamePopUp(artifacts);
+        public void FinishGamePopUp(int artifacts, UnityAction action) =>
+            playerManagement.FinishGamePopUp(artifacts, action);
         #endregion
 
         #region UnitsMenu
@@ -154,35 +146,34 @@ namespace FightWorlds.UI
         public string CutClone(string name) =>
             name.Remove(name.Length - cloneLen);
 
-        public void SwitchMainCanvas(bool turnOn)
+        public void SwitchBoostsCanvas(bool turnOn)
         {
-            int childStart = 3;
-            transform.GetChild(childStart + 1).gameObject.SetActive(false);//bp
-            if (!PlacementSystem.AttackMode)
-                foreach (Transform child in boosts.transform)
-                    child.gameObject.SetActive(!turnOn);
-            if (!turnOn)
-            {
-                if (transform.GetChild(childStart).gameObject.activeSelf)
-                    uiToHide = new();
-                int counter = -1;
-                foreach (Transform child in transform)
-                {
-                    counter++;
-                    GameObject obj = child.gameObject;
-                    if (counter < 3 || !obj.activeSelf) continue;
-                    uiToHide.Add(obj);
-                    obj.SetActive(false);
-                }
-                return;
-            }
-            if (uiToHide != null)
-            {
-                foreach (var ui in uiToHide)
-                    ui.SetActive(true);
-                uiToHide = null;
-            }
+            SetDefaultLayout();
+            boosts.transform.GetChild(0).gameObject.SetActive(turnOn);
+        }
 
+        public void SwitchUnitsCanvas(bool turnOn)
+        {
+            SetDefaultLayout();
+            unitsMenu.transform.GetChild(0).gameObject.SetActive(turnOn);
+        }
+
+        public void HideMainCanvas()
+        {
+            foreach (Transform child in transform)
+            {
+                GameObject obj = child.gameObject;
+                obj.SetActive(false);
+            }
+            return;
+        }
+
+        public void SetDefaultLayout()
+        {
+            // Show Processes List
+            activeProcesses.transform.GetChild(1).gameObject.SetActive(true);
+            foreach (var element in hideElements)
+                element.SetActive(false);
         }
     }
 }

@@ -43,6 +43,7 @@ namespace FightWorlds.Combat
         protected float distance => Vector3.Distance(destination, currentPosition);
         protected Vector3 currentPosition => transform.position;
         public int Hp => currentHp;
+        public int MaxHp => startHp;
 
         protected void OnEnable() => SubscribeOnEvents();
         protected void OnDisable() => UnsubscribeFromEvents();
@@ -67,8 +68,12 @@ namespace FightWorlds.Combat
         public void TakeDamage(int damage, Vector3 fromPos) =>
             DamageTaken?.Invoke(damage, fromPos);
 
-        public void Rotate(float angle = rotationAngle) =>
-            transform.GetChild(0).Rotate(Vector3.up, angle);
+        public float Rotate(float angle = rotationAngle)
+        {
+            var model = transform.GetChild(0);
+            model.Rotate(Vector3.up, angle);
+            return model.rotation.eulerAngles.y;
+        }
 
         protected virtual void OnDamageTaken(int damage, Vector3 fromPos)
         {

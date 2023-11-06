@@ -3,6 +3,7 @@ using UnityEngine;
 using FightWorlds.UI;
 using System.Collections.Generic;
 using FightWorlds.Boost;
+using FightWorlds.Placement;
 
 namespace FightWorlds.Controllers
 {
@@ -20,6 +21,8 @@ namespace FightWorlds.Controllers
         public int BotsAmount { get; private set; }
         public float VipMultiplier { get; private set; }
         public PlayerInfo Info { get; private set; }
+        public UpgradesSave Upgrades { get; private set; }
+        public BaseSave Base { get; private set; }
         public event Action NewLevel;
 
         public PlayerController(UIController ui)
@@ -34,6 +37,15 @@ namespace FightWorlds.Controllers
             this.ui = ui;
             if (!ui.LoadBoosts(JsonUtility.FromJson<BoostsSave>(Info.Boosts)))
                 ui.SaveBoosts(true);
+            Upgrades = JsonUtility.FromJson<UpgradesSave>(Info.Upgrades);
+            Base = JsonUtility.FromJson<BaseSave>(Info.Base);
+            if (!BuildingsExists())
+                Base = new(new(), new());
+            if (!UpgradesExists())
+            {
+                Upgrades = GetDefaultUpgrades();
+                RegularSave();
+            }
             FillLevelUi();
             FillResourcesUi();
             FillVipUi();
@@ -48,6 +60,7 @@ namespace FightWorlds.Controllers
             {
                 NewLevel?.Invoke();
                 int credits = Level() * creditsMultiplier;
+                ui.SetDefaultLayout();
                 ui.ShowLevelUp(Level(), credits);
                 resourceSystem.CollectResources(credits, ResourceType.Credits);
             }
@@ -110,7 +123,8 @@ namespace FightWorlds.Controllers
                 artifacts, Info.Record + artifacts, BotsAmount,
                 resourceSystem.Resources[ResourceType.Units],
                 resourceSystem.Resources[ResourceType.UnitsToHeal],
-                UnitsLevel, JsonUtility.ToJson(ui.SaveBoosts(false))));
+                UnitsLevel, JsonUtility.ToJson(ui.SaveBoosts(false)),
+                JsonUtility.ToJson(Upgrades), JsonUtility.ToJson(Base)));
         }
 
         public void RegularSave()
@@ -121,7 +135,8 @@ namespace FightWorlds.Controllers
                 Info.Artifacts, Info.Record, BotsAmount,
                 resourceSystem.Resources[ResourceType.Units],
                 resourceSystem.Resources[ResourceType.UnitsToHeal],
-                UnitsLevel, JsonUtility.ToJson(ui.SaveBoosts(false))));
+                UnitsLevel, JsonUtility.ToJson(ui.SaveBoosts(false)),
+                JsonUtility.ToJson(Upgrades), JsonUtility.ToJson(Base)));
         }
 
         public void AddBots() => BotsAmount++;
@@ -152,5 +167,36 @@ namespace FightWorlds.Controllers
 
         private void FillLeaderBoardUi() =>
             ui.UpdateLeaderBoard(Info.Record);
+
+        private UpgradesSave GetDefaultUpgrades() =>
+            new(new(12) { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 });
+
+        private bool UpgradesExists()
+        {
+            try
+            {
+                return
+                    Upgrades.Saves.Count == 0 ? false : true;
+            }
+            catch (Exception e)
+            {
+                _ = e;
+                return false;
+            }
+        }
+
+        private bool BuildingsExists()
+        {
+            try
+            {
+                return
+                    Base.Buildings.Count == 0 ? false : true;
+            }
+            catch (Exception e)
+            {
+                _ = e;
+                return false;
+            }
+        }
     }
 }
