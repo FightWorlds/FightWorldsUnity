@@ -69,7 +69,7 @@ namespace FightWorlds.UI
         {
             if (selectedBuilding == null)
                 return;
-            float y = selectedBuilding.Rotate() - 180f;
+            float y = selectedBuilding.Rotate();
             if (selectedBuilding.IsCustom(out StartBuilding building))
                 building.YRotationAngle = (int)y;
         }

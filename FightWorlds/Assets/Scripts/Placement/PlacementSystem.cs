@@ -126,7 +126,7 @@ namespace FightWorlds.Placement
         {
             Dictionary<BoostType, int> boosts = ui.GetActiveBoosts();
             if (AttackMode)
-                foreach (var key in boosts.Keys)
+                foreach (var key in boosts.Keys.ToList())
                     boosts[key] = 0;
             int turrets = GetTurretsLimit();
             int firingDamage = turrets - 5;
@@ -306,10 +306,15 @@ namespace FightWorlds.Placement
 
         private void PlacePlatform(GridObject obj, Vector3 pos)
         {
-            if (!obj.IsFilled && HaveFilledNeighbour(pos) &&
-                LessThanLimit(database.objectsData[id]) &&
-                player.UseResources(database.objectsData[id].Cost,
-                ResourceType.Metal, true, () => Place(obj, pos)))
+            var data = database.objectsData[id];
+            if (!LessThanLimit(data))
+            {
+                ui.ShowLimitPopUp(data.Name);
+                WrongPlace();
+            }
+            else if (!obj.IsFilled && HaveFilledNeighbour(pos) &&
+                player.UseResources(data.Cost, ResourceType.Metal, true,
+                () => Place(obj, pos)))
                 Place(obj, pos);
             else
                 WrongPlace();
@@ -320,8 +325,15 @@ namespace FightWorlds.Placement
         {
             BuildingData data = database.objectsData[id];
             if (gridObject.HasBuilding ||
-            !gridObject.IsFilled || !LessThanLimit(data))
+            !gridObject.IsFilled)
             {
+                WrongPlace();
+                return;
+            }
+
+            if (!LessThanLimit(data))
+            {
+                ui.ShowLimitPopUp(data.Name);
                 WrongPlace();
                 return;
             }
@@ -390,6 +402,8 @@ namespace FightWorlds.Placement
         private void WrongPlace()
         {
             soundFeedback.PlaySound(SoundType.WrongPlacement);
+            ui.SwitchBuildingPanel(false);
+            id = -1;
         }
 
         private void FillHex(GridObject obj)

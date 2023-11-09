@@ -103678,7 +103678,7 @@ MonoBehaviour:
   - {x: 11, y: 0, z: 7.199997}
   startBuildings:
   - Position: {x: -8, y: 0, z: 5.4}
-    YRotationAngle: 0
+    YRotationAngle: -60
     ID: 1
   - Position: {x: -32, y: 0, z: 25.5}
     YRotationAngle: -60
@@ -103717,7 +103717,7 @@ MonoBehaviour:
     YRotationAngle: 0
     ID: 7
   - Position: {x: 2, y: 0, z: 9.5}
-    YRotationAngle: 0
+    YRotationAngle: -120
     ID: 10
   - Position: {x: -30, y: 0, z: -11}
     YRotationAngle: 180

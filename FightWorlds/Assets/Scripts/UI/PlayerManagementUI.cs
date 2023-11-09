@@ -99,6 +99,24 @@ namespace FightWorlds.UI
             popUp.SetActive(true);
         }
 
+        public void ShowLimitPopUp(string name)
+        {
+            textPopUp.text = "You reached limit of" +
+                $"\n{name}s\n" +
+                $"Level up to build more!";
+            agreeButton.onClick.RemoveAllListeners();
+            agreeButton.onClick.AddListener(() => popUp.SetActive(false));
+            popUp.SetActive(true);
+        }
+
+        public void ShowMaxLvlPopUp()
+        {
+            textPopUp.text = "You reached max upgrade level" +
+                $"\nfor selected building";
+            agreeButton.onClick.RemoveAllListeners();
+            agreeButton.onClick.AddListener(() => popUp.SetActive(false));
+            popUp.SetActive(true);
+        }
 
         public void FinishGamePopUp(int artifacts, UnityAction action)
         {

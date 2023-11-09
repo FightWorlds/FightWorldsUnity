@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using FightWorlds.Combat;
@@ -33,12 +32,12 @@ namespace FightWorlds.UI
         private const int defaultStrength = 2;
         private const int defaultRange = 10;
         private const int maxUpgradeLevel = 3;
-        private const int maxStoredUnits = 300;
+        private const int maxStoredUnits = 400;
         private const int instantUnitPrice = 1;
-        private const int unitUpgradeCost = 200;
+        private const int unitUpgradeCost = 100;
         private const int unitTimeInSecondsCost = 10;
-        private const int unitEnergyCost = 100;
-        private const int unitMetalCost = 100;
+        private const int unitEnergyCost = 50;
+        private const int unitMetalCost = 50;
         private const int unitArtifactsCost = 10;
         private const int dockyardLevel = 1;
 

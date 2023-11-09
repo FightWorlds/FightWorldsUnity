@@ -282,7 +282,10 @@ namespace FightWorlds.Placement
         public bool TryUpgrade(bool instant)
         {
             if (BuildingLvl >= buildingMaxLvl)
+            {
+                placement.ui.ShowMaxLvlPopUp();
                 return false;
+            }
             placement.ui.CloseBuildingMenu();
             if (!placement.player.UseResources(BuildingData.Cost,
             ResourceType.Metal, true, PermanentUpgrade))

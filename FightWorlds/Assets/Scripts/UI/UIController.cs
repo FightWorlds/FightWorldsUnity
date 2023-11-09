@@ -103,6 +103,12 @@ namespace FightWorlds.UI
 
         public void ShowResourcePopUp(ResourceType type, int amount, Action action) => playerManagement.ShowResourcePopUp(type, amount, action);
 
+        public void ShowLimitPopUp(string name) =>
+            playerManagement.ShowLimitPopUp(name);
+
+        public void ShowMaxLvlPopUp() =>
+            playerManagement.ShowMaxLvlPopUp();
+
         public void FinishGamePopUp(int artifacts, UnityAction action) =>
             playerManagement.FinishGamePopUp(artifacts, action);
         #endregion

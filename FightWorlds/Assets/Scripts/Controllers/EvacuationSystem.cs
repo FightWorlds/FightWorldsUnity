@@ -68,7 +68,7 @@ namespace FightWorlds.Controllers
                 (int)(loadAmount * (1 - placement.HpPercent));
                 if (!placement.player.UseResources(artifactsPerOperation,
                 ResourceType.Artifacts, false))
-                    break;
+                    break; // continue; // to not evacuate when artifacts == 0
                 collectedArtifacts += artifactsPerOperation;
                 yield return new WaitForSeconds(evacuateOperationTime);
             }
