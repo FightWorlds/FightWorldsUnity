@@ -35,6 +35,9 @@ namespace FightWorlds.UI
         #endregion
 
         #region ActiveProcesses
+        public bool CantStartNewProcess(GameObject obj) =>
+        activeProcesses.CantStartNewProcess(obj);
+
         public bool NewActiveProcess(GameObject obj, ProcessType type) =>
         activeProcesses.NewActiveProcess(obj, type);
 

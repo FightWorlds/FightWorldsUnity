@@ -337,17 +337,6 @@ namespace FightWorlds.Placement
                 WrongPlace();
                 return;
             }
-            if (playerPlace)
-            {
-                if (!player.UseResources(data.Cost,
-                ResourceType.Metal, true, () =>
-                Place(gridObject, rotation, playerPlace, data)))
-                {
-                    WrongPlace();
-                    return;
-                }
-                soundFeedback.PlaySound(SoundType.Place);
-            }
             Place(gridObject, rotation, playerPlace, data);
         }
 
@@ -373,10 +362,7 @@ namespace FightWorlds.Placement
             building.OnBuilded = OnPlaceFinish;
             buildingsList[building.BuildingData.ID].Add(building);
             if (playerPlace)
-            {
                 ui.ShowBuildingMenu(building);
-                player.Base.Buildings.Add(new(building));
-            }
             else
                 StartCoroutine(building.PermanentBuildCoroutine());
             ui.SwitchBuildingPanel(false);

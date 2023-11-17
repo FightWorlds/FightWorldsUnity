@@ -57,10 +57,12 @@ namespace FightWorlds.UI
             }
         }
 
+        public bool CantStartNewProcess(GameObject gameObject) =>
+            activeProcesses.ContainsKey(gameObject) || IsProcessesFulled();
+
         public bool NewActiveProcess(GameObject gameObject, ProcessType type)
         {
-            if (activeProcesses.ContainsKey(gameObject)) return false;
-            if (IsProcessesFulled()) return false;
+            if (CantStartNewProcess(gameObject)) return false;
             var newProcessUI =
                 Instantiate(activeProcessPrefab, activeProcessContainer);
             string text = "";

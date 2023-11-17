@@ -6,7 +6,6 @@ using UnityEngine;
 using FightWorlds.UI;
 using FightWorlds.Controllers;
 using FightWorlds.Combat;
-using FightWorlds.Boost;
 
 namespace FightWorlds.Placement
 {
@@ -30,6 +29,7 @@ namespace FightWorlds.Placement
 
         private List<Material> defaultMaterials;
         private Collider modelCollider;
+        private bool isPlayerBuilding;
 
         protected override List<Collider> Detections() =>
             Physics.OverlapCapsule(currentPosition + Vector3.up,
@@ -60,6 +60,7 @@ namespace FightWorlds.Placement
 
         private IEnumerator Build()
         {
+            placement.ui.NewActiveProcess(gameObject, ProcessType.Building);
             IsProducing = true;
             yield return new WaitForSeconds(BuildingTime);
             IsProducing = false;
@@ -79,6 +80,8 @@ namespace FightWorlds.Placement
             if (!PlacementSystem.AttackMode)
                 currentHp = startHp = placement.GetBuildingHp(this);
             OnBuilded(this);
+            if (isPlayerBuilding)
+                placement.player.Base.Buildings.Add(new(this));
             placement.ui.RemoveProcess(gameObject, true);
             placement.ResetSelectedBuilding();
             modelCollider.isTrigger = false;
@@ -99,6 +102,7 @@ namespace FightWorlds.Placement
                 placement.ui.AddRepairBot(this);
             else if (buildingType == BuildingType.Dockyard)
                 placement.ui.InitDockyard(this);
+            isPlayerBuilding = false;
         }
 
         public void StopProduce()
@@ -220,6 +224,7 @@ namespace FightWorlds.Placement
         public bool TryBuild(bool instant)
         {
             placement.ui.CloseBuildingMenu();
+            isPlayerBuilding = true;
             if (instant)
             {
                 if (placement.player.UseResources(instBuildCost,
@@ -229,10 +234,11 @@ namespace FightWorlds.Placement
                     return true;
                 }
             }
-            if (!placement.ui.NewActiveProcess(
-            gameObject, ProcessType.Building))
+            if (placement.ui.CantStartNewProcess(gameObject))
                 return false;
-            StartCoroutine(Build());
+            if (placement.player.UseResources(BuildingData.Cost,
+                ResourceType.Metal, true, () => StartCoroutine(Build())))
+                StartCoroutine(Build());
             return true;
         }
 
