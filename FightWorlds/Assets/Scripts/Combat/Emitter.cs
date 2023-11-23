@@ -16,6 +16,8 @@ namespace FightWorlds.Combat
         [SerializeField] private int oneWaveNpcCount;
         [SerializeField] private int maxSpawnSize;
         [SerializeField] private int bottomSpawnRate;
+        [SerializeField] private int tankSpawnChance;
+        [SerializeField] private int tankMltpl;
         [SerializeField] private float spawnRadius;
         [SerializeField] private GameObject npcPrefab;
         [SerializeField] private GameObject unitPrefab;
@@ -32,10 +34,12 @@ namespace FightWorlds.Combat
         private float timePassed;
         private float lastSpawnTime; // TODO: maybe switch to coroutine?
         private int spawnedCounter;
+        private Vector3 tankScale;
         private Vector3 putAwayPosition = new Vector3(100, 100, 100);
         private Vector3 destinationOfNpc;
         private System.Random random;
         private FiringStats firingStats;
+        private FiringStats defaultFiringStats;
         private int len => emitters.Length;
 
         public GameObject GetBoomExplosion(bool isNpc) =>
@@ -66,11 +70,13 @@ namespace FightWorlds.Combat
         {
             oneWaveNpcCount = placement.GetTurretsLimit() +
             Mathf.CeilToInt(placement.player.Level() / 10f);
-            firingStats = placement.GetNPCFiringStats();
+            defaultFiringStats = placement.GetNPCFiringStats();
         }
 
         private void Awake()
         {
+            float scaleMltpl = tankMltpl / 2f;
+            tankScale = new(scaleMltpl, scaleMltpl, scaleMltpl);
             timePassed = lastSpawnTime = Time.time; // TODO: new Timer Class
             random = new System.Random();
             poolOfNpc = new ObjectPool<GameObject>(CreateNpc, OnGetNpc, OnReleaseNpc, OnDestroyNpc, false, maxSpawnSize / 5, maxSpawnSize);
@@ -109,6 +115,18 @@ namespace FightWorlds.Combat
                 firingStats =
                     new(stats.Damage, stats.Rate, stats.Strength, stats.Range);
             }
+            else
+            {
+                firingStats = defaultFiringStats;
+                if (UnityEngine.Random.Range(0, tankSpawnChance) == 0)
+                {
+                    firingStats.Strength *= tankMltpl;
+                    npc.transform.localScale = tankScale;
+                }
+                else
+                    npc.transform.localScale = Vector3.one;
+            }
+
             logic.UpdateStats(firingStats);
         }
 
@@ -203,7 +221,6 @@ namespace FightWorlds.Combat
                     else
                         spawnedCounter = 0;
                 }
-
             }
             else
                 for (int i = 0; i < oneWaveNpcCount; i++)

@@ -28,12 +28,7 @@ namespace FightWorlds.Combat
 
         public void SetMainDestination(Vector3 pos) => mainDestination = pos;
 
-        protected override void Awake()
-        {
-            base.Awake();
-            searchCoroutine = StartCoroutine(SearchTarget());
-            character = gameObject.GetComponent<CharacterController>();
-        }
+        protected override void Awake() { }
 
         protected override List<Collider> Detections()
         {
@@ -42,7 +37,6 @@ namespace FightWorlds.Combat
             if (PlacementSystem.AttackMode && !isMainDestinationReached)
                 return Physics.OverlapCapsule(currentPosition - Vector3.up,
                 currentPosition + Vector3.up, attackRadius, mask).ToList();
-
             return placement.GetBuildingsColliders();
         }
 
@@ -64,7 +58,6 @@ namespace FightWorlds.Combat
                     isMainDestinationReached = true;
                     mainDestination = Vector3.positiveInfinity;
                 }
-
             }
         }
 
@@ -85,14 +78,22 @@ namespace FightWorlds.Combat
             destination = Vector3.positiveInfinity;
             while (!inAttackRadius)
             {
-                FindTargetInDetections();
+                if (target == null)
+                {
+                    FindTargetInDetections();
+                    if (target != null)
+                        target.GetComponent<Building>().AttachUnit();
+                }
                 yield return new WaitForSeconds(searchDelay);
             }
         }
 
         protected override void Die()
         {
+            if (target != null && target.TryGetComponent(out Building building))
+                building.DetachUnit();
             base.Die();
+            StopAllCoroutines();
             if (!PlacementSystem.AttackMode) Process();
             var boom = placement.GetBoomExplosion(true);
             boom.transform.position = currentPosition;
@@ -111,6 +112,7 @@ namespace FightWorlds.Combat
             base.Awake();
             isMainDestinationReached = false;
             searchCoroutine = StartCoroutine(SearchTarget());
+            character = gameObject.GetComponent<CharacterController>();
         }
     }
 }

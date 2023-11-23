@@ -19,6 +19,7 @@ namespace FightWorlds.Placement
         [SerializeField] private Material unActive;
         public BuildingData BuildingData;
         public BuildingState State;
+        [field: SerializeField] public int AttachedUnits { get; private set; }
         public int BuildingLvl { get; private set; }
         public bool IsProducing { get; private set; }
         public BuildingType BuildingType { get { return buildingType; } }
@@ -246,8 +247,6 @@ namespace FightWorlds.Placement
         {
             placement.ui.CloseBuildingMenu();
             int cost = (int)(BuildingData.Cost * currentHp / (float)startHp);
-            if (!placement.player.UseResources(cost, ResourceType.Metal, true, PermanentRepair))
-                return false;
             if (instant)
             {
                 if (placement.player.UseResources(instBuildCost,
@@ -257,6 +256,8 @@ namespace FightWorlds.Placement
                     return true;
                 }
             }
+            if (!placement.player.UseResources(cost, ResourceType.Metal, true, PermanentRepair))
+                return false;
             if (!placement.ui.NewActiveProcess(
             gameObject, ProcessType.Repairing))
             {
@@ -266,6 +267,12 @@ namespace FightWorlds.Placement
             StartCoroutine(Repair());
             return true;
         }
+
+        public void AttachUnit() =>
+            AttachedUnits++;
+
+        public void DetachUnit() =>
+            AttachedUnits--;
 
         private IEnumerator Repair()
         {

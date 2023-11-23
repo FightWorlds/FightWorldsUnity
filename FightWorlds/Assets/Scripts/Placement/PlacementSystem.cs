@@ -38,6 +38,7 @@ namespace FightWorlds.Placement
         public EvacuationSystem evacuation;
         public Func<bool, GameObject> GetBoomExplosion;
 
+        public const int attachLimit = 6;
         private const int shuttleOffset = 13;
         private const int artifactsPerBuilding = 15;
         private const float evacuateHp = 0.8f;
@@ -94,8 +95,10 @@ namespace FightWorlds.Placement
         }
 
         public List<Collider> GetBuildingsColliders() =>
-            GetAllBuildings().Select(build =>
-                build.GetComponent<Collider>()).ToList();
+            GetAllBuildings()
+            .Where(build => build.AttachedUnits < attachLimit)
+            .Select(build => build.GetComponent<Collider>())
+            .ToList();
 
         public void TapOnLand(Vector3 pos, bool isOnLand) =>
             ui.PlaceHolder(pos, isOnLand);
